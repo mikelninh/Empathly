@@ -14,6 +14,7 @@
     uiLang: 'de',
     mode: 'classic',
     category: 'all',        // 'all' or category id
+    difficulty: 'medium',   // kids, easy, medium, hard, master
     cards: [],
     flipped: [],
     matched: new Set(),
@@ -23,6 +24,7 @@
     timerStart: null,
     timerInterval: null,
     locked: false,
+    peeking: false,
     checkinSelections: {}
   };
 
@@ -56,6 +58,7 @@
     dom.lang1Select = $('#lang1');
     dom.lang2Select = $('#lang2');
     dom.categorySelect = $('#category');
+    dom.difficultySelect = $('#difficulty');
     dom.newGameBtn = $('#btn-new-game');
     dom.modeTabs = $$('.mode-tab');
     dom.controlsRow2 = $('.controls-row-2');
@@ -88,9 +91,22 @@
     return cat ? cat.colorLight : '#FEF3D0';
   }
 
+  function getDifficulty() {
+    return DIFFICULTIES.find(d => d.id === state.difficulty) || DIFFICULTIES[2];
+  }
+
   function getEmotions() {
-    if (state.category === 'all') return EMOTIONS;
-    return EMOTIONS.filter(e => e.category === state.category);
+    const diff = getDifficulty();
+    let pool = EMOTIONS;
+    // Category filter from dropdown
+    if (state.category !== 'all') {
+      pool = pool.filter(e => e.category === state.category);
+    }
+    // Difficulty may restrict categories further (only if no manual category selected)
+    else if (diff.categories) {
+      pool = pool.filter(e => diff.categories.includes(e.category));
+    }
+    return pool;
   }
 
   /* ---- UI text updates ---- */
@@ -115,6 +131,18 @@
     });
     catSelect.value = state.category;
 
+    // Difficulty select
+    const diffSelect = dom.difficultySelect;
+    diffSelect.innerHTML = '';
+    DIFFICULTIES.forEach(diff => {
+      const opt = document.createElement('option');
+      opt.value = diff.id;
+      opt.textContent = `${diff.emoji} ${diff[state.uiLang] || diff.de}`;
+      opt.title = diff.desc[state.uiLang] || diff.desc.de;
+      diffSelect.appendChild(opt);
+    });
+    diffSelect.value = state.difficulty;
+
     // Language flag labels
     const flag1El = $('#flag1');
     const flag2El = $('#flag2');
@@ -125,7 +153,9 @@
   /* ---- Card rendering ---- */
   function buildDeck() {
     const pool = getEmotions();
-    const subset = shuffle(pool).slice(0, Math.min(pool.length, 20));
+    const diff = getDifficulty();
+    const maxPairs = diff.pairs || 12;
+    const subset = shuffle(pool).slice(0, Math.min(pool.length, maxPairs));
     const cards = [];
     subset.forEach(emo => {
       cards.push({
@@ -193,10 +223,25 @@
     if (isClassic) {
       state.cards = buildDeck();
       state.totalPairs = state.cards.length / 2;
+      state.peeking = false;
       updateStats();
       dom.time.textContent = '0:00';
       dom.board.innerHTML = '';
       state.cards.forEach((card, i) => dom.board.appendChild(renderCard(card, i)));
+
+      // Peek: briefly show all cards at start for kids/easy
+      const diff = getDifficulty();
+      if (diff.peekSeconds > 0) {
+        state.peeking = true;
+        state.locked = true;
+        const allCards = $$('.card', dom.board);
+        allCards.forEach(c => c.classList.add('flipped'));
+        setTimeout(() => {
+          allCards.forEach(c => { if (!state.matched.has(+c.dataset.index)) c.classList.remove('flipped'); });
+          state.peeking = false;
+          state.locked = false;
+        }, diff.peekSeconds * 1000);
+      }
     }
     if (isTalk) initTalkMode();
     if (isStory) initStoryMode();
@@ -450,6 +495,10 @@
     });
     dom.categorySelect.addEventListener('change', () => {
       state.category = dom.categorySelect.value;
+      startGame();
+    });
+    dom.difficultySelect.addEventListener('change', () => {
+      state.difficulty = dom.difficultySelect.value;
       startGame();
     });
 

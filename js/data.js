@@ -771,6 +771,58 @@ const NEEDS = [
 ];
 
 // ============================================================
+// DIFFICULTY LEVELS
+// ============================================================
+
+const DIFFICULTIES = [
+  {
+    id: 'kids',
+    emoji: '🧒',
+    pairs: 6,
+    peekSeconds: 3,
+    categories: ['licht'],
+    de: 'Kinder', vi: 'Trẻ em', en: 'Kids',
+    desc: { de: '6 Paare · nur helle Gefühle · 3s Vorschau', vi: '6 cặp · cảm xúc tích cực · xem trước 3 giây', en: '6 pairs · bright feelings only · 3s peek' }
+  },
+  {
+    id: 'easy',
+    emoji: '🌿',
+    pairs: 8,
+    peekSeconds: 2,
+    categories: ['licht', 'mitte'],
+    de: 'Leicht', vi: 'Dễ', en: 'Easy',
+    desc: { de: '8 Paare · Licht & Sanfte Mitte · 2s Vorschau', vi: '8 cặp · Ánh sáng & Dịu nhẹ · xem trước 2 giây', en: '8 pairs · Light & Gentle · 2s peek' }
+  },
+  {
+    id: 'medium',
+    emoji: '🌊',
+    pairs: 12,
+    peekSeconds: 0,
+    categories: null,
+    de: 'Mittel', vi: 'Trung bình', en: 'Medium',
+    desc: { de: '12 Paare · alle Kategorien', vi: '12 cặp · tất cả', en: '12 pairs · all categories' }
+  },
+  {
+    id: 'hard',
+    emoji: '🔥',
+    pairs: 20,
+    peekSeconds: 0,
+    categories: null,
+    de: 'Schwer', vi: 'Khó', en: 'Hard',
+    desc: { de: '20 Paare · alle Kategorien', vi: '20 cặp · tất cả', en: '20 pairs · all categories' }
+  },
+  {
+    id: 'master',
+    emoji: '🌑',
+    pairs: 30,
+    peekSeconds: 0,
+    categories: null,
+    de: 'Meister', vi: 'Bậc thầy', en: 'Master',
+    desc: { de: '30 Paare · alle 67 Gefühle', vi: '30 cặp · tất cả 67 cảm xúc', en: '30 pairs · all 67 emotions' }
+  }
+];
+
+// ============================================================
 // LANGUAGES & UI TEXT
 // ============================================================
 
