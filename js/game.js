@@ -1621,7 +1621,10 @@
     initDarkMode();
     bindEvents();
     updateUIText();
-    showLanding();
+    // Skip landing — start classic game immediately
+    state.mode = 'classic';
+    hideLanding();
+    startGame();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
