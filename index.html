@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gefühle-Memory — Lerne über Gefühle zu sprechen 💛</title>
+  <meta name="description" content="Ein Kartenspiel über Gefühle. 67 Emotionen auf Deutsch und Vietnamesisch — und Raum, darüber zu sprechen.">
+  <meta name="theme-color" content="#FFF8F0">
+  <meta property="og:title" content="Gefühle-Memory 💛">
+  <meta property="og:description" content="67 Gefühle. 6 Kategorien. Deutsch ↔ Vietnamesisch ↔ English. Finde Paare, sprich darüber.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <h1>Gefühle-Memory</h1>
+    <p class="subtitle">Finde die Paare — und sprich über deine Gefühle</p>
+  </header>
+
+  <!-- Mode Tabs -->
+  <nav class="mode-tabs">
+    <button class="mode-tab active" data-mode="classic">Klassisch</button>
+    <button class="mode-tab" data-mode="talk">Gesprächsrunde</button>
+    <button class="mode-tab" data-mode="story">Geschichten</button>
+    <button class="mode-tab" data-mode="checkin">Check-in</button>
+  </nav>
+
+  <!-- Controls Row 1: Languages -->
+  <div class="controls">
+    <div class="control-group">
+      <span id="flag1">🇩🇪</span>
+      <select id="lang1">
+        <option value="de" selected>Deutsch</option>
+        <option value="vi">Tiếng Việt</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+    <span style="color:var(--text-soft);font-size:.9rem">↔</span>
+    <div class="control-group">
+      <span id="flag2">🇻🇳</span>
+      <select id="lang2">
+        <option value="de">Deutsch</option>
+        <option value="vi" selected>Tiếng Việt</option>
+        <option value="en">English</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Controls Row 2: Category + New Game -->
+  <div class="controls controls-row-2">
+    <div class="control-group">
+      <select id="category">
+        <option value="all">Alle Kategorien</option>
+      </select>
+    </div>
+    <button class="btn-icon" id="btn-new-game" title="Neues Spiel">🔄</button>
+  </div>
+
+  <!-- Stats (Classic mode) -->
+  <div class="stats">
+    <div class="stat">
+      <span>🃏</span>
+      <span class="stat-value" id="stat-moves">0</span>
+      <span>Züge</span>
+    </div>
+    <div class="stat">
+      <span>💛</span>
+      <span class="stat-value" id="stat-pairs">0/0</span>
+      <span>Paare</span>
+    </div>
+    <div class="stat">
+      <span>⏱</span>
+      <span class="stat-value" id="stat-time">0:00</span>
+    </div>
+  </div>
+
+  <!-- Classic Mode: Card Grid -->
+  <main class="board" role="grid" aria-label="Memory Spielfeld"></main>
+
+  <!-- Talk Mode -->
+  <section class="talk-mode">
+    <p class="talk-intro"></p>
+    <div class="talk-card-display">
+      <span class="card-emoji">💛</span>
+      <span class="card-word">...</span>
+      <span class="card-word-secondary">...</span>
+    </div>
+    <p class="talk-prompt"></p>
+    <button class="draw-btn">Karte ziehen</button>
+  </section>
+
+  <!-- Story Mode -->
+  <section class="story-mode">
+    <p class="story-intro"></p>
+    <div class="story-cards"></div>
+    <button class="draw-btn">Neue Karten</button>
+  </section>
+
+  <!-- Check-in Mode -->
+  <section class="checkin-mode"></section>
+
+  <!-- Prompt Overlay -->
+  <div class="prompt-overlay" role="dialog" aria-modal="true">
+    <div class="prompt-card">
+      <div class="prompt-emoji"></div>
+      <div class="prompt-word-primary"></div>
+      <div class="prompt-word-secondary"></div>
+      <div class="prompt-divider"></div>
+      <div class="prompt-label"></div>
+      <div class="prompt-question"></div>
+      <button class="prompt-close">✓</button>
+    </div>
+  </div>
+
+  <!-- Congrats Overlay -->
+  <div class="congrats-overlay" role="dialog" aria-modal="true">
+    <div class="congrats-card">
+      <div class="congrats-title"></div>
+      <div class="congrats-text"></div>
+      <div class="congrats-stats"></div>
+      <div class="congrats-buttons">
+        <button class="btn btn-primary" id="btn-play-again">Nochmal</button>
+        <button class="btn btn-secondary" id="btn-share">Teilen 💛</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>Gefühle-Memory 💛 67 Gefühle · 6 Kategorien · 40 Bedürfnisse</p>
+    <p>Deutsch · Tiếng Việt · English</p>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
