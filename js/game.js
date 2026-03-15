@@ -3,6 +3,7 @@
  * Classic memory + Talk + Story + Check-in + Emotion Wheel modes
  * Bilingual card matching with 67 emotions in 6 categories
  * Features: Audio pronunciation, Dark mode, Star rating, Multiplayer
+ * UI: Landing screen with mode grid, collapsible settings, back navigation
  */
 
 (function () {
@@ -38,7 +39,9 @@
     currentPlayer: 0,
     playerNames: [],
     playerScores: [],
-    multiplayerStarted: false
+    multiplayerStarted: false,
+    // Landing
+    showLanding: true
   };
 
   /* ---- DOM ---- */
@@ -72,12 +75,16 @@
     dom.checkinMode = $('.checkin-mode');
     dom.wheelMode = $('.wheel-mode');
     dom.statsBar = $('.stats');
+    // Landing settings bar selects
     dom.lang1Select = $('#lang1');
     dom.lang2Select = $('#lang2');
     dom.categorySelect = $('#category');
     dom.difficultySelect = $('#difficulty');
+    // Active mode selects (duplicated in active container)
+    dom.difficultySelectActive = $('#difficulty-active');
+    dom.categorySelectActive = $('#category-active');
+    dom.playerCountSelectActive = $('#player-count-active');
     dom.newGameBtn = $('#btn-new-game');
-    dom.modeTabs = $$('.mode-tab');
     dom.controlsRow2 = $('.controls-row-2');
     dom.darkModeBtn = $('#btn-dark-mode');
     dom.playerCountSelect = $('#player-count');
@@ -87,6 +94,17 @@
     dom.journalMode = $('.journal-mode');
     dom.learnMode = $('.learn-mode');
     dom.settingsBtn = $('#btn-settings');
+    // Landing & navigation
+    dom.landingScreen = $('#landing-screen');
+    dom.activeModeContainer = $('#active-mode-container');
+    dom.backBtn = $('#btn-back');
+    dom.settingsBar = $('#settings-bar');
+    dom.settingsBarToggle = $('#settings-bar-toggle');
+    dom.settingsBarContent = $('#settings-bar-content');
+    dom.settingsSummaryText = $('#settings-summary-text');
+    dom.modeCards = $$('.mode-card');
+    // Legacy: still need modeTabs reference for updateUIText
+    dom.modeTabs = [];
   }
 
   /* ---- Helpers ---- */
@@ -137,10 +155,8 @@
   function loadVoices() {
     const voices = speechSynthesis.getVoices();
     if (!voices.length) return;
-    // Build a map: lang code → best matching voice
     Object.entries(LANG_SPEECH_MAP).forEach(([key, langTag]) => {
-      const prefix = langTag.split('-')[0]; // 'de', 'vi', 'en'
-      // Priority: exact match (de-DE) > prefix match (de) > any containing prefix
+      const prefix = langTag.split('-')[0];
       const exact = voices.find(v => v.lang === langTag);
       const prefixMatch = voices.find(v => v.lang.startsWith(prefix + '-'));
       const loose = voices.find(v => v.lang.startsWith(prefix));
@@ -148,7 +164,6 @@
     });
   }
 
-  // Voices load async in some browsers
   if ('speechSynthesis' in window) {
     loadVoices();
     speechSynthesis.addEventListener('voiceschanged', loadVoices);
@@ -159,14 +174,12 @@
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(word);
     utter.lang = LANG_SPEECH_MAP[lang] || 'de-DE';
-    // Use the correct voice for this language (not system default!)
     const voice = voiceCache[lang];
     if (voice) utter.voice = voice;
     utter.rate = 0.8;
     utter.volume = 1;
     window.speechSynthesis.speak(utter);
   }
-  // Expose globally for learn.js audio quiz
   window.gefuhleSpeakWord = speakWord;
 
   function makeSpeakButton(word, lang, extraClass) {
@@ -195,9 +208,8 @@
     document.body.classList.toggle('light-mode', !state.darkMode);
     dom.darkModeBtn.textContent = state.darkMode ? '☀️' : '🌙';
     dom.darkModeBtn.title = t('darkMode');
-    // Update theme-color meta
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = state.darkMode ? '#1E1B16' : '#FFF8F0';
+    if (meta) meta.content = state.darkMode ? '#1A1714' : '#FFF8F0';
   }
 
   /* ---- Star Rating ---- */
@@ -216,7 +228,7 @@
     const prev = parseInt(localStorage.getItem(key)) || 0;
     if (stars > prev) {
       localStorage.setItem(key, stars);
-      return true; // new best
+      return true;
     }
     return false;
   }
@@ -231,18 +243,116 @@
     }
   }
 
+  /* ---- Landing / Navigation ---- */
+  function showLanding() {
+    state.showLanding = true;
+    document.body.classList.add('show-landing');
+    clearInterval(state.timerInterval);
+    updateSettingsSummary();
+  }
+
+  function hideLanding() {
+    state.showLanding = false;
+    document.body.classList.remove('show-landing');
+  }
+
+  function updateSettingsSummary() {
+    const lang1 = LANGUAGES[state.lang1];
+    const lang2 = LANGUAGES[state.lang2];
+    const diff = getDifficulty();
+    const diffLabel = diff[state.uiLang] || diff.de;
+    const diffEmoji = diff.emoji;
+    dom.settingsSummaryText.textContent =
+      `${lang1.flag} ${lang1.name} ↔ ${lang2.flag} ${lang2.name} · ${diffEmoji} ${diffLabel}`;
+  }
+
+  /* ---- Mode card descriptions (localized) ---- */
+  const MODE_CARD_DATA = {
+    classic: {
+      icon: '🃏',
+      name: { de: 'Klassisch', vi: 'Cổ điển', en: 'Classic' },
+      desc: { de: 'Finde passende Paare', vi: 'Tìm các cặp phù hợp', en: 'Find matching pairs' }
+    },
+    talk: {
+      icon: '💬',
+      name: { de: 'Gesprächsrunde', vi: 'Trò chuyện', en: 'Talk Round' },
+      desc: { de: 'Zieh Karten & sprich', vi: 'Rút thẻ & chia sẻ', en: 'Draw cards & talk' }
+    },
+    story: {
+      icon: '📖',
+      name: { de: 'Geschichten', vi: 'Kể chuyện', en: 'Stories' },
+      desc: { de: 'Erzähle eine Geschichte', vi: 'Kể một câu chuyện', en: 'Tell a story' }
+    },
+    wheel: {
+      icon: '🎡',
+      name: { de: 'Emotions-Rad', vi: 'Vòng cảm xúc', en: 'Emotion Wheel' },
+      desc: { de: 'Alle 67 Gefühle erkunden', vi: 'Khám phá 67 cảm xúc', en: 'Explore all 67 emotions' }
+    },
+    checkin: {
+      icon: '🌿',
+      name: { de: 'Check-in', vi: 'Tự vấn', en: 'Check-in' },
+      desc: { de: 'Was brauchst du heute?', vi: 'Hôm nay bạn cần gì?', en: 'What do you need today?' }
+    },
+    learn: {
+      icon: '🧠',
+      name: { de: 'Karteikarten', vi: 'Thẻ ghi nhớ', en: 'Flashcards' },
+      desc: { de: 'Vokabeln mit Wiederholung', vi: 'Từ vựng lặp lại', en: 'Vocabulary with repetition' }
+    },
+    journal: {
+      icon: '📓',
+      name: { de: 'Journal', vi: 'Nhật ký', en: 'Journal' },
+      desc: { de: 'Tägliche Reflexion', vi: 'Suy ngẫm hàng ngày', en: 'Daily reflection' }
+    }
+  };
+
+  const MODE_GROUPS = {
+    de: { spielen: 'Spielen', entdecken: 'Entdecken', lernen: 'Lernen' },
+    vi: { spielen: 'Chơi', entdecken: 'Khám phá', lernen: 'Học' },
+    en: { spielen: 'Play', entdecken: 'Discover', lernen: 'Learn' }
+  };
+
+  function updateModeCards() {
+    const lang = state.uiLang;
+    dom.modeCards.forEach(card => {
+      const mode = card.dataset.mode;
+      const data = MODE_CARD_DATA[mode];
+      if (!data) return;
+      const iconEl = card.querySelector('.mode-card-icon');
+      const nameEl = card.querySelector('.mode-card-name');
+      const descEl = card.querySelector('.mode-card-desc');
+      if (iconEl) iconEl.textContent = data.icon;
+      if (nameEl) nameEl.textContent = data.name[lang] || data.name.de;
+      if (descEl) descEl.textContent = data.desc[lang] || data.desc.de;
+    });
+
+    // Update group labels
+    const groups = MODE_GROUPS[lang] || MODE_GROUPS.de;
+    const labels = $$('.mode-group-label');
+    if (labels[0]) labels[0].textContent = groups.spielen;
+    if (labels[1]) labels[1].textContent = groups.entdecken;
+    if (labels[2]) labels[2].textContent = groups.lernen;
+
+    // Update landing hero
+    const heroTitle = $('.landing-title');
+    const heroSubtitle = $('.landing-subtitle');
+    if (heroTitle) heroTitle.textContent = t('title');
+    if (heroSubtitle) {
+      heroSubtitle.textContent = lang === 'de' ? '67 Gefühle · 6 Kategorien · 3 Sprachen'
+        : lang === 'vi' ? '67 cảm xúc · 6 loại · 3 ngôn ngữ'
+        : '67 emotions · 6 categories · 3 languages';
+    }
+  }
+
   /* ---- UI text updates ---- */
   function updateUIText() {
     dom.title.textContent = t('title');
     dom.subtitle.textContent = t('subtitle');
     dom.newGameBtn.title = t('newGame');
-    dom.modeTabs.forEach(tab => {
-      const mode = tab.dataset.mode;
-      const key = 'mode' + mode.charAt(0).toUpperCase() + mode.slice(1);
-      if (UI_TEXT[state.uiLang][key]) tab.textContent = UI_TEXT[state.uiLang][key];
-    });
 
-    // Category select
+    // Back button text
+    dom.backBtn.textContent = '← ' + (state.uiLang === 'de' ? 'Zurück' : state.uiLang === 'vi' ? 'Quay lại' : 'Back');
+
+    // Category select (landing)
     const catSelect = dom.categorySelect;
     catSelect.innerHTML = `<option value="all">${t('allCategories')}</option>`;
     CATEGORIES.forEach(cat => {
@@ -253,7 +363,13 @@
     });
     catSelect.value = state.category;
 
-    // Difficulty select
+    // Category select (active mode)
+    if (dom.categorySelectActive) {
+      dom.categorySelectActive.innerHTML = catSelect.innerHTML;
+      dom.categorySelectActive.value = state.category;
+    }
+
+    // Difficulty select (landing)
     const diffSelect = dom.difficultySelect;
     diffSelect.innerHTML = '';
     DIFFICULTIES.forEach(diff => {
@@ -265,7 +381,13 @@
     });
     diffSelect.value = state.difficulty;
 
-    // Player count select
+    // Difficulty select (active mode)
+    if (dom.difficultySelectActive) {
+      dom.difficultySelectActive.innerHTML = diffSelect.innerHTML;
+      dom.difficultySelectActive.value = state.difficulty;
+    }
+
+    // Player count select (landing)
     const pcSelect = dom.playerCountSelect;
     const opts = pcSelect.options;
     opts[0].textContent = t('solo');
@@ -273,11 +395,24 @@
       opts[i].textContent = `${i + 1} ${t('player')}`;
     }
 
+    // Player count select (active)
+    if (dom.playerCountSelectActive) {
+      const aOpts = dom.playerCountSelectActive.options;
+      aOpts[0].textContent = t('solo');
+      for (let i = 1; i < aOpts.length; i++) {
+        aOpts[i].textContent = `${i + 1} ${t('player')}`;
+      }
+      dom.playerCountSelectActive.value = String(state.playerCount);
+    }
+
     // Language flag labels
     const flag1El = $('#flag1');
     const flag2El = $('#flag2');
     if (flag1El) flag1El.textContent = LANGUAGES[state.lang1]?.flag || '';
     if (flag2El) flag2El.textContent = LANGUAGES[state.lang2]?.flag || '';
+
+    updateModeCards();
+    updateSettingsSummary();
   }
 
   /* ---- Card rendering ---- */
@@ -355,7 +490,6 @@
     container.classList.add('active');
 
     $('#btn-start-multi').addEventListener('click', () => {
-      // Collect names
       $$('.player-name-input', container).forEach(input => {
         const idx = parseInt(input.dataset.player);
         state.playerNames[idx] = input.value.trim() || `${t('player')} ${idx + 1}`;
@@ -365,7 +499,6 @@
       startClassicGame();
     });
 
-    // Focus first input
     const firstInput = $('.player-name-input', container);
     if (firstInput) firstInput.focus();
   }
@@ -392,7 +525,6 @@
   function advanceTurn() {
     state.currentPlayer = (state.currentPlayer + 1) % state.playerCount;
     updateTurnIndicator();
-    // Show pass-device overlay
     showPassOverlay();
   }
 
@@ -443,7 +575,6 @@
     dom.playerSetup.classList.remove('active');
 
     if (isClassic) {
-      // Multiplayer setup
       if (isMultiplayer() && !state.multiplayerStarted) {
         dom.board.style.display = 'none';
         dom.statsBar.style.display = 'none';
@@ -461,7 +592,6 @@
   }
 
   function startClassicGame() {
-    // Reset multiplayer scores
     state.currentPlayer = 0;
     state.playerScores = new Array(state.playerCount).fill(0);
 
@@ -480,7 +610,6 @@
       updateTurnIndicator();
     }
 
-    // Peek: briefly show all cards at start for kids/easy
     const diff = getDifficulty();
     if (diff.peekSeconds > 0) {
       state.peeking = true;
@@ -496,7 +625,6 @@
   }
 
   function onCardClick(index) {
-    // Tap on already-flipped or matched card → show hint
     if (state.flipped.includes(index) || state.matched.has(index)) {
       const card = state.cards[index];
       if (card) showCardHint(card);
@@ -531,7 +659,6 @@
         if (state.pairsFound === state.totalPairs) setTimeout(showCongrats, 1200);
       }, 500);
     } else {
-      // No match
       state.locked = true;
       showDismissBar();
       const dismiss = () => {
@@ -540,7 +667,6 @@
         $(`.card[data-index="${j}"]`, dom.board)?.classList.remove('flipped');
         state.flipped = []; state.locked = false;
         document.removeEventListener('click', dismiss, true);
-        // Multiplayer: advance turn on mismatch
         if (isMultiplayer()) {
           advanceTurn();
         }
@@ -608,7 +734,6 @@
           <div class="hint-culture-text">${cultureNote}</div>
         </div>` : '';
 
-    // AI cultural insight
     const aiAvailable = typeof GefuehleAI !== 'undefined';
     let aiHTML = '';
     if (aiAvailable) {
@@ -639,7 +764,6 @@
       </div>`;
     hint.classList.add('visible');
 
-    // Bind AI culture button
     const aiBtn = hint.querySelector('.ai-culture-btn');
     if (aiBtn) {
       aiBtn.addEventListener('click', async (e) => {
@@ -686,13 +810,11 @@
     dom.congratsTitle.textContent = t('congratsTitle');
 
     if (isMultiplayer()) {
-      // Multiplayer scoreboard
       dom.congratsText.textContent = '';
       dom.congratsStars.innerHTML = '';
       dom.congratsBest.textContent = '';
       dom.congratsStats.textContent = t('congratsStats').replace('{moves}', state.moves).replace('{time}', elapsed);
 
-      // Find winner
       const maxScore = Math.max(...state.playerScores);
       const winners = state.playerScores.reduce((acc, s, i) => s === maxScore ? [...acc, i] : acc, []);
       const isTie = winners.length > 1;
@@ -712,16 +834,13 @@
       }
       dom.congratsScoreboard.innerHTML = sbHTML;
     } else {
-      // Solo mode
       dom.congratsScoreboard.innerHTML = '';
       dom.congratsText.textContent = t('congratsText');
       dom.congratsStats.textContent = t('congratsStats').replace('{moves}', state.moves).replace('{time}', elapsed);
 
-      // Star rating
       const stars = calculateStars(state.moves, state.totalPairs);
       renderStars(dom.congratsStars, stars);
 
-      // Save best
       const isNewBest = saveBestStars(stars);
       dom.congratsBest.textContent = isNewBest ? `⭐ ${t('newBest')}` : '';
     }
@@ -758,7 +877,6 @@
       setTimeout(() => { show(); cardDisplay.style.transform = ''; }, 200);
     };
 
-    // Bind speak buttons via delegation
     container.addEventListener('click', (e) => {
       const btn = e.target.closest('.speak-btn');
       if (btn) {
@@ -886,7 +1004,6 @@
     const container = dom.wheelMode;
     const lang = state.uiLang;
 
-    // Group emotions by category
     const catEmotions = {};
     CATEGORIES.forEach(cat => {
       catEmotions[cat.id] = EMOTIONS.filter(e => e.category === cat.id);
@@ -898,7 +1015,6 @@
     const catCount = CATEGORIES.length;
     const anglePerCat = (Math.PI * 2) / catCount;
 
-    // Helper: lighten a hex color
     function lightenHex(hex, amount) {
       const num = parseInt(hex.replace('#', ''), 16);
       const r = Math.min(255, ((num >> 16) & 0xff) + amount);
@@ -907,7 +1023,6 @@
       return 'rgb(' + r + ',' + g + ',' + b + ')';
     }
 
-    // Helper: arc path for a wedge segment
     function arcPath(cxp, cyp, r1, r2, a1, a2) {
       const x1o = cxp + r2 * Math.cos(a1), y1o = cyp + r2 * Math.sin(a1);
       const x2o = cxp + r2 * Math.cos(a2), y2o = cyp + r2 * Math.sin(a2);
@@ -919,7 +1034,6 @@
         ' A ' + r1 + ' ' + r1 + ' 0 0 0 ' + x1i + ' ' + y1i + ' Z';
     }
 
-    // Decorative pattern generators per category
     const decoGen = {
       licht: function(cxp, cyp, r1, r2, a1, a2, color) {
         let d = '';
@@ -986,7 +1100,6 @@
       }
     };
 
-    // SVG definitions: radial gradients + filters
     let defs = '<defs>';
     CATEGORIES.forEach(function(cat, i) {
       const midAngle = i * anglePerCat - Math.PI / 2 + anglePerCat / 2;
@@ -1003,7 +1116,6 @@
       '</filter>';
     defs += '</defs>';
 
-    // Build segments + emoji dots
     let segments = '';
     CATEGORIES.forEach(function(cat, catIdx) {
       const startAngle = catIdx * anglePerCat - Math.PI / 2;
@@ -1014,23 +1126,19 @@
 
       segments += '<g class="wheel-segment-group" data-cat="' + cat.id + '">';
 
-      // Gradient-filled wedge
       segments += '<path class="wheel-segment" d="' + arcPath(cx, cy, innerR, outerR, startAngle, endAngle) + '"' +
         ' fill="url(#wg-' + cat.id + ')" stroke="' + cat.color + '" stroke-width="1.5" opacity="0.82"' +
         ' tabindex="0" role="button" aria-label="' + catLabel + '"/>';
 
-      // Decorative patterns
       if (decoGen[cat.id]) {
         segments += decoGen[cat.id](cx, cy, innerR, outerR, startAngle, endAngle, cat.color);
       }
 
-      // Category emoji near inner ring
       const emojiR = innerR + 20;
       const elx = cx + emojiR * Math.cos(midAngle);
       const ely = cy + emojiR * Math.sin(midAngle);
       segments += '<text class="wheel-cat-emoji" x="' + elx + '" y="' + ely + '" text-anchor="middle" dominant-baseline="middle">' + cat.emoji + '</text>';
 
-      // Category name (visible on hover only)
       const nameR = outerR - 22;
       const nlx = cx + nameR * Math.cos(midAngle);
       const nly = cy + nameR * Math.sin(midAngle);
@@ -1039,7 +1147,6 @@
       segments += '<text class="wheel-cat-name" x="' + nlx + '" y="' + nly + '" text-anchor="middle" dominant-baseline="middle"' +
         ' transform="rotate(' + textRot + ', ' + nlx + ', ' + nly + ')">' + catLabel + '</text>';
 
-      // Emotion emoji dots
       emotions.forEach(function(emo, emoIdx) {
         const padAngle = 0.04;
         const usableAngle = anglePerCat - padAngle * 2;
@@ -1062,7 +1169,6 @@
       segments += '</g>';
     });
 
-    // Center circle group with pulsing animation
     const defaultCenterText = lang === 'de' ? 'Tippe zum Erkunden' : lang === 'vi' ? 'Chạm để khám phá' : 'Tap to explore';
     let center = '<g class="wheel-center-pulse">';
     center += '<circle class="wheel-center-circle" cx="' + cx + '" cy="' + cy + '" r="' + (innerR - 5) + '"' +
@@ -1079,7 +1185,6 @@
         '<div class="wheel-tooltip" aria-hidden="true"></div>' +
       '</div>';
 
-    // Tooltip behavior
     const svgEl = container.querySelector('svg');
     const tooltip = container.querySelector('.wheel-tooltip');
     const svgContainer = container.querySelector('.wheel-svg-container');
@@ -1109,7 +1214,6 @@
       if (ct) ct.textContent = text;
     }
 
-    // Hover events
     svgEl.addEventListener('mouseover', function(e) {
       var dot = e.target.closest('.wheel-emoji-dot');
       if (dot) {
@@ -1124,7 +1228,6 @@
       }
     });
 
-    // Focus events for keyboard nav
     svgEl.addEventListener('focusin', function(e) {
       var dot = e.target.closest('.wheel-emoji-dot');
       if (dot) {
@@ -1139,7 +1242,6 @@
       }
     });
 
-    // Click / Enter on emoji dot → zoom animation then show card hint
     function activateDot(dotEl) {
       var emoId = dotEl.dataset.emotionId;
       var emo = EMOTIONS.find(function(em) { return em.id === emoId; });
@@ -1171,7 +1273,6 @@
       }
     });
 
-    // Remove spin-in class after animation
     svgEl.addEventListener('animationend', function() {
       svgEl.classList.remove('wheel-spin-in');
     }, { once: true });
@@ -1190,7 +1291,6 @@
 
     const selectedEmotions = new Set();
 
-    // Build category sections
     let catHTML = '';
     CATEGORIES.forEach(cat => {
       const emotions = EMOTIONS.filter(e => e.category === cat.id);
@@ -1211,10 +1311,8 @@
         </div>`;
     });
 
-    // Load entries
     const entries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
 
-    // Weekly heatmap
     const weekAgo = new Date(today);
     weekAgo.setDate(weekAgo.getDate() - 7);
     const weekEntries = entries.filter(e => new Date(e.date) >= weekAgo);
@@ -1246,7 +1344,6 @@
         </div>
       </div>`;
 
-    // History
     let historyHTML = '';
     if (entries.length > 0) {
       historyHTML = `
@@ -1273,7 +1370,6 @@
       historyHTML = `<p style="color:var(--text-soft);font-size:.9rem">${t('journalNoEntries')}</p>`;
     }
 
-    // AI pattern button
     const aiAvailable = typeof GefuehleAI !== 'undefined';
     let aiPatternHTML = '';
     if (entries.length >= 3) {
@@ -1299,14 +1395,12 @@
       ${aiPatternHTML}
       ${historyHTML}`;
 
-    // Bind category toggle
     container.querySelectorAll('.journal-cat-header').forEach(header => {
       header.addEventListener('click', () => {
         header.parentElement.classList.toggle('open');
       });
     });
 
-    // Bind emotion selection
     container.querySelectorAll('.journal-emo-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const emoId = btn.dataset.emoId;
@@ -1320,7 +1414,6 @@
       });
     });
 
-    // Bind save
     container.querySelector('.journal-save-btn')?.addEventListener('click', () => {
       if (selectedEmotions.size === 0) return;
       const note = container.querySelector('.journal-note-field')?.value || '';
@@ -1337,18 +1430,16 @@
       msg.classList.add('show');
       setTimeout(() => {
         msg.classList.remove('show');
-        initJournalMode(); // Refresh to show new entry
+        initJournalMode();
       }, 1500);
     });
 
-    // Bind history expand
     container.querySelectorAll('.journal-entry').forEach(el => {
       el.addEventListener('click', () => {
         el.classList.toggle('expanded');
       });
     });
 
-    // Bind AI pattern button
     const patternBtn = container.querySelector('.journal-pattern-btn');
     if (patternBtn) {
       patternBtn.addEventListener('click', async () => {
@@ -1381,6 +1472,31 @@
     }
   }
 
+  /* ---- Sync settings between landing and active selects ---- */
+  function syncSettingsFromLanding() {
+    state.lang1 = dom.lang1Select.value;
+    state.lang2 = dom.lang2Select.value;
+    state.uiLang = state.lang1;
+    state.difficulty = dom.difficultySelect.value;
+    state.category = dom.categorySelect.value;
+    state.playerCount = parseInt(dom.playerCountSelect.value);
+  }
+
+  function syncSettingsFromActive() {
+    if (dom.difficultySelectActive) {
+      state.difficulty = dom.difficultySelectActive.value;
+      dom.difficultySelect.value = state.difficulty;
+    }
+    if (dom.categorySelectActive) {
+      state.category = dom.categorySelectActive.value;
+      dom.categorySelect.value = state.category;
+    }
+    if (dom.playerCountSelectActive) {
+      state.playerCount = parseInt(dom.playerCountSelectActive.value);
+      dom.playerCountSelect.value = String(state.playerCount);
+    }
+  }
+
   /* ---- Events ---- */
   function bindEvents() {
     dom.promptClose.addEventListener('click', hidePrompt);
@@ -1404,37 +1520,77 @@
       startGame();
     });
 
-    dom.modeTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        state.mode = tab.dataset.mode;
-        dom.modeTabs.forEach(t => t.classList.toggle('active', t === tab));
+    // Mode card clicks (landing grid)
+    dom.modeCards.forEach(card => {
+      card.addEventListener('click', () => {
+        syncSettingsFromLanding();
+        state.mode = card.dataset.mode;
         state.multiplayerStarted = false;
+        hideLanding();
+        updateUIText();
         startGame();
       });
     });
 
+    // Back button
+    dom.backBtn.addEventListener('click', () => {
+      clearInterval(state.timerInterval);
+      showLanding();
+    });
+
+    // Settings bar toggle
+    dom.settingsBarToggle.addEventListener('click', () => {
+      dom.settingsBar.classList.toggle('open');
+    });
+
+    // Landing settings changes
     dom.lang1Select.addEventListener('change', () => {
       state.lang1 = dom.lang1Select.value;
       state.uiLang = state.lang1;
       updateUIText();
-      state.multiplayerStarted = false;
-      startGame();
+      updateSettingsSummary();
     });
     dom.lang2Select.addEventListener('change', () => {
       state.lang2 = dom.lang2Select.value;
-      state.multiplayerStarted = false;
-      startGame();
+      updateSettingsSummary();
     });
     dom.categorySelect.addEventListener('change', () => {
       state.category = dom.categorySelect.value;
-      state.multiplayerStarted = false;
-      startGame();
+      updateSettingsSummary();
     });
     dom.difficultySelect.addEventListener('change', () => {
       state.difficulty = dom.difficultySelect.value;
-      state.multiplayerStarted = false;
-      startGame();
+      updateSettingsSummary();
     });
+    dom.playerCountSelect.addEventListener('change', () => {
+      state.playerCount = parseInt(dom.playerCountSelect.value);
+    });
+
+    // Active mode settings changes
+    if (dom.difficultySelectActive) {
+      dom.difficultySelectActive.addEventListener('change', () => {
+        syncSettingsFromActive();
+        state.multiplayerStarted = false;
+        startGame();
+      });
+    }
+    if (dom.categorySelectActive) {
+      dom.categorySelectActive.addEventListener('change', () => {
+        syncSettingsFromActive();
+        state.multiplayerStarted = false;
+        startGame();
+      });
+    }
+    if (dom.playerCountSelectActive) {
+      dom.playerCountSelectActive.addEventListener('change', () => {
+        syncSettingsFromActive();
+        state.multiplayerStarted = false;
+        state.playerNames = [];
+        state.playerScores = [];
+        if (state.mode === 'classic') startGame();
+      });
+    }
+
     dom.darkModeBtn.addEventListener('click', toggleDarkMode);
 
     // Settings button
@@ -1446,16 +1602,16 @@
       });
     }
 
-    dom.playerCountSelect.addEventListener('change', () => {
-      state.playerCount = parseInt(dom.playerCountSelect.value);
-      state.multiplayerStarted = false;
-      state.playerNames = [];
-      state.playerScores = [];
-      if (state.mode === 'classic') startGame();
-    });
-
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') { hidePrompt(); hideCongrats(); }
+      if (e.key === 'Escape') {
+        hidePrompt();
+        hideCongrats();
+        // If in a mode, go back to landing
+        if (!state.showLanding) {
+          clearInterval(state.timerInterval);
+          showLanding();
+        }
+      }
     });
   }
 
@@ -1465,7 +1621,7 @@
     initDarkMode();
     bindEvents();
     updateUIText();
-    startGame();
+    showLanding();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
