@@ -11,7 +11,7 @@
 
   /* ---- Constants ---- */
   const PLAYER_COLORS = ['#F6C344', '#7BAFD4', '#E74C3C', '#8E44AD'];
-  const LANG_SPEECH_MAP = { de: 'de-DE', vi: 'vi-VN', en: 'en-GB', tr: 'tr-TR', ar: 'ar-SA', es: 'es-ES', fr: 'fr-FR', uk: 'uk-UA', pl: 'pl-PL' };
+  const LANG_SPEECH_MAP = { de: 'de-DE', vi: 'vi-VN', en: 'en-GB', tr: 'tr-TR', ar: 'ar-SA', es: 'es-ES', fr: 'fr-FR', uk: 'uk-UA', pl: 'pl-PL', el: 'el-GR' };
 
   /* ---- State ---- */
   let state = {
