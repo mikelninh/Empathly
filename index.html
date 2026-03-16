@@ -7,7 +7,7 @@
   <meta name="description" content="Ein Kartenspiel über Gefühle. 67 Emotionen auf Deutsch und Vietnamesisch — und Raum, darüber zu sprechen.">
   <meta name="theme-color" content="#FFF8F0">
   <meta property="og:title" content="Gefühle-Memory 💛">
-  <meta property="og:description" content="67 Gefühle. 6 Kategorien. Deutsch ↔ Vietnamesisch ↔ English. Finde Paare, sprich darüber.">
+  <meta property="og:description" content="67 Gefühle. 6 Kategorien. 10 Sprachen. Finde Paare, sprich darüber.">
   <meta property="og:type" content="website">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>">
   <!-- PWA -->
@@ -22,122 +22,216 @@
 
   <!-- Header -->
   <header class="header">
+    <button class="btn-back" id="btn-back" title="Zurück">← Zurück</button>
     <h1>Gefühle-Memory</h1>
     <button class="btn-icon" id="btn-settings" title="Einstellungen">⚙️</button>
     <button class="btn-icon" id="btn-dark-mode" title="Dark Mode">🌙</button>
     <p class="subtitle">Finde die Paare — und sprich über deine Gefühle</p>
   </header>
 
-  <!-- Mode Tabs -->
-  <nav class="mode-tabs">
-    <button class="mode-tab active" data-mode="classic">Klassisch</button>
-    <button class="mode-tab" data-mode="talk">Gesprächsrunde</button>
-    <button class="mode-tab" data-mode="story">Geschichten</button>
-    <button class="mode-tab" data-mode="checkin">Check-in</button>
-    <button class="mode-tab" data-mode="wheel">Rad</button>
-    <button class="mode-tab" data-mode="learn">Lernen</button>
-    <button class="mode-tab" data-mode="journal">Journal</button>
-  </nav>
+  <!-- Landing Screen -->
+  <section class="landing-screen" id="landing-screen">
+    <div class="landing-hero">
+      <h2 class="landing-title">Gefühle-Memory</h2>
+      <p class="landing-subtitle">67 Gefühle · 6 Kategorien · 10 Sprachen</p>
+    </div>
 
-  <!-- Controls Row 1: Languages -->
-  <div class="controls">
-    <div class="control-group">
-      <span id="flag1">🇩🇪</span>
-      <select id="lang1">
-        <option value="de" selected>Deutsch</option>
-        <option value="vi">Tiếng Việt</option>
-        <option value="en">English</option>
-      </select>
+    <!-- Collapsible Settings Bar -->
+    <div class="settings-bar" id="settings-bar">
+      <button class="settings-bar-summary" id="settings-bar-toggle">
+        <span id="settings-summary-text">🇩🇪 Deutsch ↔ 🇻🇳 Tiếng Việt · 🌊 Mittel</span>
+        <span class="settings-bar-arrow">▾</span>
+      </button>
+      <div class="settings-bar-content" id="settings-bar-content">
+        <div class="settings-bar-row">
+          <div class="control-group">
+            <span id="flag1">🇩🇪</span>
+            <select id="lang1">
+              <option value="de" selected>Deutsch</option>
+              <option value="vi">Tiếng Việt</option>
+              <option value="en">English</option>
+              <option value="tr">Türkçe</option>
+              <option value="ar">العربية</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="uk">Українська</option>
+              <option value="pl">Polski</option>
+            </select>
+          </div>
+          <span class="settings-bar-swap">↔</span>
+          <div class="control-group">
+            <span id="flag2">🇻🇳</span>
+            <select id="lang2">
+              <option value="de">Deutsch</option>
+              <option value="vi" selected>Tiếng Việt</option>
+              <option value="en">English</option>
+              <option value="tr">Türkçe</option>
+              <option value="ar">العربية</option>
+              <option value="es">Español</option>
+              <option value="fr">Français</option>
+              <option value="uk">Українська</option>
+              <option value="pl">Polski</option>
+            </select>
+          </div>
+        </div>
+        <div class="settings-bar-row">
+          <div class="control-group">
+            <select id="difficulty"></select>
+          </div>
+          <div class="control-group">
+            <select id="category">
+              <option value="all">Alle Kategorien</option>
+            </select>
+          </div>
+          <div class="control-group multiplayer-toggle">
+            <select id="player-count">
+              <option value="1">Solo</option>
+              <option value="2">2 Spieler</option>
+              <option value="3">3 Spieler</option>
+              <option value="4">4 Spieler</option>
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
-    <span style="color:var(--text-soft);font-size:.9rem">↔</span>
-    <div class="control-group">
-      <span id="flag2">🇻🇳</span>
-      <select id="lang2">
-        <option value="de">Deutsch</option>
-        <option value="vi" selected>Tiếng Việt</option>
-        <option value="en">English</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- Controls Row 2: Difficulty + Category + Multiplayer + New Game -->
-  <div class="controls controls-row-2">
-    <div class="control-group">
-      <select id="difficulty"></select>
+    <!-- Mode Grid -->
+    <div class="mode-grid">
+      <div class="mode-group">
+        <h3 class="mode-group-label">Spielen</h3>
+        <div class="mode-group-cards">
+          <button class="mode-card" data-mode="classic">
+            <span class="mode-card-icon">🃏</span>
+            <span class="mode-card-name">Klassisch</span>
+            <span class="mode-card-desc">Finde passende Paare</span>
+          </button>
+          <button class="mode-card" data-mode="talk">
+            <span class="mode-card-icon">💬</span>
+            <span class="mode-card-name">Gesprächsrunde</span>
+            <span class="mode-card-desc">Zieh Karten & sprich</span>
+          </button>
+          <button class="mode-card" data-mode="story">
+            <span class="mode-card-icon">📖</span>
+            <span class="mode-card-name">Geschichten</span>
+            <span class="mode-card-desc">Erzähle eine Geschichte</span>
+          </button>
+        </div>
+      </div>
+      <div class="mode-group">
+        <h3 class="mode-group-label">Entdecken</h3>
+        <div class="mode-group-cards">
+          <button class="mode-card" data-mode="wheel">
+            <span class="mode-card-icon">🎡</span>
+            <span class="mode-card-name">Emotions-Rad</span>
+            <span class="mode-card-desc">Alle 67 Gefühle erkunden</span>
+          </button>
+          <button class="mode-card" data-mode="checkin">
+            <span class="mode-card-icon">🌿</span>
+            <span class="mode-card-name">Check-in</span>
+            <span class="mode-card-desc">Was brauchst du heute?</span>
+          </button>
+        </div>
+      </div>
+      <div class="mode-group">
+        <h3 class="mode-group-label">Lernen</h3>
+        <div class="mode-group-cards">
+          <button class="mode-card" data-mode="learn">
+            <span class="mode-card-icon">🧠</span>
+            <span class="mode-card-name">Karteikarten</span>
+            <span class="mode-card-desc">Vokabeln mit Wiederholung</span>
+          </button>
+          <button class="mode-card" data-mode="journal">
+            <span class="mode-card-icon">📓</span>
+            <span class="mode-card-name">Journal</span>
+            <span class="mode-card-desc">Tägliche Reflexion</span>
+          </button>
+        </div>
+      </div>
     </div>
-    <div class="control-group">
-      <select id="category">
-        <option value="all">Alle Kategorien</option>
-      </select>
-    </div>
-    <div class="control-group multiplayer-toggle">
-      <select id="player-count">
-        <option value="1">Solo</option>
-        <option value="2">2 Spieler</option>
-        <option value="3">3 Spieler</option>
-        <option value="4">4 Spieler</option>
-      </select>
-    </div>
-    <button class="btn-icon" id="btn-new-game" title="Neues Spiel">🔄</button>
-  </div>
-
-  <!-- Player Setup (Multiplayer) -->
-  <div class="player-setup" id="player-setup"></div>
-
-  <!-- Turn Indicator (Multiplayer) -->
-  <div class="turn-indicator" id="turn-indicator"></div>
-
-  <!-- Stats (Classic mode) -->
-  <div class="stats">
-    <div class="stat">
-      <span>🃏</span>
-      <span class="stat-value" id="stat-moves">0</span>
-      <span>Züge</span>
-    </div>
-    <div class="stat">
-      <span>💛</span>
-      <span class="stat-value" id="stat-pairs">0/0</span>
-      <span>Paare</span>
-    </div>
-    <div class="stat">
-      <span>⏱</span>
-      <span class="stat-value" id="stat-time">0:00</span>
-    </div>
-  </div>
-
-  <!-- Classic Mode: Card Grid -->
-  <main class="board" role="grid" aria-label="Memory Spielfeld"></main>
-
-  <!-- Talk Mode -->
-  <section class="talk-mode">
-    <p class="talk-intro"></p>
-    <div class="talk-card-display">
-      <span class="card-emoji">💛</span>
-      <span class="card-word">...</span>
-      <span class="card-word-secondary">...</span>
-    </div>
-    <p class="talk-prompt"></p>
-    <button class="draw-btn">Karte ziehen</button>
   </section>
 
-  <!-- Learn Mode -->
-  <section class="learn-mode"></section>
+  <!-- Active Mode Container (hidden when landing is shown) -->
+  <div class="active-mode-container" id="active-mode-container">
 
-  <!-- Story Mode -->
-  <section class="story-mode">
-    <p class="story-intro"></p>
-    <div class="story-cards"></div>
-    <button class="draw-btn">Neue Karten</button>
-  </section>
+    <!-- Controls Row 2: Difficulty + Category + Multiplayer + New Game (classic/talk/story only) -->
+    <div class="controls controls-row-2">
+      <div class="control-group">
+        <select id="difficulty-active"></select>
+      </div>
+      <div class="control-group">
+        <select id="category-active">
+          <option value="all">Alle Kategorien</option>
+        </select>
+      </div>
+      <div class="control-group multiplayer-toggle">
+        <select id="player-count-active">
+          <option value="1">Solo</option>
+          <option value="2">2 Spieler</option>
+          <option value="3">3 Spieler</option>
+          <option value="4">4 Spieler</option>
+        </select>
+      </div>
+      <button class="btn-icon" id="btn-new-game" title="Neues Spiel">🔄</button>
+    </div>
 
-  <!-- Check-in Mode -->
-  <section class="checkin-mode"></section>
+    <!-- Player Setup (Multiplayer) -->
+    <div class="player-setup" id="player-setup"></div>
 
-  <!-- Emotion Wheel Mode -->
-  <section class="wheel-mode"></section>
+    <!-- Turn Indicator (Multiplayer) -->
+    <div class="turn-indicator" id="turn-indicator"></div>
 
-  <!-- Journal Mode -->
-  <section class="journal-mode"></section>
+    <!-- Stats (Classic mode) -->
+    <div class="stats">
+      <div class="stat">
+        <span>🃏</span>
+        <span class="stat-value" id="stat-moves">0</span>
+        <span>Züge</span>
+      </div>
+      <div class="stat">
+        <span>💛</span>
+        <span class="stat-value" id="stat-pairs">0/0</span>
+        <span>Paare</span>
+      </div>
+      <div class="stat">
+        <span>⏱</span>
+        <span class="stat-value" id="stat-time">0:00</span>
+      </div>
+    </div>
+
+    <!-- Classic Mode: Card Grid -->
+    <main class="board" role="grid" aria-label="Memory Spielfeld"></main>
+
+    <!-- Talk Mode -->
+    <section class="talk-mode">
+      <p class="talk-intro"></p>
+      <div class="talk-card-display">
+        <span class="card-emoji">💛</span>
+        <span class="card-word">...</span>
+        <span class="card-word-secondary">...</span>
+      </div>
+      <p class="talk-prompt"></p>
+      <button class="draw-btn">Karte ziehen</button>
+    </section>
+
+    <!-- Learn Mode -->
+    <section class="learn-mode"></section>
+
+    <!-- Story Mode -->
+    <section class="story-mode">
+      <p class="story-intro"></p>
+      <div class="story-cards"></div>
+      <button class="draw-btn">Neue Karten</button>
+    </section>
+
+    <!-- Check-in Mode -->
+    <section class="checkin-mode"></section>
+
+    <!-- Emotion Wheel Mode -->
+    <section class="wheel-mode"></section>
+
+    <!-- Journal Mode -->
+    <section class="journal-mode"></section>
+  </div>
 
   <!-- Prompt Overlay -->
   <div class="prompt-overlay" role="dialog" aria-modal="true">
@@ -178,8 +272,7 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <p>Gefühle-Memory 💛 67 Gefühle · 6 Kategorien · 40 Bedürfnisse</p>
-    <p>Deutsch · Tiếng Việt · English</p>
+    <p>Gefühle-Memory 💛 67 Gefühle · 6 Kategorien · 10 Sprachen</p>
   </footer>
 
   <script src="js/data.js"></script>

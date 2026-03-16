@@ -159,7 +159,7 @@
 
   /* ---- Quiz Type Selection ---- */
   function pickQuizType(emotionId) {
-    const types = ['emoji-to-word', 'word-to-translation', 'scenario-to-emotion', 'audio-to-word', 'fill-blank', 'category-sort'];
+    const types = ['word-to-translation', 'scenario-to-emotion', 'audio-to-word', 'fill-blank', 'category-sort'];
 
     // Check if scenario exists for this emotion
     const hasScenario = SCENARIOS[emotionId] && SCENARIOS[emotionId].length > 0;

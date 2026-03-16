@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gefühle-Memory — Pitch</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #FFF8F0;
+      --text: #2D2A26;
+      --accent: #F6C344;
+      --accent-dark: #D4A520;
+      --soft: #6B6560;
+      --card-bg: #FFFFFF;
+      --shadow: 0 2px 16px rgba(45,42,38,.08);
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 60px 24px 40px;
+      background: linear-gradient(180deg, #FEF3D0 0%, var(--bg) 100%);
+    }
+    .hero-emoji { font-size: 64px; margin-bottom: 16px; }
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .hero .tagline {
+      font-size: 1.15rem;
+      color: var(--soft);
+      max-width: 500px;
+      margin: 0 auto 24px;
+    }
+    .hero .stats-row {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .hero .stat { text-align: center; }
+    .hero .stat-num { font-size: 1.8rem; font-weight: 700; color: var(--accent-dark); display: block; }
+    .hero .stat-label { font-size: 0.85rem; color: var(--soft); }
+
+    /* Sections */
+    .section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    .section h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section h2 .icon { font-size: 1.8rem; }
+
+    /* Problem / Solution */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+    .card h3 { font-size: 1.1rem; margin-bottom: 12px; }
+    .card ul { padding-left: 20px; }
+    .card li { margin-bottom: 8px; color: var(--soft); }
+    .card li strong { color: var(--text); }
+    .card.highlight {
+      border: 2px solid var(--accent);
+      background: linear-gradient(135deg, #FEF3D0 0%, #FFFFFF 100%);
+    }
+
+    /* Target Groups */
+    .targets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .target {
+      text-align: center;
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px 16px;
+      box-shadow: var(--shadow);
+    }
+    .target .t-icon { font-size: 2rem; margin-bottom: 8px; }
+    .target .t-name { font-weight: 600; font-size: 0.95rem; }
+    .target .t-detail { font-size: 0.8rem; color: var(--soft); margin-top: 4px; }
+
+    /* Why Me */
+    .why-me {
+      background: linear-gradient(135deg, #2D2A26 0%, #3D3833 100%);
+      color: #E8E0D4;
+      border-radius: 20px;
+      padding: 32px;
+      margin-top: 16px;
+    }
+    .why-me h3 { color: var(--accent); margin-bottom: 12px; font-size: 1.15rem; }
+    .why-me p { line-height: 1.7; margin-bottom: 12px; }
+    .why-me .flags { font-size: 2rem; letter-spacing: 8px; margin-bottom: 12px; }
+
+    /* Business Model */
+    .biz-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .biz-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .biz-card .biz-tier { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--soft); }
+    .biz-card .biz-price { font-size: 1.6rem; font-weight: 700; color: var(--accent-dark); margin: 8px 0; }
+    .biz-card .biz-what { font-size: 0.9rem; color: var(--soft); }
+    .biz-card.biz-highlight { border: 2px solid var(--accent); }
+
+    /* Mission */
+    .mission {
+      text-align: center;
+      padding: 48px 24px;
+      background: linear-gradient(180deg, var(--bg) 0%, #FEF3D0 100%);
+    }
+    .mission blockquote {
+      font-size: 1.3rem;
+      font-style: italic;
+      max-width: 600px;
+      margin: 0 auto;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .mission .author {
+      margin-top: 16px;
+      color: var(--soft);
+      font-size: 0.95rem;
+    }
+
+    /* CTA */
+    .cta-row {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.12); }
+    .btn-primary { background: var(--accent); color: var(--text); }
+    .btn-secondary { background: var(--card-bg); color: var(--text); border: 2px solid #E0D8CE; }
+
+    /* Footer */
+    .pitch-footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--soft);
+      font-size: 0.85rem;
+    }
+
+    /* Divider */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin: 0 auto 32px;
+    }
+
+    /* Feature list compact */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 24px;
+      margin-top: 12px;
+    }
+    @media (max-width: 480px) { .feat-grid { grid-template-columns: 1fr; } }
+    .feat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.95rem;
+      padding: 6px 0;
+    }
+    .feat-item .fi { font-size: 1.1rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-emoji">💛</div>
+    <h1>Gefühle-Memory</h1>
+    <p class="tagline">Ein Kartenspiel, das Menschen hilft, über Gefühle zu sprechen — in ihrer Sprache und der Sprache ihrer Familie.</p>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-num">67</span><span class="stat-label">Emotionen</span></div>
+      <div class="stat"><span class="stat-num">40</span><span class="stat-label">Bedürfnisse</span></div>
+      <div class="stat"><span class="stat-num">10</span><span class="stat-label">Sprachen</span></div>
+      <div class="stat"><span class="stat-num">7</span><span class="stat-label">Spielmodi</span></div>
+    </div>
+    <div class="cta-row" style="margin-top: 28px;">
+      <a href="index.html" class="btn btn-primary">▶ Live Demo</a>
+      <a href="https://github.com/mikelninh/Gefuehle-Memory" class="btn btn-secondary">GitHub ↗</a>
+    </div>
+  </div>
+
+  <!-- Problem / Solution -->
+  <div class="section">
+    <div class="two-col">
+      <div class="card">
+        <h3>😶 Das Problem</h3>
+        <ul>
+          <li><strong>Emotionale Sprachlosigkeit</strong> — Über Gefühle reden ist schwer. In jeder Kultur.</li>
+          <li><strong>Sprachbarriere</strong> — Migrantenfamilien haben kein gemeinsames Wort für „Sehnsucht"</li>
+          <li><strong>Generationskluft</strong> — Oma versteht nicht, warum Enkel „Burnout" sagt</li>
+          <li><strong>Kultureller Disconnect</strong> — Was in DE „Schwäche" heißt, ist in VN „Gesichtsverlust", in GR „Schande für die Familie"</li>
+        </ul>
+      </div>
+      <div class="card highlight">
+        <h3>💛 Die Lösung</h3>
+        <ul>
+          <li><strong>Spielerisch statt therapeutisch</strong> — Memory, nicht Sitzung</li>
+          <li><strong>10 Sprachen</strong> — DE 🇩🇪 · VI 🇻🇳 · EN 🇬🇧 · TR 🇹🇷 · AR 🇸🇦 · ES 🇪🇸 · FR 🇫🇷 · UK 🇺🇦 · PL 🇵🇱 · GR 🇬🇷</li>
+          <li><strong>Kulturbrücke</strong> — Handgeschriebene Vergleiche: „So fühlt sich Trauer in Vietnam an vs. Deutschland vs. Griechenland"</li>
+          <li><strong>Zero Friction</strong> — Kein Download, kein Login, kein Abo nötig. Einfach spielen.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="section">
+    <h2><span class="icon">🎮</span> 7 Modi — nicht nur ein Spiel</h2>
+    <div class="feat-grid">
+      <div class="feat-item"><span class="fi">🃏</span> Klassisches Memory (5 Schwierigkeiten)</div>
+      <div class="feat-item"><span class="fi">💬</span> Gesprächsrunde mit Impulsfragen</div>
+      <div class="feat-item"><span class="fi">📖</span> Geschichten aus 3 zufälligen Gefühlen</div>
+      <div class="feat-item"><span class="fi">🌿</span> Täglicher Bedürfnis-Check-in</div>
+      <div class="feat-item"><span class="fi">🎡</span> Interaktives Emotions-Rad</div>
+      <div class="feat-item"><span class="fi">🧠</span> Karteikarten mit Spaced Repetition</div>
+      <div class="feat-item"><span class="fi">📓</span> Emotions-Journal mit KI-Analyse</div>
+      <div class="feat-item"><span class="fi">🤖</span> KI-Kulturbrücke (kostenlose Modelle)</div>
+    </div>
+  </div>
+
+  <!-- Target Groups -->
+  <div class="section">
+    <h2><span class="icon">🎯</span> Zielgruppen</h2>
+    <div class="targets">
+      <div class="target">
+        <div class="t-icon">👨‍👩‍👧‍👦</div>
+        <div class="t-name">Familien</div>
+        <div class="t-detail">Generationsübergreifend, besonders bikulturell</div>
+      </div>
+      <div class="target">
+        <div class="t-icon">🏫</div>
+        <div class="t-name">Schulen</div>
+        <div class="t-detail">Soziales Lernen, DaZ-Unterricht</div>
+      </div>
+      <div class="target">
+        <div class="t-icon">🧘</div>
+        <div class="t-name">Therapie</div>
+        <div class="t-detail">Niedrigschwellig, kulturell sensibel</div>
+      </div>
+      <div class="target">
+        <div class="t-icon">🌍</div>
+        <div class="t-name">Integration</div>
+        <div class="t-detail">VHS-Kurse, Migrantenvereine</div>
+      </div>
+      <div class="target">
+        <div class="t-icon">💑</div>
+        <div class="t-name">Paare</div>
+        <div class="t-detail">Kommunikation über Gefühle üben</div>
+      </div>
+      <div class="target">
+        <div class="t-icon">👴</div>
+        <div class="t-name">Senioren</div>
+        <div class="t-detail">Einfach, warm, inklusiv</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why Me -->
+  <div class="section">
+    <h2><span class="icon">🔥</span> Warum ich</h2>
+    <div class="why-me">
+      <div class="flags">🇩🇪 🇻🇳</div>
+      <h3>Michael Ninh — in beiden Welten zuhause</h3>
+      <p>Aufgewachsen zwischen zwei Kulturen, zwei Sprachen, zwei Arten zu fühlen. Meine Mutter sagt „Ăn cơm chưa?" (Hast du schon gegessen?) statt „Ich liebe dich". Mein Vater sagt gar nichts — und meint dasselbe.</p>
+      <p>Die Kulturbrücke in dieser App ist keine KI-Übersetzung. Es sind <strong>echte Erfahrungen</strong> — aufgeschrieben von jemandem, der den Schmerz der Sprachlosigkeit zwischen Generationen kennt.</p>
+      <p>Dieses Produkt kann niemand kopieren, weil niemand sonst genau diese Perspektive hat.</p>
+    </div>
+  </div>
+
+  <!-- Business Model -->
+  <div class="section">
+    <h2><span class="icon">💰</span> Business Model</h2>
+    <div class="biz-grid">
+      <div class="biz-card">
+        <div class="biz-tier">Free</div>
+        <div class="biz-price">€0</div>
+        <div class="biz-what">Web-App, alle Modi, 10 Sprachen, Offline (PWA)</div>
+      </div>
+      <div class="biz-card biz-highlight">
+        <div class="biz-tier">Premium</div>
+        <div class="biz-price">€4,99/mo</div>
+        <div class="biz-what">KI-Coach, alle Sprachen, Journal-Analyse, Werbefrei</div>
+      </div>
+      <div class="biz-card">
+        <div class="biz-tier">Physical</div>
+        <div class="biz-price">€24,99</div>
+        <div class="biz-what">Gedrucktes Kartendeck, Print-on-Demand</div>
+      </div>
+      <div class="biz-card">
+        <div class="biz-tier">B2B / Schulen</div>
+        <div class="biz-price">€99–299/yr</div>
+        <div class="biz-what">Klassenlizenzen, Fortschritt-Export, Admin-Dashboard</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Roadmap -->
+  <div class="section">
+    <h2><span class="icon">🗺️</span> Roadmap</h2>
+    <div class="card">
+      <div class="feat-grid">
+        <div class="feat-item"><span class="fi">✅</span> 67 Emotionen + 40 Bedürfnisse</div>
+        <div class="feat-item"><span class="fi">✅</span> 10 Sprachen (inkl. GR 🇬🇷)</div>
+        <div class="feat-item"><span class="fi">✅</span> 7 Spielmodi + Multiplayer</div>
+        <div class="feat-item"><span class="fi">✅</span> PWA + Offline + Dark Mode</div>
+        <div class="feat-item"><span class="fi">✅</span> KI-Integration (kostenlose Modelle)</div>
+        <div class="feat-item"><span class="fi">✅</span> Spaced Repetition Lernsystem</div>
+        <div class="feat-item"><span class="fi">✅</span> 10 Sprachen live (inkl. TR, AR, ES, FR, UK, PL)</div>
+        <div class="feat-item"><span class="fi">🔜</span> KI-Emotions-Coach</div>
+        <div class="feat-item"><span class="fi">🔜</span> Physisches Kartendeck</div>
+        <div class="feat-item"><span class="fi">🔜</span> B2B-Lizenzen (Schulen, Therapie)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mission -->
+  <div class="mission">
+    <div class="divider"></div>
+    <blockquote>
+      „Heilung beginnt in dem Moment, in dem die Seele in ihrer eigenen Sprache sprechen darf."
+    </blockquote>
+    <p class="author">— Gefühle-Memory</p>
+    <div class="cta-row" style="margin-top: 28px;">
+      <a href="index.html" class="btn btn-primary">▶ Jetzt ausprobieren</a>
+    </div>
+  </div>
+
+  <div class="pitch-footer">
+    <p>Gefühle-Memory 💛 Made by Michael Ninh · 2026</p>
+  </div>
+
+</body>
+</html>
