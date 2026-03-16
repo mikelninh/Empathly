@@ -1,4 +1,4 @@
-$token = "$env:GITHUB_TOKEN"
+$token = $env:GITHUB_TOKEN  # Set via: $env:GITHUB_TOKEN = "your-token"
 $owner = "mikelninh"
 $repo = "Gefuehle-Memory"
 $headers = @{ Authorization = "token $token"; Accept = "application/vnd.github.v3+json" }
