@@ -10,7 +10,11 @@ Finde Paare. Sprich darüber. Lerne Emotionen — in deiner Sprache und der Spra
 
 Über Gefühle zu reden ist schwer. In jeder Sprache. Dieses Spiel macht es leichter — durch Spielen, nicht durch Belehren.
 
+<<<<<<< HEAD
 - 🇩🇪🇻🇳🇬🇧🇹🇷🇸🇦🇪🇸🇫🇷🇺🇦🇵🇱🇬🇷 **10 Sprachen** — Deutsch · Vietnamesisch · Englisch · Türkisch · Arabisch · Spanisch · Französisch · Ukrainisch · Polnisch · Griechisch
+=======
+- 🇩🇪🇻🇳🇬🇧 **Dreisprachig** — Deutsch · Vietnamesisch · Englisch
+>>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - 💛 **67 Emotionen** in 6 Kategorien (Licht, Mitte, Schwere, Sturm, Angst, Schatten)
 - 🧠 **40 Bedürfnisse** in 5 Dimensionen (Körper, Herz, Geist, Seele, Beziehung)
 - 👨‍👩‍👧‍👦 **Generationsübergreifend** — Oma mit Enkel, Familie, Freunde, Paare
@@ -46,7 +50,11 @@ Tägliche Gefühls-Einträge mit optionaler KI-Muster-Erkennung nach 3+ Einträg
 | Feature | Status |
 |---------|--------|
 | 🃏 6 Spielmodi | ✅ |
+<<<<<<< HEAD
 | 🌍 10 Sprachen | ✅ |
+=======
+| 🇩🇪🇻🇳🇬🇧 3 Sprachen | ✅ |
+>>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 | 🎴 Generative SVG-Kartenkunst | ✅ |
 | 🌍 Kulturbrücke (DE↔VN) | ✅ |
 | 🤖 KI Cultural Bridge (dynamisch) | ✅ |
@@ -106,7 +114,11 @@ Nutzt [OpenRouter](https://openrouter.ai) mit kostenlosen Modellen als Default (
 ## Roadmap
 
 - [x] 67 Emotionen in 6 Kategorien
+<<<<<<< HEAD
 - [x] 10 Sprachen (DE/VI/EN/TR/AR/ES/FR/UK/PL/EL)
+=======
+- [x] 3 Sprachen (DE/VI/EN)
+>>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - [x] 7 Spielmodi
 - [x] Audio-Aussprache
 - [x] Dark Mode + PWA
@@ -114,7 +126,11 @@ Nutzt [OpenRouter](https://openrouter.ai) mit kostenlosen Modellen als Default (
 - [x] KI-Integration (kostenlose Modelle)
 - [x] Flashcard-Lernsystem
 - [x] Generative Kartenkunst
+<<<<<<< HEAD
 - [x] Weitere Sprachen (TR, AR, ES, FR, UK, PL, EL) ✅
+=======
+- [ ] Weitere Sprachen (TR, AR, ES, FR, UK, PL)
+>>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - [ ] KI-Emotions-Coach
 - [ ] Physisches Kartendeck (Print-on-Demand)
 - [ ] B2B-Lizenzen (Schulen, Therapie, Integrationskurse)
