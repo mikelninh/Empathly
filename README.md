@@ -1,6 +1,6 @@
 # 💛 Gefühle-Memory
 
-**Ein Kartenspiel über Gefühle — auf Deutsch, Vietnamesisch und Englisch.**
+**Ein Kartenspiel über Gefühle — in 10 Sprachen.**
 
 Finde Paare. Sprich darüber. Lerne Emotionen — in deiner Sprache und der Sprache deiner Familie.
 
@@ -10,11 +10,7 @@ Finde Paare. Sprich darüber. Lerne Emotionen — in deiner Sprache und der Spra
 
 Über Gefühle zu reden ist schwer. In jeder Sprache. Dieses Spiel macht es leichter — durch Spielen, nicht durch Belehren.
 
-<<<<<<< HEAD
 - 🇩🇪🇻🇳🇬🇧🇹🇷🇸🇦🇪🇸🇫🇷🇺🇦🇵🇱🇬🇷 **10 Sprachen** — Deutsch · Vietnamesisch · Englisch · Türkisch · Arabisch · Spanisch · Französisch · Ukrainisch · Polnisch · Griechisch
-=======
-- 🇩🇪🇻🇳🇬🇧 **Dreisprachig** — Deutsch · Vietnamesisch · Englisch
->>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - 💛 **67 Emotionen** in 6 Kategorien (Licht, Mitte, Schwere, Sturm, Angst, Schatten)
 - 🧠 **40 Bedürfnisse** in 5 Dimensionen (Körper, Herz, Geist, Seele, Beziehung)
 - 👨‍👩‍👧‍👦 **Generationsübergreifend** — Oma mit Enkel, Familie, Freunde, Paare
@@ -50,13 +46,9 @@ Tägliche Gefühls-Einträge mit optionaler KI-Muster-Erkennung nach 3+ Einträg
 | Feature | Status |
 |---------|--------|
 | 🃏 6 Spielmodi | ✅ |
-<<<<<<< HEAD
 | 🌍 10 Sprachen | ✅ |
-=======
-| 🇩🇪🇻🇳🇬🇧 3 Sprachen | ✅ |
->>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 | 🎴 Generative SVG-Kartenkunst | ✅ |
-| 🌍 Kulturbrücke (DE↔VN) | ✅ |
+| 🌍 Kulturbrücke (DE↔VN↔EL) | ✅ |
 | 🤖 KI Cultural Bridge (dynamisch) | ✅ |
 | 🆓 Kostenlose KI-Modelle | ✅ |
 | 🔊 Audio-Aussprache | ✅ |
@@ -84,9 +76,9 @@ npx serve .
 ```
 index.html          — Hauptseite
 css/style.css       — Responsive Styles + Dark Mode
-js/data.js          — 67 Emotionen, 40 Bedürfnisse, UI-Texte (DE/VI/EN)
+js/data.js          — 67 Emotionen, 40 Bedürfnisse, UI-Texte (10 Sprachen)
 js/game.js          — Game Engine (alle Modi)
-js/culture.js       — 20 handgeschriebene Kulturvergleiche DE↔VN
+js/culture.js       — Handgeschriebene Kulturvergleiche DE↔VN↔EL
 js/ai.js            — OpenRouter-Integration, Settings, KI-Kulturbrücke
 js/card-art.js      — Generative SVG-Kunst pro Kategorie
 js/learn.js         — Flashcard-Engine mit Spaced Repetition
@@ -100,7 +92,7 @@ sw.js               — Service Worker (Offline-Cache)
 In `js/data.js` einen neuen Sprachcode zu jedem Emotion-Objekt + `LANGUAGES` + `UI_TEXT` hinzufügen:
 
 ```javascript
-{ id: 'freude', de: 'Freude', vi: 'Niềm vui', en: 'Joy', tr: 'Sevinç' }
+{ id: 'freude', de: 'Freude', vi: 'Niềm vui', en: 'Joy', el: 'Χαρά', ... }
 ```
 
 ## KI-Features
@@ -114,11 +106,7 @@ Nutzt [OpenRouter](https://openrouter.ai) mit kostenlosen Modellen als Default (
 ## Roadmap
 
 - [x] 67 Emotionen in 6 Kategorien
-<<<<<<< HEAD
 - [x] 10 Sprachen (DE/VI/EN/TR/AR/ES/FR/UK/PL/EL)
-=======
-- [x] 3 Sprachen (DE/VI/EN)
->>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - [x] 7 Spielmodi
 - [x] Audio-Aussprache
 - [x] Dark Mode + PWA
@@ -126,11 +114,6 @@ Nutzt [OpenRouter](https://openrouter.ai) mit kostenlosen Modellen als Default (
 - [x] KI-Integration (kostenlose Modelle)
 - [x] Flashcard-Lernsystem
 - [x] Generative Kartenkunst
-<<<<<<< HEAD
-- [x] Weitere Sprachen (TR, AR, ES, FR, UK, PL, EL) ✅
-=======
-- [ ] Weitere Sprachen (TR, AR, ES, FR, UK, PL)
->>>>>>> f284a2ef676d2ca5085262eadf9c7ab6d5c244f0
 - [ ] KI-Emotions-Coach
 - [ ] Physisches Kartendeck (Print-on-Demand)
 - [ ] B2B-Lizenzen (Schulen, Therapie, Integrationskurse)
@@ -144,3 +127,4 @@ MIT — Nimm es, teil es, mach was Schönes draus.
 *Made with 💛 to help people talk about feelings.*
 *Được tạo với 💛 để giúp mọi người nói về cảm xúc.*
 *Mit 💛 gemacht, damit Menschen über Gefühle reden können.*
+*Φτιαγμένο με 💛 για να βοηθήσει τους ανθρώπους να μιλούν για τα συναισθήματά τους.*
