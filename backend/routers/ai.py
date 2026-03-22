@@ -157,25 +157,28 @@ async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) 
             detail="No OpenRouter API key configured. Set OPENROUTER_API_KEY in .env"
         )
 
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={
-                "Authorization": f"Bearer {settings.openrouter_api_key}",
-                "Content-Type": "application/json",
-                "HTTP-Referer": "https://gefuehle-memory.app",
-                "X-Title": "Gefühle-Memory",
-            },
-            json={
-                "model": settings.default_model,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt},
-                ],
-                "max_tokens": max_tokens,
-                "temperature": 0.7,
-            },
-        )
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.openrouter_api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://gefuehle-memory.app",
+                    "X-Title": "Gefühle-Memory",
+                },
+                json={
+                    "model": settings.default_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "max_tokens": max_tokens,
+                    "temperature": 0.7,
+                },
+            )
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"LLM connection error: {type(e).__name__}: {e}")
 
     if response.status_code != 200:
         raise HTTPException(
@@ -184,7 +187,10 @@ async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) 
         )
 
     data = response.json()
-    return data["choices"][0]["message"]["content"].strip()
+    try:
+        return data["choices"][0]["message"]["content"].strip()
+    except (KeyError, IndexError) as e:
+        raise HTTPException(status_code=502, detail=f"Unexpected LLM response: {data}")
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
