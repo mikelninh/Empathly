@@ -9,5 +9,5 @@
  * Leave empty string '' for local-only development (localhost:8000).
  */
 const APP_CONFIG = {
-  API_URL: '',
+  API_URL: 'https://gefuehle-memory-production.up.railway.app',
 };
