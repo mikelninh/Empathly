@@ -63,6 +63,7 @@
     dom.promptLabel = $('.prompt-label');
     dom.promptQuestion = $('.prompt-question');
     dom.promptClose = $('.prompt-close');
+    dom.promptShare = $('.prompt-share');
     dom.congratsOverlay = $('.congrats-overlay');
     dom.congratsTitle = $('.congrats-title');
     dom.congratsText = $('.congrats-text');
@@ -799,6 +800,7 @@
     dom.promptQuestion.textContent = emotion.prompt[state.uiLang] || emotion.prompt.de;
     dom.promptClose.style.background = color;
     dom.promptClose.style.color = '#fff';
+    if (dom.promptShare) dom.promptShare.dataset.emotionId = emotion.id;
     dom.promptOverlay.classList.add('visible');
   }
   function hidePrompt() { dom.promptOverlay.classList.remove('visible'); }
@@ -1414,23 +1416,27 @@
       });
     });
 
-    container.querySelector('.journal-save-btn')?.addEventListener('click', () => {
+    container.querySelector('.journal-save-btn')?.addEventListener('click', async () => {
       if (selectedEmotions.size === 0) return;
       const note = container.querySelector('.journal-note-field')?.value || '';
-      const entry = {
-        date: dateStr,
-        emotions: [...selectedEmotions],
-        note,
-        aiInsight: ''
-      };
-      const allEntries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
-      allEntries.push(entry);
-      localStorage.setItem(JOURNAL_KEY, JSON.stringify(allEntries));
+
+      // Save via API client (handles both backend + LocalStorage)
+      if (typeof GefuehleAPI !== 'undefined') {
+        await GefuehleAPI.saveJournal({ emotions: [...selectedEmotions], note, lang });
+      } else {
+        const entry = { date: dateStr, emotions: [...selectedEmotions], note, aiInsight: '' };
+        const all = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+        all.push(entry);
+        localStorage.setItem(JOURNAL_KEY, JSON.stringify(all));
+      }
+
       const msg = container.querySelector('.journal-saved-msg');
       msg.classList.add('show');
       setTimeout(() => {
         msg.classList.remove('show');
         initJournalMode();
+        // Refresh stats widget after new entry
+        if (typeof GefuehleAPI !== 'undefined') GefuehleAPI.renderStatsWidget();
       }, 1500);
     });
 
@@ -1500,6 +1506,14 @@
   /* ---- Events ---- */
   function bindEvents() {
     dom.promptClose.addEventListener('click', hidePrompt);
+    if (dom.promptShare) {
+      dom.promptShare.addEventListener('click', e => {
+        e.stopPropagation();
+        if (typeof GefuehleAPI !== 'undefined' && dom.promptShare.dataset.emotionId) {
+          GefuehleAPI.shareEmotion({ emotionId: dom.promptShare.dataset.emotionId, lang1: state.lang1, lang2: state.lang2 });
+        }
+      });
+    }
     dom.promptOverlay.addEventListener('click', e => {
       if (e.target.closest('.speak-btn')) {
         e.stopPropagation();

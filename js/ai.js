@@ -87,6 +87,28 @@ const GefuehleAI = (function () {
     const cached = getCachedCultureInsight(emotionId, lang);
     if (cached) return cached;
 
+    // Try backend RAG endpoint first (richer, knowledge-grounded response)
+    if (typeof GefuehleAPI !== 'undefined') {
+      try {
+        const res = await GefuehleAPI.culturalBridge({
+          emotion_id: emotionId,
+          emotion_name: emotionName,
+          source_lang: 'de',
+          target_lang: lang === 'de' ? 'vi' : lang,
+          response_lang: lang,
+        });
+        if (res?.insight) {
+          const vocabText = res.vocabulary?.length
+            ? '\n\n' + res.vocabulary.map(v => `• ${v.word}: ${v.meaning}`).join('\n')
+            : '';
+          const result = res.insight + vocabText;
+          cacheCultureInsight(emotionId, lang, result);
+          return result;
+        }
+      } catch (_) {}
+    }
+
+    // Fallback: direct OpenRouter call (requires user API key)
     const langNames = { de: 'German', vi: 'Vietnamese', en: 'English' };
     const writeLang = langNames[lang] || 'English';
     const prompt = `You are a cultural psychologist. In 2-3 sentences, explain how the emotion "${emotionName}" is experienced and expressed differently in German vs Vietnamese culture. Be specific, nuanced, and mention concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;

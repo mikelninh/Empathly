@@ -10,12 +10,12 @@
 // ============================================================
 
 const CATEGORIES = [
-  { id: 'licht',    emoji: '🌟', de: 'Licht & Weite',      vi: 'Ánh sáng & Sự rộng mở', en: 'Light & Expanse',    tr: 'Işık & Genişlik',     ar: 'نور و رحابة',          es: 'Luz & Amplitud',       fr: 'Lumière & Étendue',     uk: 'Світло & Простір',     pl: 'Światło & Przestrzeń',   color: '#F6C344', colorLight: '#FEF3D0' },
-  { id: 'mitte',    emoji: '🌊', de: 'Sanfte Mitte',        vi: 'Trạng thái dịu nhẹ',    en: 'Gentle Middle',      tr: 'Yumuşak Orta',        ar: 'الوسط الهادئ',          es: 'Centro Suave',         fr: 'Milieu Doux',           uk: 'Лагідна Середина',     pl: 'Łagodny Środek',         color: '#7BAFD4', colorLight: '#DDE9F3' },
-  { id: 'schwere',  emoji: '🌑', de: 'Schwere & Tiefe',     vi: 'Cảm xúc nặng nề',       en: 'Heavy & Deep',       tr: 'Ağırlık & Derinlik',  ar: 'ثقل و عمق',            es: 'Pesadez & Profundidad', fr: 'Lourdeur & Profondeur', uk: 'Тяжкість & Глибина',   pl: 'Ciężar & Głębia',        color: '#6B6570', colorLight: '#E0DCE3' },
-  { id: 'sturm',    emoji: '🔥', de: 'Sturm & Reibung',     vi: 'Cảm xúc bùng cháy',     en: 'Storm & Friction',   tr: 'Fırtına & Sürtünme',  ar: 'عاصفة و احتكاك',        es: 'Tormenta & Fricción',  fr: 'Tempête & Friction',    uk: 'Буря & Тертя',         pl: 'Burza & Tarcie',          color: '#E74C3C', colorLight: '#FADBD8' },
-  { id: 'angst',    emoji: '⚡', de: 'Angst & Schutz',      vi: 'Cảm xúc báo động',       en: 'Fear & Protection',  tr: 'Korku & Korunma',     ar: 'خوف و حماية',           es: 'Miedo & Protección',   fr: 'Peur & Protection',     uk: 'Страх & Захист',       pl: 'Lęk & Ochrona',          color: '#8E44AD', colorLight: '#E8DAEF' },
-  { id: 'schatten', emoji: '🌘', de: 'Verdeckte Schatten',   vi: 'Bóng tối ẩn sâu',       en: 'Hidden Shadows',     tr: 'Gizli Gölgeler',      ar: 'ظلال خفية',             es: 'Sombras Ocultas',      fr: 'Ombres Cachées',        uk: 'Приховані Тіні',       pl: 'Ukryte Cienie',           color: '#5D6D7E', colorLight: '#D5D8DC' }
+  { id: 'licht',    emoji: '🌟', de: 'Licht & Weite',      vi: 'Ánh sáng & Sự rộng mở', en: 'Light & Expanse',    tr: 'Işık & Genişlik',     ar: 'نور و رحابة',          es: 'Luz & Amplitud',       fr: 'Lumière & Étendue',     uk: 'Світло & Простір',     pl: 'Światło & Przestrzeń',   ta: 'ஒளி & விரிவு',   color: '#F6C344', colorLight: '#FEF3D0' },
+  { id: 'mitte',    emoji: '🌊', de: 'Sanfte Mitte',        vi: 'Trạng thái dịu nhẹ',    en: 'Gentle Middle',      tr: 'Yumuşak Orta',        ar: 'الوسط الهادئ',          es: 'Centro Suave',         fr: 'Milieu Doux',           uk: 'Лагідна Середина',     pl: 'Łagodny Środek',         ta: 'மென்மையான நடு',         color: '#7BAFD4', colorLight: '#DDE9F3' },
+  { id: 'schwere',  emoji: '🌑', de: 'Schwere & Tiefe',     vi: 'Cảm xúc nặng nề',       en: 'Heavy & Deep',       tr: 'Ağırlık & Derinlik',  ar: 'ثقل و عمق',            es: 'Pesadez & Profundidad', fr: 'Lourdeur & Profondeur', uk: 'Тяжкість & Глибина',   pl: 'Ciężar & Głębia',        ta: 'கனம் & ஆழம்',        color: '#6B6570', colorLight: '#E0DCE3' },
+  { id: 'sturm',    emoji: '🔥', de: 'Sturm & Reibung',     vi: 'Cảm xúc bùng cháy',     en: 'Storm & Friction',   tr: 'Fırtına & Sürtünme',  ar: 'عاصفة و احتكاك',        es: 'Tormenta & Fricción',  fr: 'Tempête & Friction',    uk: 'Буря & Тертя',         pl: 'Burza & Tarcie',         ta: 'புயல் & உராய்வு',          color: '#E74C3C', colorLight: '#FADBD8' },
+  { id: 'angst',    emoji: '⚡', de: 'Angst & Schutz',      vi: 'Cảm xúc báo động',       en: 'Fear & Protection',  tr: 'Korku & Korunma',     ar: 'خوف و حماية',           es: 'Miedo & Protección',   fr: 'Peur & Protection',     uk: 'Страх & Захист',       pl: 'Lęk & Ochrona',          ta: 'பயம் & பாதுகாப்பு',          color: '#8E44AD', colorLight: '#E8DAEF' },
+  { id: 'schatten', emoji: '🌘', de: 'Verdeckte Schatten',   vi: 'Bóng tối ẩn sâu',       en: 'Hidden Shadows',     tr: 'Gizli Gölgeler',      ar: 'ظلال خفية',             es: 'Sombras Ocultas',      fr: 'Ombres Cachées',        uk: 'Приховані Тіні',       pl: 'Ukryte Cienie',          ta: 'மறைந்த நிழல்கள்',           color: '#5D6D7E', colorLight: '#D5D8DC' }
 ];
 
 // ============================================================
@@ -29,6 +29,7 @@ const EMOTIONS = [
     de: 'Freude', vi: 'Niềm vui', en: 'Joy',
     tr: 'Sevinç', ar: 'فرح', es: 'Alegría', fr: 'Joie', uk: 'Радість', pl: 'Radość',
     el: 'Χαρά',
+    ta: 'மகிழ்ச்சி',
     emoji: '😊',
     prompt: {
       de: 'Wann hast du dich zuletzt richtig gefreut?',
@@ -40,7 +41,8 @@ const EMOTIONS = [
       fr: 'Quand as-tu ressenti une vraie joie pour la dernière fois?',
       uk: 'Коли ти востаннє по-справжньому радів/раділа?',
       pl: 'Kiedy ostatnio naprawdę się ucieszyłeś/aś?',
-      el: 'Πότε ένιωσες πραγματική χαρά για τελευταία φορά;'
+      el: 'Πότε ένιωσες πραγματική χαρά για τελευταία φορά;',
+      ta: 'கடைசியாக எப்போது உண்மையான மகிழ்ச்சியை உணர்ந்தீர்கள்?'
     }
   },
   {
@@ -48,6 +50,7 @@ const EMOTIONS = [
     de: 'Dankbarkeit', vi: 'Lòng biết ơn', en: 'Gratitude',
     tr: 'Şükran', ar: 'امتنان', es: 'Gratitud', fr: 'Gratitude', uk: 'Вдячність', pl: 'Wdzięczność',
     el: 'Ευγνωμοσύνη',
+    ta: 'நன்றியுணர்வு',
     emoji: '🙏',
     prompt: {
       de: 'Wofür bist du heute dankbar?',
@@ -59,7 +62,8 @@ const EMOTIONS = [
       fr: 'Pour quoi es-tu reconnaissant(e) aujourd\'hui?',
       uk: 'За що ти вдячний/вдячна сьогодні?',
       pl: 'Za co jesteś dziś wdzięczny/a?',
-      el: 'Για τι είσαι ευγνώμων σήμερα;'
+      el: 'Για τι είσαι ευγνώμων σήμερα;',
+      ta: 'இன்று நீங்கள் எதற்காக நன்றி சொல்கிறீர்கள்?'
     }
   },
   {
@@ -67,6 +71,7 @@ const EMOTIONS = [
     de: 'Frieden', vi: 'Bình an', en: 'Peace',
     tr: 'Huzur', ar: 'سلام', es: 'Paz', fr: 'Paix', uk: 'Спокій', pl: 'Spokój',
     el: 'Ειρήνη',
+    ta: 'அமைதி',
     emoji: '🕊️',
     prompt: {
       de: 'Wann hast du dich zuletzt friedlich gefühlt?',
@@ -78,7 +83,8 @@ const EMOTIONS = [
       fr: 'Quand t\'es-tu senti(e) en paix pour la dernière fois?',
       uk: 'Коли ти востаннє відчував/ла спокій?',
       pl: 'Kiedy ostatnio czułeś/aś spokój?',
-      el: 'Πότε ένιωσες τελευταία φορά ειρηνικά;'
+      el: 'Πότε ένιωσες τελευταία φορά ειρηνικά;',
+      ta: 'கடைசியாக எப்போது மனம் அமைதியாக இருந்தது?'
     }
   },
   {
@@ -86,6 +92,7 @@ const EMOTIONS = [
     de: 'Leichtigkeit', vi: 'Nhẹ nhõm', en: 'Lightness',
     tr: 'Hafiflik', ar: 'خفة', es: 'Ligereza', fr: 'Légèreté', uk: 'Легкість', pl: 'Lekkość',
     el: 'Ελαφρότητα',
+    ta: 'இலகுவான உணர்வு',
     emoji: '🎈',
     prompt: {
       de: 'Was gibt dir ein Gefühl von Leichtigkeit?',
@@ -97,7 +104,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te donne un sentiment de légèreté?',
       uk: 'Що дарує тобі відчуття легкості?',
       pl: 'Co daje ci poczucie lekkości?',
-      el: 'Τι σου δίνει μια αίσθηση ελαφρότητας;'
+      el: 'Τι σου δίνει μια αίσθηση ελαφρότητας;',
+      ta: 'உங்களுக்கு இலகுவான உணர்வை என்ன தருகிறது?'
     }
   },
   {
@@ -105,6 +113,7 @@ const EMOTIONS = [
     de: 'Begeisterung', vi: 'Hứng khởi', en: 'Enthusiasm',
     tr: 'Coşku', ar: 'حماس', es: 'Entusiasmo', fr: 'Enthousiasme', uk: 'Захоплення', pl: 'Entuzjazm',
     el: 'Ενθουσιασμός',
+    ta: 'உற்சாகம்',
     emoji: '✨',
     prompt: {
       de: 'Was begeistert dich gerade?',
@@ -116,7 +125,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'enthousiasme en ce moment?',
       uk: 'Що тебе зараз захоплює?',
       pl: 'Co cię teraz ekscytuje?',
-      el: 'Τι σε ενθουσιάζει αυτή τη στιγμή;'
+      el: 'Τι σε ενθουσιάζει αυτή τη στιγμή;',
+      ta: 'இப்போது உங்களை என்ன உற்சாகப்படுத்துகிறது?'
     }
   },
   {
@@ -124,6 +134,7 @@ const EMOTIONS = [
     de: 'Zärtlichkeit', vi: 'Dịu dàng', en: 'Tenderness',
     tr: 'Şefkat', ar: 'حنان', es: 'Ternura', fr: 'Tendresse', uk: 'Ніжність', pl: 'Czułość',
     el: 'Τρυφερότητα',
+    ta: 'மென்மை',
     emoji: '🤲',
     prompt: {
       de: 'Wann hast du zuletzt Zärtlichkeit gespürt?',
@@ -135,7 +146,8 @@ const EMOTIONS = [
       fr: 'Quand as-tu ressenti de la tendresse pour la dernière fois?',
       uk: 'Коли ти востаннє відчував/ла ніжність?',
       pl: 'Kiedy ostatnio poczułeś/aś czułość?',
-      el: 'Πότε ένιωσες τελευταία φορά τρυφερότητα;'
+      el: 'Πότε ένιωσες τελευταία φορά τρυφερότητα;',
+      ta: 'கடைசியாக எப்போது மென்மையான உணர்வை உணர்ந்தீர்கள்?'
     }
   },
   {
@@ -143,6 +155,7 @@ const EMOTIONS = [
     de: 'Verbundenheit', vi: 'Gắn kết', en: 'Connection',
     tr: 'Bağlılık', ar: 'ترابط', es: 'Conexión', fr: 'Connexion', uk: 'Єднання', pl: 'Więź',
     el: 'Σύνδεση',
+    ta: 'இணைப்புணர்வு',
     emoji: '🔗',
     prompt: {
       de: 'Mit wem fühlst du dich verbunden?',
@@ -154,7 +167,8 @@ const EMOTIONS = [
       fr: 'Avec qui te sens-tu connecté(e)?',
       uk: 'З ким ти відчуваєш єднання?',
       pl: 'Z kim czujesz się związany/a?',
-      el: 'Με ποιον νιώθεις συνδεδεμένος/η;'
+      el: 'Με ποιον νιώθεις συνδεδεμένος/η;',
+      ta: 'யாருடன் நெருங்கிய தொடர்பு உணர்கிறீர்கள்?'
     }
   },
   {
@@ -162,6 +176,7 @@ const EMOTIONS = [
     de: 'Liebe', vi: 'Tình yêu', en: 'Love',
     tr: 'Aşk', ar: 'حب', es: 'Amor', fr: 'Amour', uk: 'Любов', pl: 'Miłość',
     el: 'Αγάπη',
+    ta: 'அன்பு',
     emoji: '❤️',
     prompt: {
       de: 'Was bedeutet Liebe für dich?',
@@ -173,7 +188,8 @@ const EMOTIONS = [
       fr: 'Que signifie l\'amour pour toi?',
       uk: 'Що для тебе означає любов?',
       pl: 'Co dla ciebie oznacza miłość?',
-      el: 'Τι σημαίνει αγάπη για σένα;'
+      el: 'Τι σημαίνει αγάπη για σένα;',
+      ta: 'உங்களுக்கு அன்பு என்றால் என்ன?'
     }
   },
   {
@@ -181,6 +197,7 @@ const EMOTIONS = [
     de: 'Staunen', vi: 'Ngạc nhiên thích thú', en: 'Wonder',
     tr: 'Hayret', ar: 'دهشة', es: 'Asombro', fr: 'Émerveillement', uk: 'Подив', pl: 'Zdumienie',
     el: 'Θαυμασμός',
+    ta: 'வியப்பு',
     emoji: '🤩',
     prompt: {
       de: 'Was hat dich zuletzt zum Staunen gebracht?',
@@ -192,7 +209,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'a récemment émerveillé(e)?',
       uk: 'Що нещодавно тебе вразило?',
       pl: 'Co ostatnio wprawiło cię w zdumienie?',
-      el: 'Τι σε γέμισε πρόσφατα με θαυμασμό;'
+      el: 'Τι σε γέμισε πρόσφατα με θαυμασμό;',
+      ta: 'சமீபத்தில் என்ன உங்களை வியப்பில் ஆழ்த்தியது?'
     }
   },
   {
@@ -200,6 +218,7 @@ const EMOTIONS = [
     de: 'Vertrauen', vi: 'Tin tưởng', en: 'Trust',
     tr: 'Güven', ar: 'ثقة', es: 'Confianza', fr: 'Confiance', uk: 'Довіра', pl: 'Zaufanie',
     el: 'Εμπιστοσύνη',
+    ta: 'நம்பிக்கை',
     emoji: '🤝',
     prompt: {
       de: 'Wem vertraust du am meisten?',
@@ -211,7 +230,8 @@ const EMOTIONS = [
       fr: 'En qui as-tu le plus confiance?',
       uk: 'Кому ти довіряєш найбільше?',
       pl: 'Komu ufasz najbardziej?',
-      el: 'Ποιον εμπιστεύεσαι περισσότερο;'
+      el: 'Ποιον εμπιστεύεσαι περισσότερο;',
+      ta: 'யாரை மிகவும் நம்புகிறீர்கள்?'
     }
   },
   {
@@ -219,6 +239,7 @@ const EMOTIONS = [
     de: 'Hoffnung', vi: 'Hy vọng', en: 'Hope',
     tr: 'Umut', ar: 'أمل', es: 'Esperanza', fr: 'Espoir', uk: 'Надія', pl: 'Nadzieja',
     el: 'Ελπίδα',
+    ta: 'நம்பம்',
     emoji: '🌱',
     prompt: {
       de: 'Worauf hoffst du gerade?',
@@ -230,7 +251,8 @@ const EMOTIONS = [
       fr: 'En quoi espères-tu en ce moment?',
       uk: 'На що ти зараз сподіваєшся?',
       pl: 'Na co teraz masz nadzieję?',
-      el: 'Σε τι ελπίζεις αυτή τη στιγμή;'
+      el: 'Σε τι ελπίζεις αυτή τη στιγμή;',
+      ta: 'இப்போது எதை நம்பிக்கையுடன் எதிர்பார்க்கிறீர்கள்?'
     }
   },
   {
@@ -238,6 +260,7 @@ const EMOTIONS = [
     de: 'Klarheit', vi: 'Sự rõ ràng', en: 'Clarity',
     tr: 'Netlik', ar: 'وضوح', es: 'Claridad', fr: 'Clarté', uk: 'Ясність', pl: 'Jasność',
     el: 'Διαύγεια',
+    ta: 'தெளிவு',
     emoji: '💎',
     prompt: {
       de: 'Wann hattest du zuletzt einen Moment der Klarheit?',
@@ -249,7 +272,8 @@ const EMOTIONS = [
       fr: 'Quand as-tu eu un moment de clarté pour la dernière fois?',
       uk: 'Коли ти востаннє відчув/ла момент ясності?',
       pl: 'Kiedy ostatnio miałeś/aś chwilę jasności?',
-      el: 'Πότε είχες τελευταία φορά μια στιγμή διαύγειας;'
+      el: 'Πότε είχες τελευταία φορά μια στιγμή διαύγειας;',
+      ta: 'கடைசியாக எப்போது தெளிவான எண்ணம் உங்களுக்கு வந்தது?'
     }
   },
   {
@@ -257,6 +281,7 @@ const EMOTIONS = [
     de: 'Freiheit', vi: 'Tự do', en: 'Freedom',
     tr: 'Özgürlük', ar: 'حرية', es: 'Libertad', fr: 'Liberté', uk: 'Свобода', pl: 'Wolność',
     el: 'Ελευθερία',
+    ta: 'சுதந்திரம்',
     emoji: '🦅',
     prompt: {
       de: 'Was bedeutet Freiheit für dich?',
@@ -268,7 +293,8 @@ const EMOTIONS = [
       fr: 'Que signifie la liberté pour toi?',
       uk: 'Що для тебе означає свобода?',
       pl: 'Co dla ciebie oznacza wolność?',
-      el: 'Τι σημαίνει ελευθερία για σένα;'
+      el: 'Τι σημαίνει ελευθερία για σένα;',
+      ta: 'உங்களுக்கு சுதந்திரம் என்றால் என்ன?'
     }
   },
   {
@@ -276,6 +302,7 @@ const EMOTIONS = [
     de: 'Ehrfurcht', vi: 'Kính trọng sâu sắc', en: 'Awe',
     tr: 'Huşu', ar: 'رهبة', es: 'Reverencia', fr: 'Révérence', uk: 'Благоговіння', pl: 'Trwoga',
     el: 'Δέος',
+    ta: 'ஆச்சரியம்',
     emoji: '🌌',
     prompt: {
       de: 'Was erfüllt dich mit Ehrfurcht?',
@@ -287,7 +314,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te remplit de révérence?',
       uk: 'Що наповнює тебе благоговінням?',
       pl: 'Co napełnia cię trwogą?',
-      el: 'Τι σε γεμίζει με δέος;'
+      el: 'Τι σε γεμίζει με δέος;',
+      ta: 'என்ன உங்களை ஆழமான வியப்பில் மூழ்கடிக்கிறது?'
     }
   },
 
@@ -297,6 +325,7 @@ const EMOTIONS = [
     de: 'Zufriedenheit', vi: 'Hài lòng', en: 'Contentment',
     tr: 'Memnuniyet', ar: 'رضا', es: 'Satisfacción', fr: 'Contentement', uk: 'Задоволення', pl: 'Zadowolenie',
     el: 'Ικανοποίηση',
+    ta: 'திருப்தி',
     emoji: '😌',
     prompt: {
       de: 'Wann bist du zufrieden mit dem, was ist?',
@@ -308,7 +337,8 @@ const EMOTIONS = [
       fr: 'Quand es-tu content(e) de ce qui est?',
       uk: 'Коли ти задоволений/задоволена тим, що є?',
       pl: 'Kiedy jesteś zadowolony/a z tego, co jest?',
-      el: 'Πότε είσαι ικανοποιημένος/η με αυτό που έχεις;'
+      el: 'Πότε είσαι ικανοποιημένος/η με αυτό που έχεις;',
+      ta: 'இருப்பதில் திருப்தியாக இருக்கும் தருணம் எது?'
     }
   },
   {
@@ -316,6 +346,7 @@ const EMOTIONS = [
     de: 'Melancholie', vi: 'Man mác buồn', en: 'Melancholy',
     tr: 'Melankoli', ar: 'كآبة', es: 'Melancolía', fr: 'Mélancolie', uk: 'Меланхолія', pl: 'Melancholia',
     el: 'Μελαγχολία',
+    ta: 'மனச்சோர்வு',
     emoji: '🌧️',
     prompt: {
       de: 'Gibt es eine schöne Traurigkeit, die du kennst?',
@@ -327,7 +358,8 @@ const EMOTIONS = [
       fr: 'Connais-tu une belle tristesse?',
       uk: 'Чи знаєш ти красивий сум?',
       pl: 'Czy znasz piękny smutek?',
-      el: 'Υπάρχει μια όμορφη θλίψη που γνωρίζεις;'
+      el: 'Υπάρχει μια όμορφη θλίψη που γνωρίζεις;',
+      ta: 'அழகான வலியை நீங்கள் உணர்ந்திருக்கிறீர்களா?'
     }
   },
   {
@@ -335,6 +367,7 @@ const EMOTIONS = [
     de: 'Nachdenklichkeit', vi: 'Trầm tư', en: 'Thoughtfulness',
     tr: 'Düşüncelilik', ar: 'تأمل', es: 'Reflexión', fr: 'Réflexion', uk: 'Задумливість', pl: 'Zamyślenie',
     el: 'Στοχαστικότητα',
+    ta: 'சிந்தனை',
     emoji: '🤔',
     prompt: {
       de: 'Worüber denkst du in letzter Zeit viel nach?',
@@ -346,7 +379,8 @@ const EMOTIONS = [
       fr: 'À quoi penses-tu beaucoup ces derniers temps?',
       uk: 'Про що ти багато думаєш останнім часом?',
       pl: 'O czym ostatnio dużo myślisz?',
-      el: 'Για τι σκέφτεσαι πολύ τελευταία;'
+      el: 'Για τι σκέφτεσαι πολύ τελευταία;',
+      ta: 'சமீபத்தில் எதைப் பற்றி அதிகமாக யோசிக்கிறீர்கள்?'
     }
   },
   {
@@ -354,6 +388,7 @@ const EMOTIONS = [
     de: 'Sehnsucht', vi: 'Nhớ nhung', en: 'Longing',
     tr: 'Özlem', ar: 'شوق', es: 'Anhelo', fr: 'Nostalgie', uk: 'Туга', pl: 'Tęsknota',
     el: 'Νοσταλγία',
+    ta: 'ஏக்கம்',
     emoji: '🥺',
     prompt: {
       de: 'Nach wem oder was sehnst du dich?',
@@ -365,7 +400,8 @@ const EMOTIONS = [
       fr: 'Qui ou quoi te manque?',
       uk: 'За ким або за чим ти сумуєш?',
       pl: 'Za kim lub czym tęsknisz?',
-      el: 'Ποιον ή τι λαχταράς;'
+      el: 'Ποιον ή τι λαχταράς;',
+      ta: 'யாரை அல்லது எதை இப்போது ஏங்குகிறீர்கள்?'
     }
   },
   {
@@ -373,6 +409,7 @@ const EMOTIONS = [
     de: 'Sensibilität', vi: 'Nhạy cảm', en: 'Sensitivity',
     tr: 'Hassasiyet', ar: 'حساسية', es: 'Sensibilidad', fr: 'Sensibilité', uk: 'Чутливість', pl: 'Wrażliwość',
     el: 'Ευαισθησία',
+    ta: 'உணர்வுமிகுதி',
     emoji: '🦋',
     prompt: {
       de: 'Wann merkst du, dass du besonders sensibel bist?',
@@ -384,7 +421,8 @@ const EMOTIONS = [
       fr: 'Quand remarques-tu que tu es particulièrement sensible?',
       uk: 'Коли ти помічаєш, що ти особливо чутливий/а?',
       pl: 'Kiedy zauważasz, że jesteś szczególnie wrażliwy/a?',
-      el: 'Πότε παρατηρείς ότι είσαι ιδιαίτερα ευαίσθητος/η;'
+      el: 'Πότε παρατηρείς ότι είσαι ιδιαίτερα ευαίσθητος/η;',
+      ta: 'நீங்கள் மிகவும் உணர்வுமிகுந்தவர் என்று எப்போது உணர்கிறீர்கள்?'
     }
   },
   {
@@ -392,6 +430,7 @@ const EMOTIONS = [
     de: 'Nostalgie', vi: 'Hoài niệm', en: 'Nostalgia',
     tr: 'Nostalji', ar: 'حنين', es: 'Nostalgia', fr: 'Nostalgie', uk: 'Ностальгія', pl: 'Nostalgia',
     el: 'Αναπόληση',
+    ta: 'கடந்தகால நினைவு',
     emoji: '📷',
     prompt: {
       de: 'Welche Erinnerung wärmt dein Herz?',
@@ -403,7 +442,8 @@ const EMOTIONS = [
       fr: 'Quel souvenir réchauffe ton cœur?',
       uk: 'Який спогад зігріває твоє серце?',
       pl: 'Które wspomnienie ogrzewa twoje serce?',
-      el: 'Ποια ανάμνηση ζεσταίνει την καρδιά σου;'
+      el: 'Ποια ανάμνηση ζεσταίνει την καρδιά σου;',
+      ta: 'எந்த நினைவு உங்கள் மனதில் இனிமையாக தங்கியிருக்கிறது?'
     }
   },
   {
@@ -411,6 +451,7 @@ const EMOTIONS = [
     de: 'Offenheit', vi: 'Cởi mở', en: 'Openness',
     tr: 'Açıklık', ar: 'انفتاح', es: 'Apertura', fr: 'Ouverture', uk: 'Відкритість', pl: 'Otwartość',
     el: 'Ανοιχτότητα',
+    ta: 'திறந்த மனம்',
     emoji: '🚪',
     prompt: {
       de: 'Für was bist du gerade offen?',
@@ -422,7 +463,8 @@ const EMOTIONS = [
       fr: 'À quoi es-tu ouvert(e) en ce moment?',
       uk: 'До чого ти зараз відкритий/а?',
       pl: 'Na co jesteś teraz otwarty/a?',
-      el: 'Σε τι είσαι ανοιχτός/ή αυτή τη στιγμή;'
+      el: 'Σε τι είσαι ανοιχτός/ή αυτή τη στιγμή;',
+      ta: 'இப்போது நீங்கள் எதற்கு திறந்த மனதுடன் இருக்கிறீர்கள்?'
     }
   },
   {
@@ -430,6 +472,7 @@ const EMOTIONS = [
     de: 'Verletzlichkeit', vi: 'Dễ tổn thương', en: 'Vulnerability',
     tr: 'Kırılganlık', ar: 'هشاشة', es: 'Vulnerabilidad', fr: 'Vulnérabilité', uk: 'Вразливість', pl: 'Wrażliwość',
     el: 'Ευαλωτότητα',
+    ta: 'பாதிப்புணர்வு',
     emoji: '🫧',
     prompt: {
       de: 'Wann hast du dich zuletzt verletzlich gezeigt?',
@@ -441,7 +484,8 @@ const EMOTIONS = [
       fr: 'Quand as-tu montré ta vulnérabilité pour la dernière fois?',
       uk: 'Коли ти востаннє показав/ла свою вразливість?',
       pl: 'Kiedy ostatnio okazałeś/aś swoją wrażliwość?',
-      el: 'Πότε έδειξες τελευταία φορά την ευαλωτότητά σου;'
+      el: 'Πότε έδειξες τελευταία φορά την ευαλωτότητά σου;',
+      ta: 'கடைசியாக எப்போது உங்களை எளிதில் பாதிக்கக்கூடியவராக உணர்ந்தீர்கள்?'
     }
   },
   {
@@ -449,6 +493,7 @@ const EMOTIONS = [
     de: 'Müdigkeit', vi: 'Mệt mỏi', en: 'Tiredness',
     tr: 'Yorgunluk', ar: 'تعب', es: 'Cansancio', fr: 'Fatigue', uk: 'Втома', pl: 'Zmęczenie',
     el: 'Κούραση',
+    ta: 'சோர்வு',
     emoji: '😴',
     prompt: {
       de: 'Was macht dich müde — und was gibt dir Energie?',
@@ -460,7 +505,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te fatigue — et qu\'est-ce qui te donne de l\'énergie?',
       uk: 'Що тебе втомлює — а що дає енергію?',
       pl: 'Co cię męczy — a co daje energię?',
-      el: 'Τι σε κουράζει — και τι σου δίνει ενέργεια;'
+      el: 'Τι σε κουράζει — και τι σου δίνει ενέργεια;',
+      ta: 'இப்போது உடல் அல்லது மனம் சோர்வாக இருக்கிறதா?'
     }
   },
   {
@@ -468,6 +514,7 @@ const EMOTIONS = [
     de: 'Langeweile', vi: 'Chán chường', en: 'Boredom',
     tr: 'Can sıkıntısı', ar: 'ملل', es: 'Aburrimiento', fr: 'Ennui', uk: 'Нудьга', pl: 'Nuda',
     el: 'Πλήξη',
+    ta: 'சலிப்பு',
     emoji: '🥱',
     prompt: {
       de: 'Kann Langeweile auch etwas Gutes sein?',
@@ -479,7 +526,8 @@ const EMOTIONS = [
       fr: 'L\'ennui peut-il être une bonne chose?',
       uk: 'Чи може нудьга бути чимось добрим?',
       pl: 'Czy nuda może być czymś dobrym?',
-      el: 'Μπορεί η πλήξη να είναι κάτι καλό;'
+      el: 'Μπορεί η πλήξη να είναι κάτι καλό;',
+      ta: 'சலிப்பு உணரும்போது என்ன செய்கிறீர்கள்?'
     }
   },
   {
@@ -487,6 +535,7 @@ const EMOTIONS = [
     de: 'Neutralität', vi: 'Trung tính', en: 'Neutrality',
     tr: 'Tarafsızlık', ar: 'حياد', es: 'Neutralidad', fr: 'Neutralité', uk: 'Нейтральність', pl: 'Neutralność',
     el: 'Ουδετερότητα',
+    ta: 'நடுநிலை',
     emoji: '⚖️',
     prompt: {
       de: 'Wie fühlt es sich an, einfach nichts zu fühlen?',
@@ -498,7 +547,8 @@ const EMOTIONS = [
       fr: 'Quel effet ça fait de ne rien ressentir?',
       uk: 'Як це — нічого не відчувати?',
       pl: 'Jak to jest — nic nie czuć?',
-      el: 'Πώς είναι να μην νιώθεις τίποτα;'
+      el: 'Πώς είναι να μην νιώθεις τίποτα;',
+      ta: 'இப்போது உங்கள் மனநிலை எப்படி இருக்கிறது?'
     }
   },
   {
@@ -506,6 +556,7 @@ const EMOTIONS = [
     de: 'Bedürftigkeit', vi: 'Cần được quan tâm', en: 'Neediness',
     tr: 'Muhtaçlık', ar: 'احتياج', es: 'Necesidad', fr: 'Besoin', uk: 'Потреба', pl: 'Potrzeba',
     el: 'Ανάγκη',
+    ta: 'தேவையுணர்வு',
     emoji: '🫶',
     prompt: {
       de: 'Was brauchst du gerade am meisten?',
@@ -517,7 +568,8 @@ const EMOTIONS = [
       fr: 'De quoi as-tu le plus besoin en ce moment?',
       uk: 'Що тобі зараз найбільше потрібно?',
       pl: 'Czego teraz najbardziej potrzebujesz?',
-      el: 'Τι χρειάζεσαι περισσότερο αυτή τη στιγμή;'
+      el: 'Τι χρειάζεσαι περισσότερο αυτή τη στιγμή;',
+      ta: 'இப்போது உங்களுக்கு எந்த ஆதரவு தேவை?'
     }
   },
   {
@@ -525,6 +577,7 @@ const EMOTIONS = [
     de: 'Weichheit', vi: 'Mềm mỏng', en: 'Softness',
     tr: 'Yumuşaklık', ar: 'لين', es: 'Suavidad', fr: 'Douceur', uk: 'М\'якість', pl: 'Miękkość',
     el: 'Απαλότητα',
+    ta: 'மென்மையான மனம்',
     emoji: '☁️',
     prompt: {
       de: 'Wann erlaubst du dir, weich zu sein?',
@@ -536,7 +589,8 @@ const EMOTIONS = [
       fr: 'Quand te permets-tu d\'être doux/douce?',
       uk: 'Коли ти дозволяєш собі бути м\'яким/м\'якою?',
       pl: 'Kiedy pozwalasz sobie być miękkim/ą?',
-      el: 'Πότε επιτρέπεις στον εαυτό σου να είναι απαλός;'
+      el: 'Πότε επιτρέπεις στον εαυτό σου να είναι απαλός;',
+      ta: 'யாரிடம் உங்கள் மனம் மிகவும் மென்மையாக இருக்கிறது?'
     }
   },
 
@@ -546,6 +600,7 @@ const EMOTIONS = [
     de: 'Traurigkeit', vi: 'Buồn bã', en: 'Sadness',
     tr: 'Üzüntü', ar: 'حزن', es: 'Tristeza', fr: 'Tristesse', uk: 'Сум', pl: 'Smutek',
     el: 'Θλίψη',
+    ta: 'துக்கம்',
     emoji: '😢',
     prompt: {
       de: 'Was macht dich manchmal traurig?',
@@ -557,7 +612,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te rend parfois triste?',
       uk: 'Що тебе іноді засмучує?',
       pl: 'Co cię czasem smuci?',
-      el: 'Τι σε κάνει μερικές φορές λυπημένο/η;'
+      el: 'Τι σε κάνει μερικές φορές λυπημένο/η;',
+      ta: 'உங்களை என்ன வருத்தப்படுத்துகிறது?'
     }
   },
   {
@@ -565,6 +621,7 @@ const EMOTIONS = [
     de: 'Einsamkeit', vi: 'Cô đơn', en: 'Loneliness',
     tr: 'Yalnızlık', ar: 'وحدة', es: 'Soledad', fr: 'Solitude', uk: 'Самотність', pl: 'Samotność',
     el: 'Μοναξιά',
+    ta: 'தனிமை',
     emoji: '🌙',
     prompt: {
       de: 'Wann fühlst du dich einsam?',
@@ -576,7 +633,8 @@ const EMOTIONS = [
       fr: 'Quand te sens-tu seul(e)?',
       uk: 'Коли ти відчуваєш самотність?',
       pl: 'Kiedy czujesz się samotny/a?',
-      el: 'Πότε νιώθεις μοναξιά;'
+      el: 'Πότε νιώθεις μοναξιά;',
+      ta: 'தனிமையை எப்போது மிகவும் உணர்கிறீர்கள்?'
     }
   },
   {
@@ -584,6 +642,7 @@ const EMOTIONS = [
     de: 'Enttäuschung', vi: 'Thất vọng', en: 'Disappointment',
     tr: 'Hayal kırıklığı', ar: 'خيبة أمل', es: 'Decepción', fr: 'Déception', uk: 'Розчарування', pl: 'Rozczarowanie',
     el: 'Απογοήτευση',
+    ta: 'ஏமாற்றம்',
     emoji: '😞',
     prompt: {
       de: 'Wann hat dich zuletzt jemand enttäuscht?',
@@ -595,7 +654,8 @@ const EMOTIONS = [
       fr: 'Quand quelqu\'un t\'a-t-il déçu(e) pour la dernière fois?',
       uk: 'Коли тебе востаннє хтось розчарував?',
       pl: 'Kiedy ostatnio ktoś cię rozczarował?',
-      el: 'Πότε σε απογοήτευσε κάποιος τελευταία;'
+      el: 'Πότε σε απογοήτευσε κάποιος τελευταία;',
+      ta: 'சமீபத்தில் என்ன உங்களை ஏமாற்றியது?'
     }
   },
   {
@@ -603,6 +663,7 @@ const EMOTIONS = [
     de: 'Hilflosigkeit', vi: 'Bất lực', en: 'Helplessness',
     tr: 'Çaresizlik', ar: 'عجز', es: 'Impotencia', fr: 'Impuissance', uk: 'Безпорадність', pl: 'Bezradność',
     el: 'Αβοηθησία',
+    ta: 'இயலாமை',
     emoji: '😶',
     prompt: {
       de: 'Wann hast du dich hilflos gefühlt?',
@@ -614,7 +675,8 @@ const EMOTIONS = [
       fr: 'Quand t\'es-tu senti(e) impuissant(e)?',
       uk: 'Коли ти відчував/ла безпорадність?',
       pl: 'Kiedy czułeś/aś się bezradny/a?',
-      el: 'Πότε ένιωσες αβοήθητος/η;'
+      el: 'Πότε ένιωσες αβοήθητος/η;',
+      ta: 'எப்போது நீங்கள் இயலாமையாக உணர்கிறீர்கள்?'
     }
   },
   {
@@ -622,6 +684,7 @@ const EMOTIONS = [
     de: 'Überforderung', vi: 'Quá tải', en: 'Overwhelm',
     tr: 'Bunalmışlık', ar: 'إرهاق', es: 'Agobio', fr: 'Surcharge', uk: 'Перевантаження', pl: 'Przeciążenie',
     el: 'Υπερφόρτωση',
+    ta: 'அதிக சுமை',
     emoji: '🤯',
     prompt: {
       de: 'Was überwältigt dich manchmal?',
@@ -633,7 +696,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te submerge parfois?',
       uk: 'Що тебе іноді перевантажує?',
       pl: 'Co cię czasem przytłacza?',
-      el: 'Τι σε συντρίβει μερικές φορές;'
+      el: 'Τι σε συντρίβει μερικές φορές;',
+      ta: 'இப்போது என்ன உங்களை அதிகமாக அழுத்துகிறது?'
     }
   },
   {
@@ -641,6 +705,7 @@ const EMOTIONS = [
     de: 'Ohnmacht', vi: 'Bất lực hoàn toàn', en: 'Powerlessness',
     tr: 'Güçsüzlük', ar: 'عجز تام', es: 'Impotencia total', fr: 'Impuissance totale', uk: 'Безсилля', pl: 'Bezsilność',
     el: 'Αδυναμία',
+    ta: 'சக்தியின்மை',
     emoji: '🕳️',
     prompt: {
       de: 'Gab es einen Moment, wo du gar nichts tun konntest?',
@@ -652,7 +717,8 @@ const EMOTIONS = [
       fr: 'Y a-t-il eu un moment où tu ne pouvais rien faire?',
       uk: 'Чи був момент, коли ти нічого не міг/могла зробити?',
       pl: 'Czy był moment, gdy nie mogłeś/aś nic zrobić?',
-      el: 'Υπήρξε στιγμή που δεν μπορούσες να κάνεις τίποτα;'
+      el: 'Υπήρξε στιγμή που δεν μπορούσες να κάνεις τίποτα;',
+      ta: 'நீங்கள் சக்தியற்றவராக உணர்ந்த நேரம் எது?'
     }
   },
   {
@@ -660,6 +726,7 @@ const EMOTIONS = [
     de: 'Scham', vi: 'Xấu hổ', en: 'Shame',
     tr: 'Utanç', ar: 'خجل', es: 'Vergüenza', fr: 'Honte', uk: 'Сором', pl: 'Wstyd',
     el: 'Ντροπή',
+    ta: 'வெட்கம்',
     emoji: '😳',
     prompt: {
       de: 'Worüber schämst du dich — und solltest du das wirklich?',
@@ -671,7 +738,8 @@ const EMOTIONS = [
       fr: 'De quoi as-tu honte — et le devrais-tu vraiment?',
       uk: 'Чого ти соромишся — і чи варто?',
       pl: 'Czego się wstydzisz — i czy naprawdę powinieneś/aś?',
-      el: 'Για τι ντρέπεσαι — και πρέπει πραγματικά;'
+      el: 'Για τι ντρέπεσαι — και πρέπει πραγματικά;',
+      ta: 'வெட்கம் என்பது உங்களுக்கு என்னை உணர்த்துகிறது?'
     }
   },
   {
@@ -679,6 +747,7 @@ const EMOTIONS = [
     de: 'Schuld', vi: 'Tội lỗi', en: 'Guilt',
     tr: 'Suçluluk', ar: 'ذنب', es: 'Culpa', fr: 'Culpabilité', uk: 'Провина', pl: 'Poczucie winy',
     el: 'Ενοχή',
+    ta: 'குற்றவுணர்வு',
     emoji: '⚖️',
     prompt: {
       de: 'Trägst du eine Schuld mit dir, die du loslassen könntest?',
@@ -690,7 +759,8 @@ const EMOTIONS = [
       fr: 'Portes-tu une culpabilité dont tu pourrais te libérer?',
       uk: 'Чи несеш ти провину, яку міг/могла б відпустити?',
       pl: 'Czy nosisz winę, którą mógłbyś/mogłabyś puścić?',
-      el: 'Κουβαλάς ενοχή που θα μπορούσες να αφήσεις;'
+      el: 'Κουβαλάς ενοχή που θα μπορούσες να αφήσεις;',
+      ta: 'எதற்காக குற்றவுணர்வு உணர்கிறீர்கள்?'
     }
   },
   {
@@ -698,6 +768,7 @@ const EMOTIONS = [
     de: 'Leere', vi: 'Trống rỗng', en: 'Emptiness',
     tr: 'Boşluk', ar: 'فراغ', es: 'Vacío', fr: 'Vide', uk: 'Порожнеча', pl: 'Pustka',
     el: 'Κενό',
+    ta: 'வெறுமை',
     emoji: '🫥',
     prompt: {
       de: 'Kennst du das Gefühl von innerer Leere?',
@@ -709,7 +780,8 @@ const EMOTIONS = [
       fr: 'Connais-tu le sentiment de vide intérieur?',
       uk: 'Чи знаєш ти відчуття внутрішньої порожнечі?',
       pl: 'Czy znasz uczucie wewnętrznej pustki?',
-      el: 'Γνωρίζεις το αίσθημα του εσωτερικού κενού;'
+      el: 'Γνωρίζεις το αίσθημα του εσωτερικού κενού;',
+      ta: 'வெறுமையை உணரும்போது என்ன செய்கிறீர்கள்?'
     }
   },
   {
@@ -717,6 +789,7 @@ const EMOTIONS = [
     de: 'Verlorenheit', vi: 'Lạc lõng', en: 'Lostness',
     tr: 'Kaybolmuşluk', ar: 'ضياع', es: 'Desorientación', fr: 'Égarement', uk: 'Загубленість', pl: 'Zagubienie',
     el: 'Χαμένος',
+    ta: 'தொலைந்த உணர்வு',
     emoji: '🧭',
     prompt: {
       de: 'Wann hast du dich verloren gefühlt?',
@@ -728,7 +801,8 @@ const EMOTIONS = [
       fr: 'Quand t\'es-tu senti(e) perdu(e)?',
       uk: 'Коли ти відчував/ла себе загубленим/ою?',
       pl: 'Kiedy czułeś/aś się zagubiony/a?',
-      el: 'Πότε ένιωσες χαμένος/η;'
+      el: 'Πότε ένιωσες χαμένος/η;',
+      ta: 'வழி தெரியாமல் தடுமாறிய நேரம் எது?'
     }
   },
   {
@@ -736,6 +810,7 @@ const EMOTIONS = [
     de: 'Hoffnungslosigkeit', vi: 'Tuyệt vọng', en: 'Hopelessness',
     tr: 'Umutsuzluk', ar: 'يأس', es: 'Desesperanza', fr: 'Désespoir', uk: 'Безнадія', pl: 'Beznadziejność',
     el: 'Απελπισία',
+    ta: 'நம்பிக்கையின்மை',
     emoji: '🖤',
     prompt: {
       de: 'Was hilft dir, wenn alles hoffnungslos scheint?',
@@ -747,7 +822,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'aide quand tout semble désespéré?',
       uk: 'Що тобі допомагає, коли все здається безнадійним?',
       pl: 'Co ci pomaga, gdy wszystko wydaje się beznadziejne?',
-      el: 'Τι σε βοηθά όταν όλα φαίνονται χωρίς ελπίδα;'
+      el: 'Τι σε βοηθά όταν όλα φαίνονται χωρίς ελπίδα;',
+      ta: 'நம்பிக்கை இழந்த நேரத்தில் என்ன உதவியது?'
     }
   },
   {
@@ -755,6 +831,7 @@ const EMOTIONS = [
     de: 'Verlassenheit', vi: 'Cảm giác bị bỏ rơi', en: 'Abandonment',
     tr: 'Terk edilmişlik', ar: 'هجران', es: 'Abandono', fr: 'Abandon', uk: 'Покинутість', pl: 'Opuszczenie',
     el: 'Εγκατάλειψη',
+    ta: 'கைவிடப்பட்ட உணர்வு',
     emoji: '🚶',
     prompt: {
       de: 'Hast du dich jemals verlassen gefühlt?',
@@ -766,7 +843,8 @@ const EMOTIONS = [
       fr: 'T\'es-tu jamais senti(e) abandonné(e)?',
       uk: 'Чи відчував/ла ти себе коли-небудь покинутим/ою?',
       pl: 'Czy kiedykolwiek czułeś/aś się opuszczony/a?',
-      el: 'Έχεις νιώσει ποτέ εγκαταλελειμμένος/η;'
+      el: 'Έχεις νιώσει ποτέ εγκαταλελειμμένος/η;',
+      ta: 'கைவிடப்பட்டதாக உணர்ந்த நேரம் எது?'
     }
   },
 
@@ -776,6 +854,7 @@ const EMOTIONS = [
     de: 'Wut', vi: 'Tức giận', en: 'Anger',
     tr: 'Öfke', ar: 'غضب', es: 'Ira', fr: 'Colère', uk: 'Гнів', pl: 'Gniew',
     el: 'Θυμός',
+    ta: 'கோபம்',
     emoji: '😤',
     prompt: {
       de: 'Worüber hast du dich zuletzt richtig geärgert?',
@@ -787,7 +866,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'a mis(e) vraiment en colère dernièrement?',
       uk: 'Що тебе востаннє по-справжньому розгнівало?',
       pl: 'Co ostatnio naprawdę cię zezłościło?',
-      el: 'Τι σε εξόργισε πραγματικά τελευταία;'
+      el: 'Τι σε εξόργισε πραγματικά τελευταία;',
+      ta: 'என்ன உங்களை கோபப்படுத்துகிறது?'
     }
   },
   {
@@ -795,6 +875,7 @@ const EMOTIONS = [
     de: 'Frustration', vi: 'Bực bội', en: 'Frustration',
     tr: 'Hayal kırıklığı', ar: 'إحباط', es: 'Frustración', fr: 'Frustration', uk: 'Розчарування', pl: 'Frustracja',
     el: 'Ματαίωση',
+    ta: 'விரக்தி',
     emoji: '😩',
     prompt: {
       de: 'Was frustriert dich im Moment?',
@@ -806,7 +887,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te frustre en ce moment?',
       uk: 'Що тебе зараз розчаровує?',
       pl: 'Co cię teraz frustruje?',
-      el: 'Τι σε ματαιώνει αυτή τη στιγμή;'
+      el: 'Τι σε ματαιώνει αυτή τη στιγμή;',
+      ta: 'எப்போது விரக்தி அதிகமாக உணர்கிறீர்கள்?'
     }
   },
   {
@@ -814,6 +896,7 @@ const EMOTIONS = [
     de: 'Ärger', vi: 'Cáu giận', en: 'Annoyance',
     tr: 'Kızgınlık', ar: 'انزعاج', es: 'Enfado', fr: 'Agacement', uk: 'Роздратування', pl: 'Irytacja',
     el: 'Εκνευρισμός',
+    ta: 'எரிச்சல்',
     emoji: '😠',
     prompt: {
       de: 'Was ärgert dich am meisten im Alltag?',
@@ -825,7 +908,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'agace le plus au quotidien?',
       uk: 'Що тебе найбільше дратує у повсякденні?',
       pl: 'Co najbardziej irytuje cię na co dzień?',
-      el: 'Τι σε εκνευρίζει πιο πολύ στην καθημερινότητα;'
+      el: 'Τι σε εκνευρίζει πιο πολύ στην καθημερινότητα;',
+      ta: 'சிறிய விஷயங்கள் உங்களை எரிச்சலடையச் செய்யுமா?'
     }
   },
   {
@@ -833,6 +917,7 @@ const EMOTIONS = [
     de: 'Neid', vi: 'Ghen tị', en: 'Envy',
     tr: 'Kıskançlık', ar: 'حسد', es: 'Envidia', fr: 'Envie', uk: 'Заздрість', pl: 'Zazdrość',
     el: 'Φθόνος',
+    ta: 'பொறாமை',
     emoji: '👀',
     prompt: {
       de: 'Auf wen oder was warst du schon mal neidisch?',
@@ -844,7 +929,8 @@ const EMOTIONS = [
       fr: 'De qui ou de quoi as-tu été envieux/envieuse?',
       uk: 'Кому або чому ти заздрив/ла?',
       pl: 'Komu lub czemu zazdrościłeś/aś?',
-      el: 'Ποιον ή τι έχεις ζηλέψει;'
+      el: 'Ποιον ή τι έχεις ζηλέψει;',
+      ta: 'யாரிடம் அல்லது எதைப் பார்த்து பொறாமைப்படுகிறீர்கள்?'
     }
   },
   {
@@ -852,6 +938,7 @@ const EMOTIONS = [
     de: 'Eifersucht', vi: 'Ghen tuông', en: 'Jealousy',
     tr: 'Kıskançlık', ar: 'غيرة', es: 'Celos', fr: 'Jalousie', uk: 'Ревнощі', pl: 'Zazdrość',
     el: 'Ζήλια',
+    ta: 'ஊடல்',
     emoji: '💚',
     prompt: {
       de: 'Was steckt hinter Eifersucht?',
@@ -863,7 +950,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui se cache derrière la jalousie?',
       uk: 'Що стоїть за ревнощами?',
       pl: 'Co kryje się za zazdrością?',
-      el: 'Τι κρύβεται πίσω από τη ζήλια;'
+      el: 'Τι κρύβεται πίσω από τη ζήλια;',
+      ta: 'காதல் ஊடல் உணர்வை எப்படி கையாள்கிறீர்கள்?'
     }
   },
   {
@@ -871,6 +959,7 @@ const EMOTIONS = [
     de: 'Groll', vi: 'Oán giận', en: 'Resentment',
     tr: 'Kin', ar: 'ضغينة', es: 'Rencor', fr: 'Rancœur', uk: 'Образа', pl: 'Uraza',
     el: 'Μνησικακία',
+    ta: 'மனக்கசப்பு',
     emoji: '😒',
     prompt: {
       de: 'Trägst du einen Groll mit dir? Gegen wen?',
@@ -882,7 +971,8 @@ const EMOTIONS = [
       fr: 'Gardes-tu rancœur? Envers qui?',
       uk: 'Чи тримаєш ти образу? На кого?',
       pl: 'Czy nosisz w sobie urazę? Do kogo?',
-      el: 'Κρατάς μνησικακία; Εναντίον ποιου;'
+      el: 'Κρατάς μνησικακία; Εναντίον ποιου;',
+      ta: 'மனக்கசப்பை மனதில் வைத்திருக்கிறீர்களா?'
     }
   },
   {
@@ -890,6 +980,7 @@ const EMOTIONS = [
     de: 'Ungeduld', vi: 'Thiếu kiên nhẫn', en: 'Impatience',
     tr: 'Sabırsızlık', ar: 'نفاد الصبر', es: 'Impaciencia', fr: 'Impatience', uk: 'Нетерплячість', pl: 'Niecierpliwość',
     el: 'Ανυπομονησία',
+    ta: 'பொறுமையின்மை',
     emoji: '⏰',
     prompt: {
       de: 'Wobei verlierst du am schnellsten die Geduld?',
@@ -901,7 +992,8 @@ const EMOTIONS = [
       fr: 'Avec quoi perds-tu patience le plus vite?',
       uk: 'Де ти найшвидше втрачаєш терпіння?',
       pl: 'Przy czym najszybciej tracisz cierpliwość?',
-      el: 'Πότε χάνεις πιο γρήγορα την υπομονή σου;'
+      el: 'Πότε χάνεις πιο γρήγορα την υπομονή σου;',
+      ta: 'எதற்காக பொறுமை இழக்கிறீர்கள்?'
     }
   },
   {
@@ -909,6 +1001,7 @@ const EMOTIONS = [
     de: 'Gereiztheit', vi: 'Dễ nổi nóng', en: 'Irritability',
     tr: 'Sinirlilik', ar: 'عصبية', es: 'Irritabilidad', fr: 'Irritabilité', uk: 'Дратівливість', pl: 'Drażliwość',
     el: 'Ευερεθιστότητα',
+    ta: 'எரிமலை உணர்வு',
     emoji: '😡',
     prompt: {
       de: 'Was reizt dich, wenn du ehrlich bist?',
@@ -920,7 +1013,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'irrite, si tu es honnête?',
       uk: 'Що тебе дратує, якщо чесно?',
       pl: 'Co cię drażni, jeśli masz być szczery/a?',
-      el: 'Τι σε ερεθίζει, αν είσαι ειλικρινής;'
+      el: 'Τι σε ερεθίζει, αν είσαι ειλικρινής;',
+      ta: 'எப்போது சின்ன விஷயங்களும் பொறுக்காமல் போகிறது?'
     }
   },
   {
@@ -928,6 +1022,7 @@ const EMOTIONS = [
     de: 'Trotz', vi: 'Bướng bỉnh', en: 'Defiance',
     tr: 'İnat', ar: 'تحدٍّ', es: 'Rebeldía', fr: 'Défiance', uk: 'Упертість', pl: 'Upór',
     el: 'Πείσμα',
+    ta: 'பிடிவாதம்',
     emoji: '✊',
     prompt: {
       de: 'Wann bist du trotzig — und ist das manchmal gut?',
@@ -939,7 +1034,8 @@ const EMOTIONS = [
       fr: 'Quand es-tu défiant(e) — et est-ce parfois bien?',
       uk: 'Коли ти впертий/а — і чи це іноді добре?',
       pl: 'Kiedy jesteś uparty/a — i czy to czasem dobrze?',
-      el: 'Πότε είσαι πεισματάρης/α — και είναι αυτό μερικές φορές καλό;'
+      el: 'Πότε είσαι πεισματάρης/α — και είναι αυτό μερικές φορές καλό;',
+      ta: 'எதை மறுத்து நிற்கிறீர்கள்?'
     }
   },
   {
@@ -947,6 +1043,7 @@ const EMOTIONS = [
     de: 'Empörung', vi: 'Phẫn nộ', en: 'Outrage',
     tr: 'Öfke', ar: 'سخط', es: 'Indignación', fr: 'Indignation', uk: 'Обурення', pl: 'Oburzenie',
     el: 'Αγανάκτηση',
+    ta: 'ஆவேசம்',
     emoji: '🗯️',
     prompt: {
       de: 'Was empört dich zutiefst?',
@@ -958,7 +1055,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui t\'indigne profondément?',
       uk: 'Що тебе глибоко обурює?',
       pl: 'Co cię głęboko oburza?',
-      el: 'Τι σε αγανακτεί βαθιά;'
+      el: 'Τι σε αγανακτεί βαθιά;',
+      ta: 'எது உங்களை ஆவேசப்படுத்துகிறது?'
     }
   },
   {
@@ -966,6 +1064,7 @@ const EMOTIONS = [
     de: 'Rebellion', vi: 'Phản kháng', en: 'Rebellion',
     tr: 'İsyan', ar: 'تمرد', es: 'Rebelión', fr: 'Rébellion', uk: 'Бунт', pl: 'Bunt',
     el: 'Επανάσταση',
+    ta: 'எதிர்ப்பு',
     emoji: '🏴',
     prompt: {
       de: 'Wogegen möchtest du manchmal rebellieren?',
@@ -977,7 +1076,8 @@ const EMOTIONS = [
       fr: 'Contre quoi veux-tu parfois te rebeller?',
       uk: 'Проти чого ти іноді хочеш бунтувати?',
       pl: 'Przeciwko czemu chciałbyś/chciałabyś się czasem zbuntować?',
-      el: 'Εναντίον τίνος θέλεις μερικές φορές να επαναστατήσεις;'
+      el: 'Εναντίον τίνος θέλεις μερικές φορές να επαναστατήσεις;',
+      ta: 'எதை மாற்ற வேண்டும் என்று உணர்கிறீர்கள்?'
     }
   },
 
@@ -987,6 +1087,7 @@ const EMOTIONS = [
     de: 'Angst', vi: 'Sợ hãi', en: 'Fear',
     tr: 'Korku', ar: 'خوف', es: 'Miedo', fr: 'Peur', uk: 'Страх', pl: 'Strach',
     el: 'Φόβος',
+    ta: 'பயம்',
     emoji: '😨',
     prompt: {
       de: 'Wovor hast du Angst — und wovor hattest du als Kind Angst?',
@@ -998,7 +1099,8 @@ const EMOTIONS = [
       fr: 'De quoi as-tu peur — et de quoi avais-tu peur enfant?',
       uk: 'Чого ти боїшся — і чого боявся/лася в дитинстві?',
       pl: 'Czego się boisz — i czego bałeś/aś się jako dziecko?',
-      el: 'Τι φοβάσαι — και τι φοβόσουν ως παιδί;'
+      el: 'Τι φοβάσαι — και τι φοβόσουν ως παιδί;',
+      ta: 'இப்போது உங்களுக்கு எது பயமாக இருக்கிறது?'
     }
   },
   {
@@ -1006,6 +1108,7 @@ const EMOTIONS = [
     de: 'Sorge', vi: 'Lo lắng', en: 'Worry',
     tr: 'Endişe', ar: 'قلق', es: 'Preocupación', fr: 'Souci', uk: 'Тривога', pl: 'Troska',
     el: 'Ανησυχία',
+    ta: 'கவலை',
     emoji: '😟',
     prompt: {
       de: 'Was bereitet dir gerade Sorgen?',
@@ -1017,7 +1120,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te préoccupe en ce moment?',
       uk: 'Що тебе зараз турбує?',
       pl: 'Co cię teraz martwi?',
-      el: 'Τι σε ανησυχεί αυτή τη στιγμή;'
+      el: 'Τι σε ανησυχεί αυτή τη στιγμή;',
+      ta: 'எதைப் பற்றி அதிகமாக கவலைப்படுகிறீர்கள்?'
     }
   },
   {
@@ -1025,6 +1129,7 @@ const EMOTIONS = [
     de: 'Unsicherheit', vi: 'Bất an', en: 'Insecurity',
     tr: 'Güvensizlik', ar: 'انعدام الأمان', es: 'Inseguridad', fr: 'Insécurité', uk: 'Невпевненість', pl: 'Niepewność',
     el: 'Ανασφάλεια',
+    ta: 'நிச்சயமின்மை',
     emoji: '🫣',
     prompt: {
       de: 'Wobei fühlst du dich unsicher?',
@@ -1036,7 +1141,8 @@ const EMOTIONS = [
       fr: 'Dans quoi te sens-tu en insécurité?',
       uk: 'У чому ти відчуваєш невпевненість?',
       pl: 'W czym czujesz się niepewny/a?',
-      el: 'Σε τι νιώθεις ανασφαλής;'
+      el: 'Σε τι νιώθεις ανασφαλής;',
+      ta: 'எதில் நம்பிக்கையின்மை உணர்கிறீர்கள்?'
     }
   },
   {
@@ -1044,6 +1150,7 @@ const EMOTIONS = [
     de: 'Panik', vi: 'Hoảng loạn', en: 'Panic',
     tr: 'Panik', ar: 'ذعر', es: 'Pánico', fr: 'Panique', uk: 'Паніка', pl: 'Panika',
     el: 'Πανικός',
+    ta: 'பீதி',
     emoji: '😱',
     prompt: {
       de: 'Hast du schon mal Panik erlebt? Was hat geholfen?',
@@ -1055,7 +1162,8 @@ const EMOTIONS = [
       fr: 'As-tu déjà vécu une panique? Qu\'est-ce qui a aidé?',
       uk: 'Чи переживав/ла ти паніку? Що допомогло?',
       pl: 'Czy doświadczyłeś/aś paniki? Co pomogło?',
-      el: 'Έχεις βιώσει πανικό; Τι βοήθησε;'
+      el: 'Έχεις βιώσει πανικό; Τι βοήθησε;',
+      ta: 'பீதியான நேரத்தில் என்ன செய்கிறீர்கள்?'
     }
   },
   {
@@ -1063,6 +1171,7 @@ const EMOTIONS = [
     de: 'Nervosität', vi: 'Hồi hộp', en: 'Nervousness',
     tr: 'Gerginlik', ar: 'توتر', es: 'Nerviosismo', fr: 'Nervosité', uk: 'Нервозність', pl: 'Nerwowość',
     el: 'Νευρικότητα',
+    ta: 'பதட்டம்',
     emoji: '😬',
     prompt: {
       de: 'Wobei wirst du nervös?',
@@ -1074,7 +1183,8 @@ const EMOTIONS = [
       fr: 'Qu\'est-ce qui te rend nerveux/nerveuse?',
       uk: 'Від чого ти нервуєшся?',
       pl: 'Co cię denerwuje?',
-      el: 'Τι σε κάνει νευρικό/ή;'
+      el: 'Τι σε κάνει νευρικό/ή;',
+      ta: 'எப்போது பதட்டமாக உணர்கிறீர்கள்?'
     }
   },
   {
@@ -1082,6 +1192,7 @@ const EMOTIONS = [
     de: 'Misstrauen', vi: 'Nghi ngờ', en: 'Distrust',
     tr: 'Güvensizlik', ar: 'ريبة', es: 'Desconfianza', fr: 'Méfiance', uk: 'Недовіра', pl: 'Nieufność',
     el: 'Δυσπιστία',
+    ta: 'சந்தேகம்',
     emoji: '🤨',
     prompt: {
       de: 'Wann fällt es dir schwer, zu vertrauen?',
@@ -1093,7 +1204,8 @@ const EMOTIONS = [
       fr: 'Quand est-ce difficile pour toi de faire confiance?',
       uk: 'Коли тобі важко довіряти?',
       pl: 'Kiedy trudno ci zaufać?',
-      el: 'Πότε σου είναι δύσκολο να εμπιστευτείς;'
+      el: 'Πότε σου είναι δύσκολο να εμπιστευτείς;',
+      ta: 'நம்பிக்கை இல்லாமல் போகும் நேரம் எது?'
     }
   },
   {
@@ -1101,6 +1213,7 @@ const EMOTIONS = [
     de: 'Bedrohung', vi: 'Bị đe dọa', en: 'Threat',
     tr: 'Tehdit', ar: 'تهديد', es: 'Amenaza', fr: 'Menace', uk: 'Загроза', pl: 'Zagrożenie',
     el: 'Απειλή',
+    ta: 'அச்சுறுத்தல்',
     emoji: '⚠️',
     prompt: {
       de: 'Wann hast du dich bedroht gefühlt?',
@@ -1112,7 +1225,8 @@ const EMOTIONS = [
       fr: 'Quand t\'es-tu senti(e) menacé(e)?',
       uk: 'Коли ти відчував/ла загрозу?',
       pl: 'Kiedy czułeś/aś się zagrożony/a?',
-      el: 'Πότε ένιωσες απειλή;'
+      el: 'Πότε ένιωσες απειλή;',
+      ta: 'எது உங்களை அச்சுறுத்துவதாக உணர்கிறீர்கள்?'
     }
   },
   {
@@ -1120,6 +1234,7 @@ const EMOTIONS = [
     de: 'Kontrollverlust', vi: 'Mất kiểm soát', en: 'Loss of control',
     tr: 'Kontrol kaybı', ar: 'فقدان السيطرة', es: 'Pérdida de control', fr: 'Perte de contrôle', uk: 'Втрата контролю', pl: 'Utrata kontroli',
     el: 'Απώλεια ελέγχου',
+    ta: 'கட்டுப்பாட்டை இழக்கும் உணர்வு',
     emoji: '🌀',
     prompt: {
       de: 'Was passiert mit dir, wenn du die Kontrolle verlierst?',
@@ -1131,7 +1246,8 @@ const EMOTIONS = [
       fr: 'Que se passe-t-il quand tu perds le contrôle?',
       uk: 'Що з тобою відбувається, коли ти втрачаєш контроль?',
       pl: 'Co się z tobą dzieje, gdy tracisz kontrolę?',
-      el: 'Τι συμβαίνει όταν χάνεις τον έλεγχο;'
+      el: 'Τι συμβαίνει όταν χάνεις τον έλεγχο;',
+      ta: 'கட்டுப்பாடு இழந்த நேரத்தில் என்ன உதவியது?'
     }
   },
   {
@@ -1139,6 +1255,7 @@ const EMOTIONS = [
     de: 'Überwachsamkeit', vi: 'Cảnh giác quá mức', en: 'Hypervigilance',
     tr: 'Aşırı tetikte olma', ar: 'فرط اليقظة', es: 'Hipervigilancia', fr: 'Hypervigilance', uk: 'Надпильність', pl: 'Nadmierna czujność',
     el: 'Υπερεπαγρύπνηση',
+    ta: 'மிகுந்த விழிப்புணர்வு',
     emoji: '👁️',
     prompt: {
       de: 'Bist du manchmal zu wachsam? Wovor schützt du dich?',
@@ -1150,7 +1267,8 @@ const EMOTIONS = [
       fr: 'Es-tu parfois trop vigilant(e)? De quoi te protèges-tu?',
       uk: 'Чи буваєш ти іноді занадто пильним/ою? Від чого ти себе захищаєш?',
       pl: 'Czy bywasz czasem zbyt czujny/a? Przed czym się chronisz?',
-      el: 'Είσαι μερικές φορές υπερβολικά σε εγρήγορση; Από τι προστατεύεσαι;'
+      el: 'Είσαι μερικές φορές υπερβολικά σε εγρήγορση; Από τι προστατεύεσαι;',
+      ta: 'எப்போதும் கவனமாக இருக்க வேண்டும் என்று உணர்கிறீர்களா?'
     }
   },
 
@@ -1160,6 +1278,7 @@ const EMOTIONS = [
     de: 'Resignation', vi: 'Buông xuôi', en: 'Resignation',
     tr: 'Boyun eğme', ar: 'استسلام', es: 'Resignación', fr: 'Résignation', uk: 'Смирення', pl: 'Rezygnacja',
     el: 'Παραίτηση',
+    ta: 'விரக்தி துறத்தல்',
     emoji: '😔',
     prompt: {
       de: 'Hast du bei etwas aufgegeben, das dir wichtig war?',
@@ -1171,7 +1290,8 @@ const EMOTIONS = [
       fr: 'As-tu renoncé à quelque chose qui comptait pour toi?',
       uk: 'Чи відмовився/лась ти від чогось важливого?',
       pl: 'Czy zrezygnowałeś/aś z czegoś, co było dla ciebie ważne?',
-      el: 'Έχεις παραιτηθεί από κάτι που σου ήταν σημαντικό;'
+      el: 'Έχεις παραιτηθεί από κάτι που σου ήταν σημαντικό;',
+      ta: 'எதை விட்டுக் கொடுத்தீர்கள்?'
     }
   },
   {
@@ -1179,6 +1299,7 @@ const EMOTIONS = [
     de: 'Bitterkeit', vi: 'Cay đắng', en: 'Bitterness',
     tr: 'Acılık', ar: 'مرارة', es: 'Amargura', fr: 'Amertume', uk: 'Гіркота', pl: 'Gorycz',
     el: 'Πικρία',
+    ta: 'கசப்பு',
     emoji: '🍋',
     prompt: {
       de: 'Gibt es etwas, das dich bitter gemacht hat?',
@@ -1190,7 +1311,8 @@ const EMOTIONS = [
       fr: 'Y a-t-il quelque chose qui t\'a rendu(e) amer/amère?',
       uk: 'Чи є щось, що зробило тебе гірким/ою?',
       pl: 'Czy jest coś, co napełniło cię goryczą?',
-      el: 'Υπάρχει κάτι που σε έκανε πικρόχολο/η;'
+      el: 'Υπάρχει κάτι που σε έκανε πικρόχολο/η;',
+      ta: 'மனதில் கசப்பான நினைவு தங்கியிருக்கிறதா?'
     }
   },
   {
@@ -1198,6 +1320,7 @@ const EMOTIONS = [
     de: 'Selbstzweifel', vi: 'Tự nghi ngờ', en: 'Self-doubt',
     tr: 'Özgüven eksikliği', ar: 'شك بالنفس', es: 'Inseguridad', fr: 'Doute de soi', uk: 'Невпевненість у собі', pl: 'Zwątpienie w siebie',
     el: 'Αυτοαμφιβολία',
+    ta: 'சுயசந்தேகம்',
     emoji: '🪞',
     prompt: {
       de: 'Woran zweifelst du bei dir selbst?',
@@ -1209,7 +1332,8 @@ const EMOTIONS = [
       fr: 'De quoi doutes-tu chez toi?',
       uk: 'У чому ти сумніваєшся щодо себе?',
       pl: 'W co wątpisz u siebie?',
-      el: 'Τι αμφιβάλλεις για τον εαυτό σου;'
+      el: 'Τι αμφιβάλλεις για τον εαυτό σου;',
+      ta: 'உங்களையே சந்தேகிக்கும் நேரம் எது?'
     }
   },
   {
@@ -1217,6 +1341,7 @@ const EMOTIONS = [
     de: 'Selbstverurteilung', vi: 'Tự trách móc', en: 'Self-judgment',
     tr: 'Kendini yargılama', ar: 'محاسبة الذات', es: 'Autocrítica', fr: 'Auto-jugement', uk: 'Самозасудження', pl: 'Samoosądzanie',
     el: 'Αυτοκατάκριση',
+    ta: 'சுயகுற்றவுணர்வு',
     emoji: '⚖️',
     prompt: {
       de: 'Verurteilst du dich manchmal zu hart?',
@@ -1228,7 +1353,8 @@ const EMOTIONS = [
       fr: 'Es-tu parfois trop dur(e) avec toi-même?',
       uk: 'Чи буваєш ти іноді занадто суворим/ою до себе?',
       pl: 'Czy bywasz czasem zbyt surowy/a wobec siebie?',
-      el: 'Είσαι μερικές φορές πολύ σκληρός/ή με τον εαυτό σου;'
+      el: 'Είσαι μερικές φορές πολύ σκληρός/ή με τον εαυτό σου;',
+      ta: 'உங்களையே குற்றப்படுத்திக்கொள்கிறீர்களா?'
     }
   },
   {
@@ -1236,6 +1362,7 @@ const EMOTIONS = [
     de: 'Verhärtung', vi: 'Chai sạn', en: 'Hardening',
     tr: 'Katılaşma', ar: 'تصلب', es: 'Endurecimiento', fr: 'Endurcissement', uk: 'Зачерствіння', pl: 'Zatwardziałość',
     el: 'Σκλήρυνση',
+    ta: 'மனகடினம்',
     emoji: '🪨',
     prompt: {
       de: 'Wo bist du hart geworden — und willst du dort wieder weich werden?',
@@ -1247,7 +1374,8 @@ const EMOTIONS = [
       fr: 'Où t\'es-tu endurci(e) — et veux-tu redevenir tendre?',
       uk: 'Де ти зачерствів/ла — і чи хочеш знову стати м\'яким/ою?',
       pl: 'Gdzie stwardniałeś/aś — i czy chcesz znów zmięknąć?',
-      el: 'Πού έχεις σκληρύνει — και θέλεις να μαλακώσεις ξανά;'
+      el: 'Πού έχεις σκληρύνει — και θέλεις να μαλακώσεις ξανά;',
+      ta: 'எப்போது மனம் கல்லாக மாறுவதாக உணர்கிறீர்கள்?'
     }
   },
   {
@@ -1255,6 +1383,7 @@ const EMOTIONS = [
     de: 'Taubheit', vi: 'Tê liệt cảm xúc', en: 'Numbness',
     tr: 'Hissizlik', ar: 'خدر', es: 'Insensibilidad', fr: 'Engourdissement', uk: 'Заціпеніння', pl: 'Odrętwienie',
     el: 'Μούδιασμα',
+    ta: 'உணர்வற்ற நிலை',
     emoji: '🧊',
     prompt: {
       de: 'Kennst du das Gefühl, gar nichts mehr zu fühlen?',
@@ -1266,7 +1395,8 @@ const EMOTIONS = [
       fr: 'Connais-tu le sentiment de ne plus rien ressentir?',
       uk: 'Чи знаєш ти відчуття, коли більше нічого не відчуваєш?',
       pl: 'Czy znasz uczucie, gdy niczego już nie czujesz?',
-      el: 'Γνωρίζεις το αίσθημα να μην νιώθεις πια τίποτα;'
+      el: 'Γνωρίζεις το αίσθημα να μην νιώθεις πια τίποτα;',
+      ta: 'எப்போது எதுவும் உணர முடியாமல் போகிறது?'
     }
   },
   {
@@ -1274,6 +1404,7 @@ const EMOTIONS = [
     de: 'Zynismus', vi: 'Bi quan châm biếm', en: 'Cynicism',
     tr: 'Sinizm', ar: 'سخرية', es: 'Cinismo', fr: 'Cynisme', uk: 'Цинізм', pl: 'Cynizm',
     el: 'Κυνισμός',
+    ta: 'நம்பிக்கையற்ற நகை',
     emoji: '🎭',
     prompt: {
       de: 'Ist dein Zynismus ein Schutzschild? Wogegen?',
@@ -1285,7 +1416,8 @@ const EMOTIONS = [
       fr: 'Ton cynisme est-il un bouclier? Contre quoi?',
       uk: 'Чи є твій цинізм щитом? Від чого?',
       pl: 'Czy twój cynizm to tarcza? Przed czym?',
-      el: 'Ο κυνισμός σου είναι ασπίδα; Εναντίον τίνος;'
+      el: 'Ο κυνισμός σου είναι ασπίδα; Εναντίον τίνος;',
+      ta: 'நம்பிக்கை இழந்தது எப்போது தொடங்கியது?'
     }
   },
   {
@@ -1293,6 +1425,7 @@ const EMOTIONS = [
     de: 'Hoffnungsmüdigkeit', vi: 'Mệt mỏi vì hy vọng', en: 'Hope fatigue',
     tr: 'Umut yorgunluğu', ar: 'إرهاق الأمل', es: 'Fatiga de esperanza', fr: "Fatigue d'espoir", uk: 'Втома від надії', pl: 'Zmęczenie nadzieją',
     el: 'Κόπωση ελπίδας',
+    ta: 'நம்பிக்கை சோர்வு',
     emoji: '🕯️',
     prompt: {
       de: 'Bist du müde vom Hoffen? Was würde helfen?',
@@ -1304,7 +1437,8 @@ const EMOTIONS = [
       fr: "Es-tu fatigué(e) d'espérer? Qu'est-ce qui aiderait?",
       uk: 'Чи втомився/лася ти від надії? Що б допомогло?',
       pl: 'Czy jesteś zmęczony/a nadzieją? Co by pomogło?',
-      el: 'Είσαι κουρασμένος/η από το να ελπίζεις; Τι θα βοηθούσε;'
+      el: 'Είσαι κουρασμένος/η από το να ελπίζεις; Τι θα βοηθούσε;',
+      ta: 'நம்பிக்கையுடன் இருக்க சோர்வாக இருக்கிறதா?'
     }
   }
 ];
@@ -1439,7 +1573,8 @@ const LANGUAGES = {
   fr: { name: 'Français',    flag: '🇫🇷' },
   uk: { name: 'Українська',  flag: '🇺🇦' },
   pl: { name: 'Polski',      flag: '🇵🇱' },
-  el: { name: 'Ελληνικά',   flag: '🇬🇷' }
+  el: { name: 'Ελληνικά',   flag: '🇬🇷' },
+  ta: { name: 'தமிழ்',      flag: '🇮🇳' }
 };
 
 const UI_TEXT = {
@@ -2329,5 +2464,95 @@ const UI_TEXT = {
     backToDashboard: 'Πίσω',
     nochmal: 'Ξανά',
     categoryBreakdown: 'Κατηγορίες'
+  },
+
+  ta: {
+    title: 'உணர்வு நினைவு',
+    subtitle: 'ஜோடிகளை கண்டுபிடி — உன் உணர்வுகளை பேசு',
+    moves: 'நகர்வுகள்',
+    pairs: 'ஜோடிகள்',
+    time: 'நேரம்',
+    newGame: 'புதிய விளையாட்டு',
+    modeClassic: 'கிளாசிக்',
+    modeStory: 'கதைகள்',
+    modeTalk: 'உரையாடல்',
+    modeCheckin: 'செக்-இன்',
+    langLabel: 'மொழிகள்',
+    pairFound: 'ஜோடி கிடைத்தது!',
+    promptIntro: 'இதைப் பற்றி பேசு:',
+    congratsTitle: '🎉 சாபாஷ்!',
+    congratsText: 'அனைத்து ஜோடிகளையும் கண்டுபிடித்தாய்!',
+    congratsStats: '{time} நேரத்தில் {moves} நகர்வுகள்',
+    playAgain: 'மீண்டும் விளையாடு',
+    storyIntro: 'இந்த உணர்வுகளை உள்ளடக்கிய ஒரு கதை சொல்:',
+    talkIntro: 'ஒரு அட்டை எடு, உன் உணர்வை பகிர்:',
+    drawCard: 'அட்டை எடு',
+    newCards: 'புதிய அட்டைகள்',
+    allCategories: 'அனைத்து வகைகளும்',
+    share: 'பகிர்',
+    shareText: 'நான் உணர்வு நினைவு விளையாடுகிறேன் — {lang1} மற்றும் {lang2} மொழிகளில்! 💛',
+    checkinTitle: 'இன்று உனக்கு என்ன தேவை?',
+    checkinSubtitle: 'ஒவ்வொரு பரிமாணத்திலும் உனக்கு பொருத்தமானதை தேர்ந்தெடு.',
+    todayIChoose: 'இன்று நான் தேர்வு செய்கிறேன்:',
+    checkinDone: '🌿 சாபாஷ். உன் உணர்வுகளை கேள்.',
+    checkinReset: 'மீண்டும் தொடங்கு',
+    tapToContinue: 'தொடர எங்கும் தொடு',
+    tapToClose: 'மூட தொடு',
+    speak: 'உச்சரிப்பு',
+    darkMode: 'இருண்ட முறை',
+    stars: 'நட்சத்திரங்கள்',
+    bestScore: 'சிறந்த மதிப்பெண்',
+    newBest: 'புதிய சாதனை!',
+    modeWheel: 'சக்கரம்',
+    wheelIntro: '67 உணர்வுகளையும் சக்கரத்தில் ஆராய்',
+    solo: 'தனியாக',
+    multiPlayer: 'பலர்',
+    player: 'வீரர்',
+    playerTurn: '{name} முறை',
+    points: 'புள்ளிகள்',
+    winner: 'வெற்றியாளர்!',
+    tie: 'சமநிலை!',
+    passDevice: '{name}க்கு கொடு',
+    enterNames: 'வீரர்களின் பெயர்களை எழுது',
+    startGame: 'விளையாட்டை தொடங்கு',
+    scoreboard: 'மதிப்பெண் பலகை',
+    modeJournal: 'நாட்குறிப்பு',
+    journalTitle: 'இன்று எப்படி உணர்கிறாய்?',
+    journalNote: 'இன்னும் ஏதாவது சொல்ல விரும்புகிறாயா?',
+    journalSave: 'சேமி',
+    journalHistory: 'முந்தைய பதிவுகள்',
+    journalPattern: '🤖 முறைகளை கண்டுபிடி',
+    journalNoEntries: 'பதிவுகள் இல்லை.',
+    journalSaved: '✓ சேமிக்கப்பட்டது!',
+    journalWeek: 'இந்த வாரம்',
+    aiGenerate: '🤖 கலாச்சார நுண்ணறிவை உருவாக்கு',
+    aiLoading: 'உருவாக்குகிறது...',
+    aiSetup: '⚙️ அமைப்புகளில் AI விசையை அமைக்கவும்',
+    settings: 'அமைப்புகள்',
+    modeLearn: 'கற்றல்',
+    learnTitle: 'சொல்வளம் பயிற்சி',
+    learnSubtitle: 'அட்டைகள் மூலம் உணர்வுகளை கற்றுக்கொள்',
+    dueToday: 'இன்றைக்கு',
+    studyNow: 'இப்போது படி',
+    newCards: 'புதிய அட்டைகள்',
+    lastStudied: 'கடைசியாக படித்தது',
+    correct: 'சரி',
+    wrong: 'தவறு',
+    sessionComplete: 'அமர்வு முடிந்தது!',
+    score: 'மதிப்பெண்',
+    newLearned: 'புதியவை கற்றது',
+    toReview: 'மதிப்பாய்வுக்கு',
+    masteryNew: 'புதியது',
+    masteryLearning: 'கற்கிறது',
+    masteryKnown: 'தெரியும்',
+    masteryMastered: 'தேர்ச்சி',
+    exportProgress: 'முன்னேற்றம் ஏற்றுமதி',
+    streak: 'தொடர்',
+    streakDays: 'நாட்கள்',
+    exercisePrompt: 'பயிற்சி',
+    nextCard: 'அடுத்த அட்டை',
+    backToDashboard: 'பின்னால்',
+    nochmal: 'மீண்டும்',
+    categoryBreakdown: 'வகைகள்'
   }
 };
