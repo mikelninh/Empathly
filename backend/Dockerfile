@@ -15,4 +15,4 @@ RUN mkdir -p data
 EXPOSE 8080
 
 # PORT env var is set by Railway/Fly.io; default 8080 for local Docker
-CMD uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}"]
