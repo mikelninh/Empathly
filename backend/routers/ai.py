@@ -165,7 +165,7 @@ async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) 
                     "Authorization": f"Bearer {settings.openrouter_api_key}",
                     "Content-Type": "application/json",
                     "HTTP-Referer": "https://gefuehle-memory.app",
-                    "X-Title": "Gefühle-Memory",
+                    "X-Title": "Gefuehle-Memory",
                 },
                 json={
                     "model": settings.default_model,
