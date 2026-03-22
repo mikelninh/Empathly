@@ -270,6 +270,7 @@
       <div class="prompt-divider"></div>
       <div class="prompt-label"></div>
       <div class="prompt-question"></div>
+      <div class="prompt-culture"></div>
       <button class="prompt-share" title="Teilen">💛</button>
       <button class="prompt-close">✓</button>
     </div>
@@ -291,6 +292,38 @@
     </div>
   </div>
 
+  <!-- Onboarding Overlay (first visit) -->
+  <div class="onboarding-overlay" id="onboarding-overlay" style="display:none">
+    <div class="onboarding-card">
+      <div class="onboarding-emoji">💛</div>
+      <h2 class="onboarding-title">Willkommen!</h2>
+      <p class="onboarding-subtitle">Wie möchtest du starten?</p>
+      <div class="onboarding-grid">
+        <button class="onboarding-btn" data-mode="classic" data-lang1="de" data-lang2="vi" data-players="2">
+          <span class="onboarding-btn-icon">👨‍👩‍👧‍👦</span>
+          <span class="onboarding-btn-name">Familie</span>
+          <span class="onboarding-btn-desc">Spielt zusammen Memory</span>
+        </button>
+        <button class="onboarding-btn" data-mode="talk">
+          <span class="onboarding-btn-icon">💬</span>
+          <span class="onboarding-btn-name">Gespräch</span>
+          <span class="onboarding-btn-desc">Therapie & Gruppen</span>
+        </button>
+        <button class="onboarding-btn" data-mode="learn">
+          <span class="onboarding-btn-icon">🧠</span>
+          <span class="onboarding-btn-name">Lernen</span>
+          <span class="onboarding-btn-desc">Vokabeln & Sprache</span>
+        </button>
+        <button class="onboarding-btn" data-mode="journal">
+          <span class="onboarding-btn-icon">📓</span>
+          <span class="onboarding-btn-name">Reflektieren</span>
+          <span class="onboarding-btn-desc">Tägliches Journal</span>
+        </button>
+      </div>
+      <button class="onboarding-skip">Direkt loslegen →</button>
+    </div>
+  </div>
+
   <!-- Pass Device Overlay (Multiplayer) -->
   <div class="pass-overlay" id="pass-overlay">
     <div class="pass-card">
@@ -304,6 +337,7 @@
     <p>Gefühle-Memory 💛 67 Gefühle · 6 Kategorien · 10 Sprachen</p>
   </footer>
 
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/api.js"></script>
   <script src="js/funfacts.js"></script>

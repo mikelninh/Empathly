@@ -15,7 +15,10 @@ const GefuehleAPI = (function () {
   'use strict';
 
   // ── Config ────────────────────────────────────────────────────────────────
-  const BASE_URL = 'http://localhost:8000';
+  // Priority: APP_CONFIG.API_URL (set after deployment) → localhost
+  const BASE_URL = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_URL)
+    ? APP_CONFIG.API_URL.replace(/\/$/, '')
+    : 'http://localhost:8000';
   const USER_ID_KEY = 'gefuehle-user-id';
 
   let _backendAvailable = null; // null = not checked yet
@@ -298,6 +301,7 @@ const GefuehleAPI = (function () {
   return {
     init,
     getUserId,
+    apiFetch,
     saveJournal,
     getJournalEntries,
     saveCheckin,

@@ -3001,3 +3001,165 @@ body:not(.light-mode) .ff-wow { background: var(--accent-light); }
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Onboarding Overlay ── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .3s ease;
+  padding: 16px;
+}
+.onboarding-overlay.visible { opacity: 1; }
+.onboarding-card {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 32px 28px 24px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  transform: translateY(20px);
+  transition: transform .3s ease;
+  box-shadow: 0 24px 64px rgba(0,0,0,.2);
+}
+.onboarding-overlay.visible .onboarding-card { transform: translateY(0); }
+.onboarding-emoji { font-size: 2.5rem; margin-bottom: 8px; }
+.onboarding-title { font-size: 1.5rem; font-weight: 700; margin: 0 0 6px; }
+.onboarding-subtitle { color: var(--text-soft); font-size: .95rem; margin: 0 0 22px; }
+.onboarding-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.onboarding-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 12px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.onboarding-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  transform: translateY(-2px);
+}
+.onboarding-btn-icon { font-size: 1.8rem; }
+.onboarding-btn-name { font-size: .95rem; font-weight: 600; }
+.onboarding-btn-desc { font-size: .75rem; color: var(--text-soft); }
+.onboarding-skip {
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  font-size: .88rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  transition: color var(--transition);
+}
+.onboarding-skip:hover { color: var(--text); }
+
+/* ── Prompt Culture Note ── */
+.prompt-culture {
+  margin: 10px 0 4px;
+  padding: 12px 14px;
+  background: var(--accent-light);
+  border-radius: 10px;
+  font-size: .83rem;
+  line-height: 1.6;
+  color: var(--text);
+  text-align: left;
+}
+.prompt-culture-label {
+  display: block;
+  font-size: .72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--accent);
+  margin-bottom: 5px;
+}
+
+/* ── Talk Mode Progress ── */
+.talk-progress {
+  display: block;
+  text-align: center;
+  font-size: .78rem;
+  color: var(--text-soft);
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Journal Timeline ── */
+.journal-timeline {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.timeline-title {
+  font-size: .8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-soft);
+  margin: 0 0 12px;
+}
+.timeline-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  height: 72px;
+}
+.timeline-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+  height: 100%;
+}
+.timeline-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height .4s ease;
+  opacity: .85;
+}
+.timeline-label {
+  font-size: .7rem;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+
+/* ── Journal Tools ── */
+.journal-tools {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 14px 0 4px;
+}
+.btn-journal-export, .btn-journal-reminder {
+  background: var(--card-bg);
+  border: 1.5px solid var(--border);
+  border-radius: 24px;
+  padding: 8px 16px;
+  font-size: .82rem;
+  cursor: pointer;
+  color: var(--text-soft);
+  transition: border-color var(--transition), color var(--transition), background var(--transition);
+}
+.btn-journal-export:hover { border-color: var(--accent); color: var(--accent); }
+.btn-journal-reminder:hover { border-color: #F6C344; color: #c49a00; }
+.btn-journal-reminder.active { border-color: #F6C344; color: #c49a00; background: #FFF9E6; }

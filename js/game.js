@@ -64,6 +64,7 @@
     dom.promptQuestion = $('.prompt-question');
     dom.promptClose = $('.prompt-close');
     dom.promptShare = $('.prompt-share');
+    dom.promptCulture = $('.prompt-culture');
     dom.congratsOverlay = $('.congrats-overlay');
     dom.congratsTitle = $('.congrats-title');
     dom.congratsText = $('.congrats-text');
@@ -805,6 +806,16 @@
     dom.promptClose.style.background = color;
     dom.promptClose.style.color = '#fff';
     if (dom.promptShare) dom.promptShare.dataset.emotionId = emotion.id;
+    // Show culture note if available
+    if (dom.promptCulture) {
+      const note = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emotion.id]?.[state.uiLang] : null;
+      if (note) {
+        dom.promptCulture.innerHTML = `<span class="prompt-culture-label">🌍 Kulturbrücke</span>${note}`;
+        dom.promptCulture.style.display = '';
+      } else {
+        dom.promptCulture.style.display = 'none';
+      }
+    }
     dom.promptOverlay.classList.add('visible');
   }
   function hidePrompt() { dom.promptOverlay.classList.remove('visible'); }
@@ -856,9 +867,16 @@
   function hideCongrats() { dom.congratsOverlay.classList.remove('visible'); }
 
   /* ---- Talk mode ---- */
+  const TALK_EXPLORED_KEY = 'gefuehle-talk-explored';
+
   function initTalkMode() {
     const container = dom.talkMode;
-    const deck = shuffle(getEmotions());
+    // Sort deck: unexplored first, then explored — so users always see new cards
+    const explored = new Set(JSON.parse(localStorage.getItem(TALK_EXPLORED_KEY) || '[]'));
+    const allEmos = getEmotions();
+    const fresh = shuffle(allEmos.filter(e => !explored.has(e.id)));
+    const seen = shuffle(allEmos.filter(e => explored.has(e.id)));
+    const deck = [...fresh, ...seen];
     let index = 0;
     let currentEmo = null;
     const cardDisplay = $('.talk-card-display', container);
@@ -869,16 +887,34 @@
     const intro = $('.talk-intro', container);
     intro.textContent = t('talkIntro');
     drawBtn.textContent = t('drawCard');
+    // Add progress tracker if not present
+    if (!container.querySelector('.talk-progress')) {
+      const prog = document.createElement('span');
+      prog.className = 'talk-progress';
+      const exploredCount = JSON.parse(localStorage.getItem(TALK_EXPLORED_KEY) || '[]').length;
+      prog.textContent = `${Math.min(exploredCount, allEmos.length)} / ${allEmos.length} erkundet`;
+      intro.after(prog);
+    }
 
     function show() {
       currentEmo = deck[index % deck.length];
+      // Mark as explored
+      const explored = new Set(JSON.parse(localStorage.getItem(TALK_EXPLORED_KEY) || '[]'));
+      explored.add(currentEmo.id);
+      localStorage.setItem(TALK_EXPLORED_KEY, JSON.stringify([...explored]));
+
       const color = getCategoryColor(currentEmo.category);
+      const isNew = !explored.has(currentEmo.id) || index < fresh.length;
       cardDisplay.innerHTML = `
         <span class="card-emoji">${currentEmo.emoji}</span>
         <span class="card-word" style="color:${color}">${currentEmo[state.lang1]} ${makeSpeakButton(currentEmo[state.lang1], state.lang1)}</span>
         <span class="card-word-secondary">${currentEmo[state.lang2]} ${makeSpeakButton(currentEmo[state.lang2], state.lang2)}</span>`;
       cardDisplay.style.borderTop = `4px solid ${color}`;
       prompt.textContent = currentEmo.prompt[state.uiLang] || currentEmo.prompt.de;
+      // Progress counter
+      const exploredCount = JSON.parse(localStorage.getItem(TALK_EXPLORED_KEY) || '[]').length;
+      const progressEl = container.querySelector('.talk-progress');
+      if (progressEl) progressEl.textContent = `${Math.min(exploredCount, allEmos.length)} / ${allEmos.length} erkundet`;
       // Reset deep question on new card
       deepResult.textContent = '';
       deepResult.className = 'talk-deep-result';
@@ -1408,6 +1444,62 @@
     }, { once: true });
   }
 
+  /* ---- Emotion Timeline (6-month bar chart) ---- */
+  function buildEmotionTimeline(entries, lang) {
+    if (entries.length < 3) return '';
+
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      return {
+        label: d.toLocaleDateString(lang === 'de' ? 'de-DE' : lang === 'vi' ? 'vi-VN' : 'en-US', { month: 'short' }),
+        year: d.getFullYear(),
+        month: d.getMonth(),
+        catCounts: {},
+        total: 0,
+      };
+    });
+
+    entries.forEach(e => {
+      const d = new Date(e.date);
+      const bucket = months.find(m => m.year === d.getFullYear() && m.month === d.getMonth());
+      if (!bucket) return;
+      (e.emotions || []).forEach(eid => {
+        const emo = EMOTIONS.find(em => em.id === eid);
+        if (emo) {
+          bucket.catCounts[emo.category] = (bucket.catCounts[emo.category] || 0) + 1;
+          bucket.total++;
+        }
+      });
+    });
+
+    const hasData = months.some(m => m.total > 0);
+    if (!hasData) return '';
+
+    const maxTotal = Math.max(...months.map(m => m.total), 1);
+
+    const bars = months.map(m => {
+      const height = Math.max(4, Math.round((m.total / maxTotal) * 60));
+      // Dominant category color
+      let domCat = 'mitte';
+      let domCount = 0;
+      Object.entries(m.catCounts).forEach(([cat, count]) => {
+        if (count > domCount) { domCat = cat; domCount = count; }
+      });
+      const cat = CATEGORIES.find(c => c.id === domCat);
+      const color = cat ? cat.color : 'var(--accent)';
+      return `<div class="timeline-col">
+        <div class="timeline-bar" style="height:${height}px;background:${color}" title="${m.total} Einträge"></div>
+        <div class="timeline-label">${m.label}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="journal-timeline">
+      <h4 class="timeline-title">6-Monats-Überblick</h4>
+      <div class="timeline-bars">${bars}</div>
+    </div>`;
+  }
+
   /* ---- Journal Mode ---- */
   function initJournalMode() {
     const container = dom.journalMode;
@@ -1500,17 +1592,16 @@
       historyHTML = `<p style="color:var(--text-soft);font-size:.9rem">${t('journalNoEntries')}</p>`;
     }
 
-    const aiAvailable = typeof GefuehleAI !== 'undefined';
+    const backendReady = typeof GefuehleAPI !== 'undefined';
+    const localAiReady = typeof GefuehleAI !== 'undefined' && GefuehleAI.isConfigured();
     let aiPatternHTML = '';
-    if (entries.length >= 3) {
-      if (aiAvailable && GefuehleAI.isConfigured()) {
-        aiPatternHTML = `
-          <button class="ai-culture-btn journal-pattern-btn">${t('journalPattern')}</button>
-          <div class="journal-ai-result"></div>`;
-      } else if (aiAvailable) {
-        aiPatternHTML = `<div class="ai-setup-hint">${t('aiSetup')}</div>`;
-      }
+    if (entries.length >= 2 && (backendReady || localAiReady)) {
+      aiPatternHTML = `
+        <button class="ai-culture-btn journal-pattern-btn">${t('journalPattern')}</button>
+        <div class="journal-ai-result"></div>`;
     }
+
+    const timelineHTML = buildEmotionTimeline(entries, lang);
 
     container.innerHTML = `
       <div class="journal-date">${dateDisplay}</div>
@@ -1522,7 +1613,12 @@
         <span class="journal-saved-msg">${t('journalSaved')}</span>
       </div>
       ${heatmapHTML}
+      ${timelineHTML}
       ${aiPatternHTML}
+      <div class="journal-tools">
+        <button class="btn-journal-export">📥 Journal exportieren</button>
+        <button class="btn-journal-reminder">🔔 Tägliche Erinnerung</button>
+      </div>
       ${historyHTML}`;
 
     container.querySelectorAll('.journal-cat-header').forEach(header => {
@@ -1573,6 +1669,45 @@
         el.classList.toggle('expanded');
       });
     });
+
+    // Export button
+    container.querySelector('.btn-journal-export')?.addEventListener('click', () => {
+      const allEntries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+      const blob = new Blob([JSON.stringify(allEntries, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `gefuehle-journal-${dateStr}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    // Reminder button
+    const reminderBtn = container.querySelector('.btn-journal-reminder');
+    if (reminderBtn) {
+      const REMINDER_KEY = 'gefuehle-reminder-enabled';
+      if (localStorage.getItem(REMINDER_KEY)) {
+        reminderBtn.textContent = '✓ Erinnerung aktiv';
+        reminderBtn.classList.add('active');
+      }
+      reminderBtn.addEventListener('click', async () => {
+        if (!('Notification' in window)) {
+          reminderBtn.textContent = '⚠ Nicht unterstützt';
+          return;
+        }
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+          localStorage.setItem(REMINDER_KEY, '1');
+          reminderBtn.textContent = '✓ Erinnerung aktiv';
+          reminderBtn.classList.add('active');
+          new Notification('Gefühle-Memory 💛', {
+            body: 'Erinnerung aktiviert! Wir sehen uns heute Abend.',
+            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>',
+          });
+        } else {
+          reminderBtn.textContent = '⚠ Erlaubnis verweigert';
+        }
+      });
+    }
 
     const patternBtn = container.querySelector('.journal-pattern-btn');
     if (patternBtn) {
@@ -1888,15 +2023,84 @@
   }
 
   /* ---- Init ---- */
+  /* ---- Onboarding ---- */
+  function initOnboarding() {
+    const ONBOARDING_KEY = 'gefuehle-onboarded';
+    if (localStorage.getItem(ONBOARDING_KEY)) return; // already seen
+
+    const overlay = document.getElementById('onboarding-overlay');
+    if (!overlay) return;
+    overlay.style.display = '';
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    function dismiss() {
+      overlay.classList.remove('visible');
+      setTimeout(() => { overlay.style.display = 'none'; }, 300);
+      localStorage.setItem(ONBOARDING_KEY, '1');
+    }
+
+    overlay.querySelectorAll('.onboarding-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        const lang1 = btn.dataset.lang1;
+        const lang2 = btn.dataset.lang2;
+        const players = btn.dataset.players;
+        if (lang1) { state.lang1 = lang1; dom.lang1Select.value = lang1; }
+        if (lang2) { state.lang2 = lang2; dom.lang2Select.value = lang2; }
+        if (players) { state.playerCount = parseInt(players); }
+        state.mode = mode;
+        state.uiLang = state.lang1;
+        dismiss();
+        showLanding(); // show landing with mode pre-selected, then start
+        // Small delay so landing renders before we navigate
+        setTimeout(() => {
+          hideLanding();
+          startGame();
+        }, 50);
+      });
+    });
+
+    overlay.querySelector('.onboarding-skip')?.addEventListener('click', () => {
+      dismiss();
+      showLanding();
+    });
+  }
+
+  /* ---- Notification reminder on app open ---- */
+  function checkReminder() {
+    const REMINDER_KEY = 'gefuehle-reminder-enabled';
+    const JOURNAL_KEY = 'gefuehle-journal';
+    if (!localStorage.getItem(REMINDER_KEY)) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const today = new Date().toISOString().split('T')[0];
+    const entries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+    const hasToday = entries.some(e => e.date === today);
+    if (!hasToday) {
+      const hour = new Date().getHours();
+      if (hour >= 19) { // Only show reminder in the evening
+        new Notification('Gefühle-Memory 💛', {
+          body: 'Wie war dein Tag? Dein Journal wartet.',
+          icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>',
+        });
+      }
+    }
+  }
+
   function init() {
     cacheDom();
     initDarkMode();
     bindEvents();
     updateUIText();
-    // Skip landing — start classic game immediately
-    state.mode = 'classic';
-    hideLanding();
-    startGame();
+    checkReminder();
+    // Check onboarding before showing landing
+    const ONBOARDING_KEY = 'gefuehle-onboarded';
+    if (!localStorage.getItem(ONBOARDING_KEY)) {
+      // Show landing first, then onboarding overlay
+      showLanding();
+      initOnboarding();
+    } else {
+      showLanding();
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);

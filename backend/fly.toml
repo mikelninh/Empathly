@@ -1,0 +1,24 @@
+# Fly.io deployment config for Gefühle-Memory backend
+# Deploy: fly launch --no-deploy, then fly deploy
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = 'gefuehle-memory-backend'
+primary_region = 'fra'
+
+[build]
+
+[env]
+  # SQLite stored in /tmp (ephemeral — resets on redeploy, fine for demo)
+  DATABASE_URL = "sqlite:////tmp/gefuehle.db"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
