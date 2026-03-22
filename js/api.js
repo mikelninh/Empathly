@@ -209,7 +209,7 @@ const GefuehleAPI = (function () {
   // ── Ask (RAG Q&A) ─────────────────────────────────────────────────────────
 
   async function streamAsk({ question, lang }, onChunk) {
-    if (!(await checkBackend())) return false;
+    if (!(await checkBackend())) return { ok: false, error: 'backend_down' };
     try {
       const res = await fetch(`${BASE_URL}/ai/ask/stream`, {
         method: 'POST',
@@ -217,7 +217,14 @@ const GefuehleAPI = (function () {
         body: JSON.stringify({ question, lang }),
         signal: AbortSignal.timeout(30000),
       });
-      if (!res.ok) return false;
+      if (!res.ok) {
+        try {
+          const err = await res.json();
+          return { ok: false, error: err.detail || `HTTP ${res.status}` };
+        } catch {
+          return { ok: false, error: `HTTP ${res.status}` };
+        }
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -235,9 +242,9 @@ const GefuehleAPI = (function () {
           }
         }
       }
-      return true;
+      return { ok: true };
     } catch {
-      return false;
+      return { ok: false, error: 'backend_down' };
     }
   }
 

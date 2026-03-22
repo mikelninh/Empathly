@@ -1829,23 +1829,26 @@
       const textEl = aiDiv.querySelector('.ask-msg-text');
 
       if (typeof GefuehleAPI === 'undefined') {
-        textEl.textContent = 'Backend nicht erreichbar. cd backend && uvicorn main:app --reload';
+        textEl.textContent = lang === 'de'
+          ? 'KI nicht verfügbar.'
+          : 'AI not available.';
         sendBtn.disabled = false;
         return;
       }
 
       let fullText = '';
-      const ok = await GefuehleAPI.streamAsk({ question: q, lang }, (chunk) => {
+      const result = await GefuehleAPI.streamAsk({ question: q, lang }, (chunk) => {
         if (!fullText) textEl.textContent = '';
         fullText += chunk;
         textEl.textContent = fullText;
         chat.scrollTop = chat.scrollHeight;
       });
 
-      if (!ok) {
-        textEl.textContent = lang === 'de'
-          ? 'Backend nicht erreichbar. Starte: cd backend && uvicorn main:app --reload'
-          : 'Backend unavailable. Run: cd backend && uvicorn main:app --reload';
+      if (!result.ok) {
+        const isRateLimit = result.error && result.error.includes('429');
+        textEl.textContent = isRateLimit
+          ? (lang === 'de' ? 'KI momentan überlastet — bitte kurz warten und nochmal versuchen.' : 'AI is currently rate-limited — please try again in a moment.')
+          : (lang === 'de' ? 'Keine Antwort von der KI erhalten.' : 'No response from AI.');
       }
 
       sendBtn.disabled = false;
