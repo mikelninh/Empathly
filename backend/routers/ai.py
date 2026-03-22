@@ -54,6 +54,14 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 
 KNOWLEDGE_BASE_PATH = Path(__file__).parent.parent / "data" / "knowledge_base.md"
 
+# Free models tried in order if the primary is rate-limited
+FREE_MODEL_FALLBACKS = [
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "google/gemma-3-27b-it:free",
+    "mistralai/mistral-small-3.1-24b-instruct:free",
+    "qwen/qwen2.5-vl-72b-instruct:free",
+]
+
 LANGUAGE_NAMES = {
     "de": "German",
     "vi": "Vietnamese",
@@ -157,40 +165,49 @@ async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) 
             detail="No OpenRouter API key configured. Set OPENROUTER_API_KEY in .env"
         )
 
-    try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.openrouter_api_key}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://gefuehle-memory.app",
-                    "X-Title": "Gefuehle-Memory",
-                },
-                json={
-                    "model": settings.default_model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    "max_tokens": max_tokens,
-                    "temperature": 0.7,
-                },
-            )
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"LLM connection error: {type(e).__name__}: {e}")
+    models = [settings.default_model] + [m for m in FREE_MODEL_FALLBACKS if m != settings.default_model]
+    last_error = "No models available"
 
-    if response.status_code != 200:
-        raise HTTPException(
-            status_code=502,
-            detail=f"LLM API error: {response.status_code} — {response.text}"
-        )
+    for model in models:
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {settings.openrouter_api_key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://gefuehle-memory.app",
+                        "X-Title": "Gefuehle-Memory",
+                    },
+                    json={
+                        "model": model,
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": user_prompt},
+                        ],
+                        "max_tokens": max_tokens,
+                        "temperature": 0.7,
+                    },
+                )
+        except Exception as e:
+            last_error = f"Connection error: {type(e).__name__}: {e}"
+            continue
 
-    data = response.json()
-    try:
-        return data["choices"][0]["message"]["content"].strip()
-    except (KeyError, IndexError) as e:
-        raise HTTPException(status_code=502, detail=f"Unexpected LLM response: {data}")
+        if response.status_code == 429:
+            last_error = f"Rate limited on {model}"
+            continue
+        if response.status_code != 200:
+            last_error = f"LLM API error {response.status_code} on {model}"
+            continue
+
+        data = response.json()
+        try:
+            return data["choices"][0]["message"]["content"].strip()
+        except (KeyError, IndexError):
+            last_error = f"Unexpected response from {model}: {data}"
+            continue
+
+    raise HTTPException(status_code=502, detail=f"All models failed: {last_error}")
 
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
@@ -470,43 +487,52 @@ Write in {response_lang}
         raise HTTPException(status_code=503, detail="No API key configured")
 
     async def generate() -> AsyncGenerator[str, None]:
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            async with client.stream(
-                "POST",
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.openrouter_api_key}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://gefuehle-memory.app",
-                    "X-Title": "Gefuehle-Memory",
-                },
-                json={
-                    "model": settings.default_model,
-                    "messages": [
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": payload.question},
-                    ],
-                    "max_tokens": 400,
-                    "temperature": 0.7,
-                    "stream": True,
-                },
-            ) as resp:
-                if resp.status_code != 200:
-                    yield "data: [ERROR]\n\n"
-                    return
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data: "):
-                        continue
-                    raw = line[6:]
-                    if raw == "[DONE]":
-                        yield "data: [DONE]\n\n"
-                        return
-                    try:
-                        token = json.loads(raw)["choices"][0]["delta"].get("content", "")
-                        if token:
-                            yield f"data: {token}\n\n"
-                    except Exception:
-                        continue
+        models = [settings.default_model] + [m for m in FREE_MODEL_FALLBACKS if m != settings.default_model]
+        for model in models:
+            try:
+                async with httpx.AsyncClient(timeout=45.0) as client:
+                    async with client.stream(
+                        "POST",
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {settings.openrouter_api_key}",
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": "https://gefuehle-memory.app",
+                            "X-Title": "Gefuehle-Memory",
+                        },
+                        json={
+                            "model": model,
+                            "messages": [
+                                {"role": "system", "content": system_prompt},
+                                {"role": "user", "content": payload.question},
+                            ],
+                            "max_tokens": 400,
+                            "temperature": 0.7,
+                            "stream": True,
+                        },
+                    ) as resp:
+                        if resp.status_code == 429:
+                            continue  # try next model
+                        if resp.status_code != 200:
+                            yield "data: [ERROR]\n\n"
+                            return
+                        async for line in resp.aiter_lines():
+                            if not line.startswith("data: "):
+                                continue
+                            raw = line[6:]
+                            if raw == "[DONE]":
+                                yield "data: [DONE]\n\n"
+                                return
+                            try:
+                                token = json.loads(raw)["choices"][0]["delta"].get("content", "")
+                                if token:
+                                    yield f"data: {token}\n\n"
+                            except Exception:
+                                continue
+                        return  # finished successfully
+            except Exception:
+                continue  # try next model
+        yield "data: [ERROR]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
