@@ -146,6 +146,11 @@
             <span class="mode-card-name">Check-in</span>
             <span class="mode-card-desc">Was brauchst du heute?</span>
           </button>
+          <button class="mode-card" data-mode="ask">
+            <span class="mode-card-icon">💬</span>
+            <span class="mode-card-name">Frag die App</span>
+            <span class="mode-card-desc">Stell eine Frage</span>
+          </button>
         </div>
       </div>
       <div class="mode-group">
@@ -226,7 +231,11 @@
         <span class="card-word-secondary">...</span>
       </div>
       <p class="talk-prompt"></p>
-      <button class="draw-btn">Karte ziehen</button>
+      <div class="talk-actions">
+        <button class="draw-btn">Karte ziehen</button>
+        <button class="btn-deep-question">Tiefere Frage 🤖</button>
+      </div>
+      <div class="talk-deep-result"></div>
     </section>
 
     <!-- Learn Mode -->
@@ -247,6 +256,9 @@
 
     <!-- Journal Mode -->
     <section class="journal-mode"></section>
+
+    <!-- Ask Mode -->
+    <section class="ask-mode"></section>
   </div>
 
   <!-- Prompt Overlay -->

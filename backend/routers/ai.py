@@ -40,8 +40,12 @@ from config import settings
 from database import get_db
 from models import JournalEntry
 from schemas import (
+    AskRequest,
+    AskResponse,
     CulturalBridgeRequest,
     CulturalBridgeResponse,
+    DynamicPromptRequest,
+    DynamicPromptResponse,
     JournalAnalysisRequest,
     JournalAnalysisResponse,
 )
@@ -381,7 +385,8 @@ Respond ONLY with valid JSON:
 {{
   "insight": "2-3 sentences describing the overall emotional pattern",
   "patterns": ["pattern 1", "pattern 2", "pattern 3"],
-  "suggestion": "one gentle, specific suggestion for emotional wellbeing"
+  "suggestion": "one gentle, specific suggestion for emotional wellbeing",
+  "follow_up_question": "one specific, personal question that invites deeper reflection based on a pattern you noticed"
 }}
 """
 
@@ -402,7 +407,199 @@ Respond ONLY with valid JSON:
         insight=parsed.get("insight", ""),
         patterns=parsed.get("patterns", []),
         suggestion=parsed.get("suggestion", ""),
+        follow_up_question=parsed.get("follow_up_question", ""),
     )
+
+
+@router.post("/ask", response_model=AskResponse)
+async def ask(payload: AskRequest):
+    """
+    RAG-powered Q&A — answers any question about emotions, languages, or cultures.
+
+    LEARNING NOTE — this is the same RAG pattern as cultural-bridge, but more open-ended:
+    - The user asks in natural language
+    - We extract keywords and retrieve matching knowledge chunks
+    - The LLM answers grounded in our knowledge base
+    """
+    chunks = load_knowledge_chunks()
+    # Simple keyword extraction: split on spaces, filter short words
+    query_terms = [w for w in payload.question.lower().split() if len(w) > 3]
+    retrieved = retrieve_chunks(query_terms, chunks, top_k=3)
+
+    response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")
+    rag_context = "\n\n".join(retrieved) if retrieved else ""
+    context_block = f"\nKNOWLEDGE BASE:\n---\n{rag_context}\n---\n" if rag_context else ""
+
+    system_prompt = f"""You are an emotional intelligence guide for "Gefühle-Memory" — a multilingual emotion card game.
+You help people understand emotions, their linguistic nuances, and cultural differences.
+Be warm, specific, and educational. Keep answers concise (3-5 sentences max).
+Write in {response_lang}
+{context_block}
+If the question is about a specific language's word or concept, explain it richly.
+If you don't know, say so honestly — don't invent facts."""
+
+    answer = await call_llm(system_prompt, payload.question, max_tokens=400)
+    return AskResponse(answer=answer)
+
+
+@router.post("/ask/stream")
+async def ask_stream(payload: AskRequest):
+    """
+    Streaming version of /ai/ask — returns SSE token by token.
+    """
+    chunks = load_knowledge_chunks()
+    query_terms = [w for w in payload.question.lower().split() if len(w) > 3]
+    retrieved = retrieve_chunks(query_terms, chunks, top_k=3)
+
+    response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")
+    rag_context = "\n\n".join(retrieved) if retrieved else ""
+    context_block = f"\nKNOWLEDGE BASE:\n---\n{rag_context}\n---\n" if rag_context else ""
+
+    system_prompt = f"""You are an emotional intelligence guide for "Gefühle-Memory" — a multilingual emotion card game.
+Answer questions about emotions, languages, and cultural differences warmly and concisely (3-5 sentences).
+Write in {response_lang}
+{context_block}"""
+
+    if not settings.openrouter_api_key:
+        raise HTTPException(status_code=503, detail="No API key configured")
+
+    async def generate() -> AsyncGenerator[str, None]:
+        async with httpx.AsyncClient(timeout=45.0) as client:
+            async with client.stream(
+                "POST",
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {settings.openrouter_api_key}",
+                    "Content-Type": "application/json",
+                    "HTTP-Referer": "https://gefuehle-memory.app",
+                    "X-Title": "Gefuehle-Memory",
+                },
+                json={
+                    "model": settings.default_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": payload.question},
+                    ],
+                    "max_tokens": 400,
+                    "temperature": 0.7,
+                    "stream": True,
+                },
+            ) as resp:
+                if resp.status_code != 200:
+                    yield "data: [ERROR]\n\n"
+                    return
+                async for line in resp.aiter_lines():
+                    if not line.startswith("data: "):
+                        continue
+                    raw = line[6:]
+                    if raw == "[DONE]":
+                        yield "data: [DONE]\n\n"
+                        return
+                    try:
+                        token = json.loads(raw)["choices"][0]["delta"].get("content", "")
+                        if token:
+                            yield f"data: {token}\n\n"
+                    except Exception:
+                        continue
+
+    return StreamingResponse(generate(), media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+
+
+# ── Dynamic Prompt Configs ─────────────────────────────────────────────────────
+
+_DYNAMIC_CONFIGS = {
+    "talk_followup": (
+        """You are a skilled facilitator for emotional conversation circles.
+Generate exactly ONE open-ended discussion question about the emotion "{emotion}".
+Context: {context}
+The question should invite personal reflection, not yes/no answers.
+Write in {lang}. Output ONLY the question, no preamble.""",
+        'What is one moment this week when you felt "{emotion}"? What was happening around you?'
+    ),
+    "checkin_reflection": (
+        """You are a compassionate emotional coach.
+The person has identified these needs today: {needs}
+Write a warm, personal reflection of 2-3 sentences that:
+1. Acknowledges what they're seeking without judgment
+2. Notes any inner tension if needs feel contradictory
+3. Offers one small, concrete suggestion for today
+Write in {lang}. Be warm and specific, not clinical.""",
+        "You're carrying several needs today. That awareness itself is meaningful — noticing what we need is the first step toward meeting it."
+    ),
+    "story_starter": (
+        """You are a creative writing facilitator.
+Write ONLY the opening 1-2 sentences of a story that weaves together these emotions: {emotions}
+The opening should set a scene and emotionally draw the reader in.
+Write in {lang}. Output ONLY the story opening, nothing else.""",
+        "She didn't know why, standing at the kitchen window, she felt all three at once — but she did."
+    ),
+    "story_feedback": (
+        """You are a compassionate creative writing coach.
+The person wrote a short story using these emotion cards: {emotions}
+Respond with 2-3 warm sentences that:
+- Name which emotions you felt in the story
+- Point to one moment of emotional truth
+- Close with one gentle question that invites them deeper
+Write in {lang}.""",
+        "There's real emotional honesty in what you wrote. What surprised you most while writing?"
+    ),
+    "journal_question": (
+        """You are a compassionate emotional intelligence guide.
+The person's recent journal emotions include: {emotions}
+Generate ONE specific, personal follow-up question that:
+- References a pattern you notice in these emotions
+- Invites reflection without judgment
+- Could unlock deeper self-understanding
+Write in {lang}. Output ONLY the question.""",
+        "What has been the common thread in the moments when you felt this way?"
+    ),
+}
+
+
+@router.post("/dynamic-prompt", response_model=DynamicPromptResponse)
+async def dynamic_prompt(payload: DynamicPromptRequest):
+    """
+    Generates contextual AI text for multiple moments in the app:
+    talk_followup, checkin_reflection, story_starter, story_feedback, journal_question.
+
+    LEARNING NOTE — one endpoint, multiple behaviors via a 'type' field.
+    This avoids endpoint explosion while keeping prompts specialized.
+    Each type has its own system prompt template and fallback text.
+    """
+    if payload.type not in _DYNAMIC_CONFIGS:
+        raise HTTPException(status_code=400, detail=f"Unknown type: {payload.type}. Use: {list(_DYNAMIC_CONFIGS)}")
+
+    system_template, fallback = _DYNAMIC_CONFIGS[payload.type]
+    response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")
+
+    # Format template vars
+    system_prompt = system_template.format(
+        emotion=", ".join(payload.emotion_names) if payload.emotion_names else "this emotion",
+        emotions=", ".join(payload.emotion_names) if payload.emotion_names else "these emotions",
+        needs=", ".join(payload.needs) if payload.needs else "various needs",
+        context=payload.context or "general conversation",
+        lang=response_lang,
+    )
+
+    # Build user message
+    if payload.type == "story_feedback" and payload.user_text:
+        user_msg = f"Story: {payload.user_text}"
+    elif payload.type == "journal_question" and payload.emotion_names:
+        user_msg = f"Recent emotions: {', '.join(payload.emotion_names)}"
+    elif payload.type == "checkin_reflection" and payload.needs:
+        user_msg = f"My needs today: {', '.join(payload.needs)}"
+    else:
+        user_msg = f"Emotions: {', '.join(payload.emotion_names)}" if payload.emotion_names else "Please generate."
+
+    if not settings.openrouter_api_key:
+        return DynamicPromptResponse(text=fallback)
+
+    try:
+        text = await call_llm(system_prompt, user_msg, max_tokens=300)
+        return DynamicPromptResponse(text=text)
+    except Exception:
+        return DynamicPromptResponse(text=fallback)
 
 
 @router.get("/models")

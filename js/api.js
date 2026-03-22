@@ -203,6 +203,51 @@ const GefuehleAPI = (function () {
     container.style.display = '';
   }
 
+  // ── Ask (RAG Q&A) ─────────────────────────────────────────────────────────
+
+  async function streamAsk({ question, lang }, onChunk) {
+    if (!(await checkBackend())) return false;
+    try {
+      const res = await fetch(`${BASE_URL}/ai/ask/stream`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, lang }),
+        signal: AbortSignal.timeout(30000),
+      });
+      if (!res.ok) return false;
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const chunk = line.slice(6);
+            if (chunk !== '[DONE]' && chunk !== '[ERROR]') onChunk(chunk);
+          }
+        }
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // ── Dynamic Prompt ────────────────────────────────────────────────────────
+
+  async function dynamicPrompt({ type, emotion_ids = [], emotion_names = [], needs = [], context = '', user_text = '', lang }) {
+    if (!(await checkBackend())) return null;
+    return apiFetch('/ai/dynamic-prompt', {
+      method: 'POST',
+      body: JSON.stringify({ type, emotion_ids, emotion_names, needs, context, user_text, lang }),
+    }).catch(() => null);
+  }
+
   // ── Share an emotion card ─────────────────────────────────────────────────
 
   async function shareEmotion({ emotionId, lang1, lang2 }) {
@@ -259,6 +304,8 @@ const GefuehleAPI = (function () {
     getStats,
     culturalBridge,
     streamCulturalBridge,
+    streamAsk,
+    dynamicPrompt,
     renderStatsWidget,
     shareEmotion,
     checkBackend,

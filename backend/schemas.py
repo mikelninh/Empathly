@@ -104,3 +104,37 @@ class JournalAnalysisResponse(BaseModel):
     insight: str
     patterns: list[str]
     suggestion: str
+    follow_up_question: str = ""
+
+
+# ── Ask (RAG Q&A) ──────────────────────────────────────────────────────────────
+
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, description="The user's question")
+    lang: str = "de"
+
+
+class AskResponse(BaseModel):
+    answer: str
+
+
+# ── Dynamic Prompt ─────────────────────────────────────────────────────────────
+# One endpoint for multiple AI-assisted moments in the app:
+#   talk_followup     — deeper discussion question for an emotion
+#   checkin_reflection — personal reflection after selecting needs
+#   story_starter     — opening sentence for a story using 3 emotions
+#   story_feedback    — feedback on a user-written story
+#   journal_question  — specific follow-up question based on recent journal emotions
+
+class DynamicPromptRequest(BaseModel):
+    type: str = Field(..., description="talk_followup | checkin_reflection | story_starter | story_feedback | journal_question")
+    emotion_ids: list[str] = []
+    emotion_names: list[str] = []
+    needs: list[str] = []
+    context: str = ""       # e.g. "family", "therapy", "solo"
+    user_text: str = ""     # for story_feedback: the user's written story
+    lang: str = "de"
+
+
+class DynamicPromptResponse(BaseModel):
+    text: str

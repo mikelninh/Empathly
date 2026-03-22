@@ -94,6 +94,7 @@
     dom.passOverlay = $('#pass-overlay');
     dom.journalMode = $('.journal-mode');
     dom.learnMode = $('.learn-mode');
+    dom.askMode = $('.ask-mode');
     dom.settingsBtn = $('#btn-settings');
     // Landing & navigation
     dom.landingScreen = $('#landing-screen');
@@ -562,16 +563,18 @@
     const isWheel = state.mode === 'wheel';
     const isJournal = state.mode === 'journal';
     const isLearn = state.mode === 'learn';
+    const isAsk = state.mode === 'ask';
 
     dom.board.style.display = isClassic ? '' : 'none';
     dom.statsBar.style.display = isClassic ? '' : 'none';
-    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn) ? 'none' : '';
+    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk) ? 'none' : '';
     dom.talkMode.classList.toggle('active', isTalk);
     dom.storyMode.classList.toggle('active', isStory);
     dom.checkinMode.classList.toggle('active', isCheckin);
     dom.wheelMode.classList.toggle('active', isWheel);
     dom.journalMode.classList.toggle('active', isJournal);
     if (dom.learnMode) dom.learnMode.classList.toggle('active', isLearn);
+    if (dom.askMode) dom.askMode.classList.toggle('active', isAsk);
     dom.turnIndicator.classList.remove('active');
     dom.playerSetup.classList.remove('active');
 
@@ -590,6 +593,7 @@
     if (isWheel) initWheelMode();
     if (isJournal) initJournalMode();
     if (isLearn && window.initLearnMode) window.initLearnMode();
+    if (isAsk) initAskMode();
   }
 
   function startClassicGame() {
@@ -856,28 +860,56 @@
     const container = dom.talkMode;
     const deck = shuffle(getEmotions());
     let index = 0;
+    let currentEmo = null;
     const cardDisplay = $('.talk-card-display', container);
     const prompt = $('.talk-prompt', container);
     const drawBtn = $('.draw-btn', container);
+    const deepBtn = $('.btn-deep-question', container);
+    const deepResult = $('.talk-deep-result', container);
     const intro = $('.talk-intro', container);
     intro.textContent = t('talkIntro');
     drawBtn.textContent = t('drawCard');
 
     function show() {
-      const emo = deck[index % deck.length];
-      const color = getCategoryColor(emo.category);
+      currentEmo = deck[index % deck.length];
+      const color = getCategoryColor(currentEmo.category);
       cardDisplay.innerHTML = `
-        <span class="card-emoji">${emo.emoji}</span>
-        <span class="card-word" style="color:${color}">${emo[state.lang1]} ${makeSpeakButton(emo[state.lang1], state.lang1)}</span>
-        <span class="card-word-secondary">${emo[state.lang2]} ${makeSpeakButton(emo[state.lang2], state.lang2)}</span>`;
+        <span class="card-emoji">${currentEmo.emoji}</span>
+        <span class="card-word" style="color:${color}">${currentEmo[state.lang1]} ${makeSpeakButton(currentEmo[state.lang1], state.lang1)}</span>
+        <span class="card-word-secondary">${currentEmo[state.lang2]} ${makeSpeakButton(currentEmo[state.lang2], state.lang2)}</span>`;
       cardDisplay.style.borderTop = `4px solid ${color}`;
-      prompt.textContent = emo.prompt[state.uiLang] || emo.prompt.de;
+      prompt.textContent = currentEmo.prompt[state.uiLang] || currentEmo.prompt.de;
+      // Reset deep question on new card
+      deepResult.textContent = '';
+      deepResult.className = 'talk-deep-result';
+      if (deepBtn) { deepBtn.disabled = false; deepBtn.textContent = 'Tiefere Frage 🤖'; }
     }
+
     drawBtn.onclick = () => {
       index++;
       cardDisplay.style.transform = 'scale(.9) rotateZ(-3deg)';
       setTimeout(() => { show(); cardDisplay.style.transform = ''; }, 200);
     };
+
+    if (deepBtn) {
+      deepBtn.addEventListener('click', async () => {
+        if (!currentEmo || typeof GefuehleAPI === 'undefined') return;
+        deepBtn.disabled = true;
+        deepBtn.innerHTML = '<span class="ai-spinner"></span>';
+        const res = await GefuehleAPI.dynamicPrompt({
+          type: 'talk_followup',
+          emotion_names: [currentEmo[state.uiLang] || currentEmo.de, currentEmo.en],
+          context: 'open conversation',
+          lang: state.uiLang,
+        });
+        deepBtn.textContent = 'Tiefere Frage 🤖';
+        deepBtn.disabled = false;
+        if (res?.text) {
+          deepResult.textContent = res.text;
+          deepResult.className = 'talk-deep-result visible';
+        }
+      });
+    }
 
     container.addEventListener('click', (e) => {
       const btn = e.target.closest('.speak-btn');
@@ -898,10 +930,12 @@
     intro.textContent = t('storyIntro');
     drawBtn.textContent = t('newCards');
 
+    let currentThree = [];
+
     function draw() {
-      const three = shuffle(getEmotions()).slice(0, 3);
+      currentThree = shuffle(getEmotions()).slice(0, 3);
       cardsEl.innerHTML = '';
-      three.forEach(emo => {
+      currentThree.forEach(emo => {
         const color = getCategoryColor(emo.category);
         const card = document.createElement('div');
         card.className = 'story-card';
@@ -911,6 +945,68 @@
           <span class="card-word" style="color:${color}">${emo[state.lang1]} ${makeSpeakButton(emo[state.lang1], state.lang1)}</span>
           <span class="card-word" style="color:${color};opacity:.7;font-weight:400">${emo[state.lang2]}</span>`;
         cardsEl.appendChild(card);
+      });
+      // Reset AI panel on new draw
+      const panel = container.querySelector('.story-ai-panel');
+      if (panel) panel.remove();
+      renderStoryAiPanel();
+    }
+
+    function renderStoryAiPanel() {
+      const panel = document.createElement('div');
+      panel.className = 'story-ai-panel';
+      panel.innerHTML = `
+        <button class="btn-story-starter">KI-Anfang 🤖</button>
+        <div class="story-ai-starter"></div>
+        <div class="story-write-area" style="display:none">
+          <textarea class="story-textarea" placeholder="Schreib weiter..."></textarea>
+          <button class="btn-story-feedback">Geschichte reflektieren 🤖</button>
+          <div class="story-feedback-result"></div>
+        </div>`;
+      container.appendChild(panel);
+
+      panel.querySelector('.btn-story-starter').addEventListener('click', async () => {
+        if (typeof GefuehleAPI === 'undefined') return;
+        const btn = panel.querySelector('.btn-story-starter');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ai-spinner"></span>';
+        const names = currentThree.map(e => e[state.uiLang] || e.de);
+        const res = await GefuehleAPI.dynamicPrompt({
+          type: 'story_starter',
+          emotion_names: names,
+          lang: state.uiLang,
+        });
+        btn.textContent = 'KI-Anfang 🤖';
+        btn.disabled = false;
+        if (res?.text) {
+          const starterEl = panel.querySelector('.story-ai-starter');
+          starterEl.textContent = res.text;
+          starterEl.classList.add('visible');
+          panel.querySelector('.story-write-area').style.display = '';
+        }
+      });
+
+      panel.querySelector('.btn-story-feedback').addEventListener('click', async () => {
+        if (typeof GefuehleAPI === 'undefined') return;
+        const storyText = panel.querySelector('.story-textarea').value.trim();
+        if (!storyText) return;
+        const btn = panel.querySelector('.btn-story-feedback');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="ai-spinner"></span>';
+        const names = currentThree.map(e => e[state.uiLang] || e.de);
+        const res = await GefuehleAPI.dynamicPrompt({
+          type: 'story_feedback',
+          emotion_names: names,
+          user_text: storyText,
+          lang: state.uiLang,
+        });
+        btn.textContent = 'Geschichte reflektieren 🤖';
+        btn.disabled = false;
+        if (res?.text) {
+          const fbEl = panel.querySelector('.story-feedback-result');
+          fbEl.textContent = res.text;
+          fbEl.classList.add('visible');
+        }
       });
     }
 
@@ -992,10 +1088,42 @@
     if (selected.length > 0) {
       summary.style.display = '';
       const lang = state.uiLang;
-      list.innerHTML = selected.map(needId => {
+      const needNames = selected.map(needId => {
         const need = NEEDS.find(n => n.id === needId);
-        return `<span class="chosen-tag">${need.emoji} ${need[lang] || need.de}</span>`;
+        return need ? (need[lang] || need.de) : needId;
+      });
+      list.innerHTML = needNames.map((name, i) => {
+        const need = NEEDS.find(n => n.id === selected[i]);
+        return `<span class="chosen-tag">${need ? need.emoji : ''} ${name}</span>`;
       }).join('');
+
+      // Add AI reflection button if not already present
+      if (!summary.querySelector('.btn-checkin-reflection')) {
+        const reflBtn = document.createElement('button');
+        reflBtn.className = 'btn-checkin-reflection';
+        reflBtn.textContent = 'KI-Reflexion 🤖';
+        const reflResult = document.createElement('div');
+        reflResult.className = 'checkin-reflection-box';
+        summary.appendChild(reflBtn);
+        summary.appendChild(reflResult);
+
+        reflBtn.addEventListener('click', async () => {
+          if (typeof GefuehleAPI === 'undefined') return;
+          reflBtn.disabled = true;
+          reflBtn.innerHTML = '<span class="ai-spinner"></span>';
+          const res = await GefuehleAPI.dynamicPrompt({
+            type: 'checkin_reflection',
+            needs: needNames,
+            lang: state.uiLang,
+          });
+          reflBtn.textContent = 'KI-Reflexion 🤖';
+          reflBtn.disabled = false;
+          if (res?.text) {
+            reflResult.textContent = res.text;
+            reflResult.classList.add('visible');
+          }
+        });
+      }
     } else {
       summary.style.display = 'none';
     }
@@ -1453,9 +1581,42 @@
         patternBtn.disabled = true;
         patternBtn.innerHTML = `<span class="ai-spinner"></span>${t('aiLoading')}`;
         try {
-          const allEntries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
-          const insight = await GefuehleAI.generateJournalInsight(allEntries, state.uiLang);
-          resultEl.innerHTML = `<div class="journal-ai-card"><h4>🤖 ${t('journalPattern')}</h4><p>${insight}</p></div>`;
+          // Try backend analysis first (richer: patterns + suggestion + follow-up question)
+          let insight = '';
+          let followUp = '';
+          if (typeof GefuehleAPI !== 'undefined') {
+            const res = await GefuehleAPI.apiFetch?.('/ai/journal-analysis', {
+              method: 'POST',
+              body: JSON.stringify({ user_id: GefuehleAPI.getUserId(), lang: state.uiLang }),
+            }).catch(() => null);
+            if (res?.insight) {
+              insight = res.insight;
+              if (res.patterns?.length) insight += '\n\n' + res.patterns.map(p => `• ${p}`).join('\n');
+              if (res.suggestion) insight += '\n\n' + res.suggestion;
+              followUp = res.follow_up_question || '';
+            }
+          }
+          // Fallback to local AI
+          if (!insight && typeof GefuehleAI !== 'undefined') {
+            const allEntries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+            insight = await GefuehleAI.generateJournalInsight(allEntries, state.uiLang);
+          }
+          // Fallback: local dynamic prompt for follow-up question
+          if (!followUp && typeof GefuehleAPI !== 'undefined') {
+            const allEntries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+            const recentEmotions = [...new Set(allEntries.slice(-5).flatMap(e => e.emotions || []))]
+              .slice(0, 5)
+              .map(id => { const em = EMOTIONS.find(e => e.id === id); return em ? (em[state.uiLang] || em.de) : id; });
+            if (recentEmotions.length) {
+              const fq = await GefuehleAPI.dynamicPrompt({ type: 'journal_question', emotion_names: recentEmotions, lang: state.uiLang });
+              followUp = fq?.text || '';
+            }
+          }
+          resultEl.innerHTML = `<div class="journal-ai-card">
+            <h4>🤖 ${t('journalPattern')}</h4>
+            <p>${insight.replace(/\n/g, '<br>')}</p>
+            ${followUp ? `<div class="journal-follow-up"><span class="follow-up-label">Frage für dich</span><p>${followUp}</p></div>` : ''}
+          </div>`;
           patternBtn.style.display = 'none';
         } catch (err) {
           resultEl.innerHTML = `<div class="ai-setup-hint">Error: ${err.message}</div>`;
@@ -1464,6 +1625,103 @@
         }
       });
     }
+  }
+
+  /* ---- Ask Mode (RAG Q&A chat) ---- */
+  function initAskMode() {
+    const container = dom.askMode;
+    const lang = state.uiLang;
+
+    const EXAMPLES = {
+      de: [
+        'Was ist der Unterschied zwischen Scham und Schuld?',
+        'Warum hat Tamil so viele Wörter für Liebe?',
+        'Was bedeutet Philotimo auf Griechisch?',
+        'Was ist Weltschmerz?',
+        'Wie fühlt sich Einsamkeit im Körper an?',
+      ],
+      vi: [
+        'Sự khác biệt giữa thương và yêu là gì?',
+        'Alexithymia có nghĩa là gì?',
+        'Tại sao tiếng Đức có từ Sehnsucht?',
+        'Tự hào khác gì với kiêu ngạo?',
+      ],
+      en: [
+        'What is the difference between shame and guilt?',
+        'Why does Vietnamese have multiple words for love?',
+        'What does Philotimo mean in Greek?',
+        'What is Weltschmerz?',
+        'How does loneliness feel in the body?',
+      ],
+    };
+
+    const introText = { de: 'Stell eine Frage über Gefühle, Sprache oder Kulturen — ich antworte mit Wissen aus der App.', vi: 'Đặt câu hỏi về cảm xúc, ngôn ngữ hoặc văn hóa.', en: 'Ask about emotions, language, or cultures — I answer from the app\'s knowledge base.' };
+    const placeholderText = { de: 'Deine Frage...', vi: 'Câu hỏi của bạn...', en: 'Your question...' };
+    const chips = EXAMPLES[lang] || EXAMPLES.de;
+
+    container.innerHTML = `
+      <p class="ask-intro">${introText[lang] || introText.de}</p>
+      <div class="ask-examples">${chips.map(q => `<button class="ask-example-chip">${q}</button>`).join('')}</div>
+      <div class="ask-chat" id="ask-chat"></div>
+      <div class="ask-input-row">
+        <input class="ask-input" type="text" placeholder="${placeholderText[lang] || placeholderText.de}" maxlength="300">
+        <button class="ask-send-btn" aria-label="Senden">→</button>
+      </div>`;
+
+    const chat = container.querySelector('#ask-chat');
+    const input = container.querySelector('.ask-input');
+    const sendBtn = container.querySelector('.ask-send-btn');
+
+    function addMsg(role, text) {
+      const div = document.createElement('div');
+      div.className = `ask-msg ask-msg-${role}`;
+      div.innerHTML = role === 'ai'
+        ? `<span class="ask-msg-icon">💛</span><span class="ask-msg-text">${text}</span>`
+        : `<span class="ask-msg-text">${text}</span>`;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+      return div;
+    }
+
+    async function send() {
+      const q = input.value.trim();
+      if (!q) return;
+      input.value = '';
+      sendBtn.disabled = true;
+      addMsg('user', q);
+
+      const aiDiv = addMsg('ai', '<span class="ask-dots"><span></span><span></span><span></span></span>');
+      const textEl = aiDiv.querySelector('.ask-msg-text');
+
+      if (typeof GefuehleAPI === 'undefined') {
+        textEl.textContent = 'Backend nicht erreichbar. cd backend && uvicorn main:app --reload';
+        sendBtn.disabled = false;
+        return;
+      }
+
+      let fullText = '';
+      const ok = await GefuehleAPI.streamAsk({ question: q, lang }, (chunk) => {
+        if (!fullText) textEl.textContent = '';
+        fullText += chunk;
+        textEl.textContent = fullText;
+        chat.scrollTop = chat.scrollHeight;
+      });
+
+      if (!ok) {
+        textEl.textContent = lang === 'de'
+          ? 'Backend nicht erreichbar. Starte: cd backend && uvicorn main:app --reload'
+          : 'Backend unavailable. Run: cd backend && uvicorn main:app --reload';
+      }
+
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+    container.querySelectorAll('.ask-example-chip').forEach(chip => {
+      chip.addEventListener('click', () => { input.value = chip.textContent; send(); });
+    });
   }
 
   /* ---- Share ---- */

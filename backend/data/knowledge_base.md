@@ -249,7 +249,209 @@ Shame (Scham/xấu hổ/عار) is one of the most culturally variable emotions.
 
 ---
 
-## CHUNK: fear | angst | sợ hãi | korku | φόβος | tamil | existential
+## CHUNK: loneliness | einsamkeit | cô đơn | isolation | connection | belonging
+
+### Loneliness — The Most Undernamed Emotion
+
+Loneliness is one of the most widespread but least spoken emotions. It is not the same as being alone (solitude).
+
+**German**
+- **Einsamkeit** — loneliness. Being alone in a painful sense. Distinct from "Alleinsein" (being alone by choice).
+- **Verlassenheit** — feeling abandoned, left behind. More acute than loneliness — implies someone left.
+- **Verbundenheit** — connectedness, the opposite of loneliness. Feeling bonded to someone or a group.
+- **Einsamkeit in der Menge** — "loneliness in the crowd" — feeling invisible while surrounded by people. A distinctly modern experience.
+- CULTURAL NOTE: Germany has a long philosophical tradition around solitude (Rilke: "It is good to be solitary, for solitude is difficult"). German culture makes a strong distinction between chosen solitude (enriching) and imposed loneliness (painful).
+
+**Vietnamese**
+- **Cô đơn** — lonely/alone. Both the state of being alone and the feeling of loneliness.
+- **Cô độc** — solitary, isolated — more severe or literary form
+- **Trống vắng** — empty, hollow — the feeling left behind when someone is absent
+- **Nhớ** — missing someone; loneliness is often expressed as missing a specific person rather than abstract aloneness
+- CULTURAL NOTE: In Vietnamese collectivist culture, loneliness is rarely romanticized. To be alone is often seen as a problem to be solved by family or community. The concept of "thiếu thốn tình cảm" (lacking emotional warmth) describes the loneliness of not being loved or cared for.
+
+**Greek**
+- **Μοναξιά (monaxia)** — loneliness
+- **Ερημιά (erimia)** — solitude/desolation (literally "desert" — the feeling of vast emptiness)
+- CULTURAL NOTE: Greek culture strongly values parea (παρέα — good company, group of friends sharing time together). Loneliness is considered almost a social failure — you should always have your parea. This makes it harder to admit.
+
+---
+
+## CHUNK: guilt | schuld | shame | scham | difference | unterschied | vietnamese | arabic
+
+### Guilt vs Shame — The Most Important Emotional Distinction
+
+The difference between guilt and shame is one of the most important concepts in emotional literacy. They feel similar but work completely differently.
+
+**The Core Distinction**
+- **Guilt** (Schuld): "I did something bad." — Behavior-focused. The self is intact; the action was wrong. Guilt motivates repair: apologize, make amends, change behavior.
+- **Shame** (Scham): "I am bad." — Identity-focused. The whole self feels defective, exposed, worthless. Shame motivates hiding, not repair.
+
+**German**
+- **Schuld** — guilt; also "debt" and "fault." German collapses all three into one word, which is philosophically rich.
+- **Scham** — shame. The desire to disappear, to not be seen.
+- **Reue** — remorse, regret — a form of guilt mixed with grief for what was done
+- **Schuldgefühl** — feeling of guilt (compound: Schuld + Gefühl)
+- CULTURAL NOTE: German psychological culture increasingly distinguishes healthy guilt (motivates growth) from toxic shame (damages self-worth). The Lutheran tradition historically blended both.
+
+**Vietnamese**
+- **Tội lỗi** — guilt, sin. Religious/moral weight.
+- **Xấu hổ** — shame. Literally "ugly-afraid" — the social exposure of being seen as wrong.
+- **Hối hận** — remorse, regret for past actions
+- **Mặc cảm** — inferiority complex, chronic shame — feeling fundamentally less-than
+- CULTURAL NOTE: In Vietnamese collectivist culture, both guilt and shame are amplified by their impact on the family group. "Làm mất mặt gia đình" (making the family lose face) is the ultimate shame — not just personal. This creates a specific form of family-shame that individual therapy often misses.
+
+**Arabic**
+- **ذنب (dhanb)** — guilt, sin
+- **خزي (khizy)** — shame, disgrace
+- **حياء (haya)** — modesty/shyness as virtue — a positive form of shame-awareness
+- CULTURAL NOTE: In Islamic ethics, "haya" (modesty) is considered a pillar of good character — a sensitivity to how one appears before God and community. This gives shame a positive valence that Western psychology often lacks.
+
+**PRACTICAL NOTE**: Therapists and educators worldwide now teach this distinction. When someone says "I feel so ashamed" — they usually need compassion and reconnection, not problem-solving. When someone says "I feel guilty" — they often need help with repair and action.
+
+---
+
+## CHUNK: pride | stolz | jealousy | eifersucht | envy | neid | complex emotions
+
+### Pride, Jealousy, and Envy — The Complex Emotions
+
+These emotions are often confused or avoided, but are deeply important for honest emotional literacy.
+
+**PRIDE (Stolz)**
+
+**German**
+- **Stolz** — pride. Can be healthy (achievement, identity) or problematic (arrogance).
+- **Selbstwertgefühl** — self-worth, self-esteem — the stable version of pride as a baseline
+- **Hochmut** — arrogance, hubris — pride that looks down on others
+- **Bescheidenheit** — modesty, humility — the cultural counter to excessive pride
+
+**Vietnamese**
+- **Tự hào** — pride, especially collective/cultural pride ("tự hào là người Việt Nam" — proud to be Vietnamese)
+- **Kiêu ngạo** — arrogance, pride that becomes problematic
+- CULTURAL NOTE: Vietnamese culture expresses pride primarily through the collective — pride in family, nation, heritage. Individual pride (boasting about oneself) is viewed as arrogance. "Con ngoan của cha mẹ" (a good child to the parents) is a key Vietnamese pride identity.
+
+**Greek**
+- **Υπερηφάνεια (yperifania)** — pride (positive)
+- **Αλαζονεία (alazoneia)** — arrogance, hubris
+- **Φιλότιμο (philotimo)** — the Greek concept connecting pride, honor, and duty — acting with dignity
+
+**JEALOUSY vs ENVY**
+
+These are often confused but are distinct:
+- **Jealousy** (Eifersucht): Fear of LOSING something you have (a partner, a relationship, a position). "I fear you'll take what's mine."
+- **Envy** (Neid): Wanting what SOMEONE ELSE has. "I want what you have."
+
+**German**
+- **Eifersucht** — jealousy (romantic, competitive). Literally "eagerness-addiction."
+- **Neid** — envy. Wanting what others have.
+- **Missgunst** — begrudging envy — not just wanting what they have, but not wanting them to have it either
+
+**Vietnamese**
+- **Ghen** — jealousy (especially romantic). "Ghen tuông" — the full expression of romantic jealousy.
+- **Đố kỵ** — envy
+- CULTURAL NOTE: Vietnamese culture has a concept "ghen ăn tức ở" — jealousy about food and living (literal), meaning petty envy about material things. It's used semi-humorously but names something real.
+
+---
+
+## CHUNK: hope | hoffnung | exhaustion | erschöpfung | overwhelm | burnout | resilience
+
+### Hope, Exhaustion, and the Space Between
+
+**HOPE (Hoffnung)**
+
+**German**
+- **Hoffnung** — hope. Active, expectant. "Die Hoffnung stirbt zuletzt" — hope dies last (German proverb).
+- **Zuversicht** — confidence, optimism. Stronger than hope — a sense that things will be okay.
+- **Sehnsucht** — longing with hope embedded. Not just missing something, but hoping it could be.
+- **Erwartung** — expectation, anticipation
+
+**Vietnamese**
+- **Hi vọng** — hope
+- **Hy vọng** — alternative spelling, same meaning. To cherish hope.
+- **Mong muốn** — to wish/desire — hope with an active wanting
+- **Tin tưởng** — trust/faith — hope grounded in trust in someone
+- CULTURAL NOTE: Vietnamese culture grounds hope strongly in family and collective effort. "Không có gì là không thể" (nothing is impossible) is a common expression of active hope. Vietnamese refugee narratives are saturated with hope-through-hardship.
+
+**EXHAUSTION / OVERWHELM**
+
+**German**
+- **Erschöpfung** — exhaustion, depletion. Physical and emotional emptiness.
+- **Überwältigung** — overwhelm. Being "overpowered." Too much to process.
+- **Burnout** — adopted from English; becoming more culturally recognized
+- **Überforderung** — being overtaxed, asked to do more than you can handle
+- CULTURAL NOTE: Germany has a complex relationship with exhaustion. The culture values hard work (Fleiß) but increasingly recognizes mental health needs. "Burnout" was adopted into German as a medical term decades before it gained acceptance in many other countries.
+
+**Vietnamese**
+- **Kiệt sức** — exhausted, drained (kiet = depleted, suc = strength/energy)
+- **Mệt mỏi** — tired, weary — both physical and emotional tiredness
+- **Áp lực** — pressure, stress — the feeling of being pressed down
+- **Căng thẳng** — tension, stress
+- CULTURAL NOTE: Vietnamese culture has a tradition of "chịu đựng" (endurance, bearing difficulty without complaint). This means exhaustion is often hidden or minimized — expressing it feels like weakness or burdening others.
+
+**RESILIENCE VOCABULARY**
+- German: **Resilienz**, **Widerstandskraft** (resistance-strength), **Stärke**
+- Vietnamese: **Kiên cường** (resilient, steadfast), **Vượt qua** (to overcome), **Mạnh mẽ** (strong)
+
+---
+
+## CHUNK: vietnamese culture | collectivism | family | harmony | đạo hiếu | filial piety | relationships
+
+### Vietnamese Emotional Culture — Deep Structure
+
+Understanding Vietnamese emotional life requires understanding its collectivist foundation.
+
+**Core Cultural Values**
+- **Đạo hiếu (filial piety)** — the most fundamental Vietnamese value. Respect, care, and obligation toward parents and ancestors. Children are not just loved — they carry the family's future and honor. This shapes every emotional relationship.
+- **Thể diện / Mặt mũi (face)** — social reputation, honor. Not just avoiding embarrassment but actively maintaining the family's dignity in community eyes. Much emotion is processed through "what will people say."
+- **Hòa thuận (harmony)** — the value of peaceful, conflict-free relationships. Strong emotions (anger, conflict) are often suppressed to maintain harmony. Indirect communication is the norm.
+- **Tình nghĩa (relational loyalty)** — the bond between people built through shared history, kindness, and obligation. Friendship and love in Vietnamese culture are not just feelings — they are commitments built over time.
+
+**How Vietnamese Emotional Expression Differs from German**
+- Germans tend toward directness (sagen was man denkt — say what you think). Vietnamese culture uses indirection, suggestion, and context.
+- Vietnamese emotional vocabulary is more relational — emotions are often named in terms of WHO they're felt toward ("nhớ mẹ" — miss mom, not abstract "I miss someone").
+- Public emotional expression: Germans more comfortable with direct emotional statements. Vietnamese express strong emotions primarily within trusted relationships.
+- Aging and care: Vietnamese culture embeds care of elderly parents as a moral obligation (đạo hiếu), not a choice — this creates specific emotional dynamics around duty, obligation, and love.
+
+**Key Untranslatable Concepts**
+- **Tình (tình cảm)** — emotional warmth, feeling, affection. The glue of Vietnamese relationships.
+- **Duyên** — fate, destiny — the invisible thread connecting people. "Có duyên mới gặp" (only those with fate/duyên meet). Used for romantic connections and deep friendships.
+- **Ơn** — grace received, favor that creates moral debt. When someone helps you deeply, you "mang ơn" (carry their grace).
+
+---
+
+## CHUNK: body | somatic | physiological | gut feeling | körpergefühl | emotions physical
+
+### Emotions and the Body — Somatic Intelligence
+
+Emotions are not just in the mind. Research (and ancient wisdom) shows they live in the body.
+
+**Key Concepts**
+
+**German**
+- **Körpergefühl** — body awareness, the felt sense of one's own physical state
+- **Bauchgefühl** — gut feeling (Bauch = stomach). Intuition felt as a physical sensation.
+- **Leibgefühl** — the felt sense of being in a body (philosophical/phenomenological term)
+- **Herzklopfen** — heart pounding (Herz = heart, klopfen = knock/pound) — the physical sensation of excitement or fear
+- **Gänsehaut** — goosebumps (Gänsehaut = goose skin) — the body's response to awe, music, cold, or fear
+
+**Vietnamese**
+- **Nao lòng** — a heart-stirring, gut-dropping feeling (lòng = heart/gut center)
+- **Thắt lòng** — heart constriction — physical tightness in chest from grief or worry
+- **Rùng mình** — shudder, physical full-body sensation from fear or awe
+- **Bồn chồn** — restlessness, a physical agitation — can't sit still because of anxiety or anticipation
+
+**The Body Map of Emotions (Research)**
+Neuroscientist Lauri Nummenmaa mapped where emotions are felt in the body (2014):
+- **Anger**: upper chest, arms (heat, pressure — activation for fighting)
+- **Fear**: chest, stomach, legs (alert, ready to flee — "stomach drops")
+- **Sadness**: chest, throat, eyes (heaviness, constriction)
+- **Love**: whole body, especially chest (warmth and expansion)
+- **Disgust**: throat, stomach (nausea, rejection)
+- **Joy**: whole body, especially face (lightness, activation)
+
+**Why This Matters for Emotional Literacy**
+Many people first notice emotions as body sensations before having words. Teaching somatic awareness — "where do you feel that in your body?" — is often more accessible than abstract emotion naming. This is especially true across language barriers.
+
+**CULTURAL NOTE**: Asian somatic traditions (Chinese medicine, Ayurveda, Vietnamese folk medicine) have long mapped emotions to organs — grief in the lungs, fear in the kidneys, anger in the liver. Modern neuroscience is finding biological correlates for these ancient mappings. | sợ hãi | korku | φόβος | tamil | existential
 
 ### Fear and Anxiety Across Cultures
 
