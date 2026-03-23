@@ -40,15 +40,15 @@ const GefuehleAPI = (function () {
   // ── Health check (cached) ─────────────────────────────────────────────────
 
   async function checkBackend() {
-    if (_backendAvailable !== null) return _backendAvailable;
+    if (_backendAvailable === true) return true; // only cache success; always re-check if previously failed
     try {
       const res = await fetch(`${BASE_URL}/health`, { signal: AbortSignal.timeout(2000) });
-      _backendAvailable = res.ok;
+      _backendAvailable = res.ok ? true : null;
     } catch {
-      _backendAvailable = false;
+      _backendAvailable = null;
     }
-    updateStatusIndicator(_backendAvailable);
-    return _backendAvailable;
+    updateStatusIndicator(_backendAvailable === true);
+    return _backendAvailable === true;
   }
 
   function updateStatusIndicator(online) {

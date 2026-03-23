@@ -17,7 +17,7 @@
   let state = {
     lang1: 'en',
     lang2: 'el',
-    uiLang: 'de',
+    uiLang: 'en',
     mode: 'classic',
     category: 'all',
     difficulty: 'medium',
@@ -781,7 +781,8 @@
           const text = await GefuehleAI.generateCultureInsight(
             section.dataset.emotionId,
             section.dataset.emotionName,
-            state.uiLang
+            state.lang1,
+            state.lang2
           );
           resultEl.innerHTML = `<div class="ai-insight-box">🤖 ${text}</div>`;
           aiBtn.style.display = 'none';

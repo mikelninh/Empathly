@@ -12,7 +12,7 @@ const GefuehleAI = (function () {
   const CACHE_PREFIX = 'gefuehle-ai-cache-';
 
   // Free models (cost $0 on OpenRouter) — available to ALL users
-  const DEFAULT_MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
+  const DEFAULT_MODEL = 'google/gemma-3-27b-it:free';
   const DEMO_API_KEY = ''; // Set a shared demo key here for zero-config experience
 
   const MODEL_OPTIONS = [
@@ -70,21 +70,20 @@ const GefuehleAI = (function () {
   }
 
   // ── Cached cultural insight ──
-  function getCultureCacheKey(emotionId, lang) {
-    return CACHE_PREFIX + 'culture-' + emotionId + '-' + lang;
+  function getCultureCacheKey(emotionId, lang1, lang2) {
+    return CACHE_PREFIX + 'culture-' + emotionId + '-' + lang1 + '-' + lang2;
   }
 
-  function getCachedCultureInsight(emotionId, lang) {
-    const key = getCultureCacheKey(emotionId, lang);
-    return localStorage.getItem(key);
+  function getCachedCultureInsight(emotionId, lang1, lang2) {
+    return localStorage.getItem(getCultureCacheKey(emotionId, lang1, lang2));
   }
 
-  function cacheCultureInsight(emotionId, lang, text) {
-    localStorage.setItem(getCultureCacheKey(emotionId, lang), text);
+  function cacheCultureInsight(emotionId, lang1, lang2, text) {
+    localStorage.setItem(getCultureCacheKey(emotionId, lang1, lang2), text);
   }
 
-  async function generateCultureInsight(emotionId, emotionName, lang) {
-    const cached = getCachedCultureInsight(emotionId, lang);
+  async function generateCultureInsight(emotionId, emotionName, lang1, lang2) {
+    const cached = getCachedCultureInsight(emotionId, lang1, lang2);
     if (cached) return cached;
 
     // Try backend RAG endpoint first (richer, knowledge-grounded response)
@@ -93,16 +92,16 @@ const GefuehleAI = (function () {
         const res = await GefuehleAPI.culturalBridge({
           emotion_id: emotionId,
           emotion_name: emotionName,
-          source_lang: 'de',
-          target_lang: lang === 'de' ? 'vi' : lang,
-          response_lang: lang,
+          source_lang: lang1,
+          target_lang: lang2,
+          response_lang: lang1,
         });
         if (res?.insight) {
           const vocabText = res.vocabulary?.length
             ? '\n\n' + res.vocabulary.map(v => `• ${v.word}: ${v.meaning}`).join('\n')
             : '';
           const result = res.insight + vocabText;
-          cacheCultureInsight(emotionId, lang, result);
+          cacheCultureInsight(emotionId, lang1, lang2, result);
           return result;
         }
       } catch (_) {}
@@ -114,11 +113,13 @@ const GefuehleAI = (function () {
       ar: 'Arabic', es: 'Spanish', fr: 'French', uk: 'Ukrainian',
       pl: 'Polish', el: 'Greek', ta: 'Tamil',
     };
-    const writeLang = langNames[lang] || 'English';
-    const prompt = `You are a cultural psychologist. In 2-3 sentences, explain how the emotion "${emotionName}" is experienced and expressed differently in German vs Vietnamese culture. Be specific, nuanced, and mention concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;
+    const writeLang = langNames[lang1] || 'English';
+    const srcName = langNames[lang1] || lang1;
+    const tgtName = langNames[lang2] || lang2;
+    const prompt = `You are a cultural psychologist. In 2-3 sentences, explain how the emotion "${emotionName}" is experienced and expressed differently in ${srcName} vs ${tgtName} culture. Be specific, nuanced, and mention concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;
 
     const result = await callOpenRouter(prompt);
-    cacheCultureInsight(emotionId, lang, result);
+    cacheCultureInsight(emotionId, lang1, lang2, result);
     return result;
   }
 
