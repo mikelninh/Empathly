@@ -15,8 +15,8 @@
 
   /* ---- State ---- */
   let state = {
-    lang1: 'de',
-    lang2: 'vi',
+    lang1: 'en',
+    lang2: 'el',
     uiLang: 'de',
     mode: 'classic',
     category: 'all',
@@ -757,9 +757,8 @@
       <div class="card-hint-card">
         <div class="hint-emoji">${emo.emoji}</div>
         <div class="hint-words">
-          <div class="hint-word-row"><span class="hint-flag">🇩🇪</span> <strong>${emo.de}</strong> ${makeSpeakButton(emo.de, 'de')}</div>
-          <div class="hint-word-row"><span class="hint-flag">🇻🇳</span> <strong>${emo.vi}</strong> ${makeSpeakButton(emo.vi, 'vi')}</div>
-          <div class="hint-word-row"><span class="hint-flag">🇬🇧</span> <strong>${emo.en}</strong> ${makeSpeakButton(emo.en, 'en')}</div>
+          <div class="hint-word-row"><span class="hint-flag">${LANGUAGES[state.lang1]?.flag}</span> <strong>${emo[state.lang1]}</strong> ${makeSpeakButton(emo[state.lang1], state.lang1)}</div>
+          <div class="hint-word-row"><span class="hint-flag">${LANGUAGES[state.lang2]?.flag}</span> <strong>${emo[state.lang2]}</strong> ${makeSpeakButton(emo[state.lang2], state.lang2)}</div>
         </div>
         <div class="hint-category">${catLabel}</div>
         <div class="hint-divider"></div>
