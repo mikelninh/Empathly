@@ -54,14 +54,12 @@ router = APIRouter(prefix="/ai", tags=["AI"])
 
 KNOWLEDGE_BASE_PATH = Path(__file__).parent.parent / "data" / "knowledge_base.md"
 
-# Free models tried in order if the primary is rate-limited
+# Fallback models tried in order if the primary is unavailable
 FREE_MODEL_FALLBACKS = [
-    "meta-llama/llama-3.3-70b-instruct:free",
+    "meta-llama/llama-3.3-70b-instruct",
     "google/gemma-3-27b-it:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
     "qwen/qwen3-next-80b-a3b-instruct:free",
-    "deepseek/deepseek-r1:free",
-    "microsoft/phi-4:free",
 ]
 
 LANGUAGE_NAMES = {
