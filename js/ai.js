@@ -16,21 +16,25 @@ const GefuehleAI = (function () {
   const DEMO_API_KEY = ''; // Set a shared demo key here for zero-config experience
 
   const MODEL_OPTIONS = [
-    // 🆓 Free models (no cost)
-    { value: 'meta-llama/llama-3.1-8b-instruct:free', label: '🆓 Llama 3.1 8B (kostenlos)', free: true },
-    { value: 'google/gemma-2-9b-it:free',              label: '🆓 Gemma 2 9B (kostenlos)',   free: true },
-    { value: 'qwen/qwen-2-7b-instruct:free',           label: '🆓 Qwen 2 7B (kostenlos)',    free: true },
-    { value: 'mistralai/mistral-7b-instruct:free',      label: '🆓 Mistral 7B (kostenlos)',   free: true },
-    // ⭐ Premium models (require paid key)
-    { value: 'anthropic/claude-sonnet-4-6',       label: '⭐ Claude Sonnet 4.6',  free: false },
-    { value: 'openai/gpt-4o-mini',                     label: '⭐ GPT-4o Mini',        free: false },
-    { value: 'google/gemini-flash-1.5',                 label: '⭐ Gemini Flash 1.5',   free: false }
+    // Free models
+    { value: 'google/gemma-3-27b-it:free',                    label: 'Gemma 3 27B (free)',       free: true },
+    { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (free)',  free: true },
+    { value: 'meta-llama/llama-3.3-70b-instruct:free',        label: 'Llama 3.3 70B (free)',      free: true },
+    // Premium models (require paid key)
+    { value: 'anthropic/claude-sonnet-4-6',                   label: 'Claude Sonnet 4.6',         free: false },
+    { value: 'openai/gpt-4o-mini',                            label: 'GPT-4o Mini',               free: false },
+    { value: 'google/gemini-2.5-flash',                       label: 'Gemini 2.5 Flash',          free: false },
   ];
 
   function getApiKey() { return localStorage.getItem(STORAGE_KEY_API) || DEMO_API_KEY || ''; }
   function setApiKey(key) { localStorage.setItem(STORAGE_KEY_API, key); }
   function isUsingFreeModel() { const m = getModel(); return MODEL_OPTIONS.find(o => o.value === m)?.free === true; }
-  function getModel() { return localStorage.getItem(STORAGE_KEY_MODEL) || DEFAULT_MODEL; }
+  // Validate stored model is still in the list; fall back to default if removed
+  function getModel() {
+    const stored = localStorage.getItem(STORAGE_KEY_MODEL);
+    if (stored && MODEL_OPTIONS.some(o => o.value === stored)) return stored;
+    return DEFAULT_MODEL;
+  }
   function setModel(m) { localStorage.setItem(STORAGE_KEY_MODEL, m); }
   function isEnabled() { return localStorage.getItem(STORAGE_KEY_ENABLED) !== 'false'; }
   function setEnabled(v) { localStorage.setItem(STORAGE_KEY_ENABLED, v ? 'true' : 'false'); }

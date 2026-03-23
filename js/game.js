@@ -740,7 +740,8 @@
     const catLabel = cat ? `${cat.emoji} ${cat[state.uiLang] || cat.de}` : '';
     // Only show a static note if one is written for the actual target language — no fallback to unrelated de/vi content
     const _cultureNotes = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emo.id] : null;
-    const cultureNote = _cultureNotes ? (_cultureNotes[state.lang2] || _cultureNotes[state.lang1] || null) : null;
+    // Show note in the reading language (lang1); only if it exists natively for that key
+    const cultureNote = _cultureNotes ? (_cultureNotes[state.lang1] || null) : null;
     const cultureHTML = cultureNote ? `
         <div class="hint-divider"></div>
         <div class="hint-culture">
