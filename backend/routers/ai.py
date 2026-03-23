@@ -87,6 +87,7 @@ RESPONSE_LANGUAGE_NAMES = {
     "uk": "Ukrainian.",
     "pl": "Polish.",
     "el": "Greek.",
+    "ta": "Tamil.",
 }
 
 

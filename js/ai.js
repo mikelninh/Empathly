@@ -109,7 +109,11 @@ const GefuehleAI = (function () {
     }
 
     // Fallback: direct OpenRouter call (requires user API key)
-    const langNames = { de: 'German', vi: 'Vietnamese', en: 'English' };
+    const langNames = {
+      de: 'German', vi: 'Vietnamese', en: 'English', tr: 'Turkish',
+      ar: 'Arabic', es: 'Spanish', fr: 'French', uk: 'Ukrainian',
+      pl: 'Polish', el: 'Greek', ta: 'Tamil',
+    };
     const writeLang = langNames[lang] || 'English';
     const prompt = `You are a cultural psychologist. In 2-3 sentences, explain how the emotion "${emotionName}" is experienced and expressed differently in German vs Vietnamese culture. Be specific, nuanced, and mention concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;
 
@@ -135,7 +139,11 @@ const GefuehleAI = (function () {
     const cached = localStorage.getItem(cacheKey);
     if (cached) return cached;
 
-    const langNames = { de: 'German', vi: 'Vietnamese', en: 'English' };
+    const langNames = {
+      de: 'German', vi: 'Vietnamese', en: 'English', tr: 'Turkish',
+      ar: 'Arabic', es: 'Spanish', fr: 'French', uk: 'Ukrainian',
+      pl: 'Polish', el: 'Greek', ta: 'Tamil',
+    };
     const writeLang = langNames[lang] || 'English';
     const last7 = entries.slice(-7);
     const entriesJson = JSON.stringify(last7.map(e => ({
