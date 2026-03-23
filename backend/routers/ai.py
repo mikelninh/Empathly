@@ -46,8 +46,11 @@ from schemas import (
     CulturalBridgeResponse,
     DynamicPromptRequest,
     DynamicPromptResponse,
+    GenerateAIOutputRequest,
+    GenerateAIOutputResponse,
     JournalAnalysisRequest,
     JournalAnalysisResponse,
+    OPENAI_MODELS,
 )
 
 router = APIRouter(prefix="/ai", tags=["AI"])
@@ -377,9 +380,9 @@ async def journal_analysis(payload: JournalAnalysisRequest, db: Session = Depend
     """
     Analyze the last 7 journal entries for a user and return patterns + suggestions.
     """
-    user = db.query(User).filter(User.device_id == payload.device_id).first()
+    user = db.query(User).filter(User.id == payload.user_id).first()
     if not user:
-        raise HTTPException(status_code=400, detail="At least 2 journal entries needed for analysis.")
+        raise HTTPException(status_code=404, detail="User not found")
 
     entries = (
         db.query(JournalEntry)
@@ -649,8 +652,147 @@ def list_models():
             {"value": "meta-llama/llama-3.3-70b-instruct:free",       "label": "Llama 3.3 70B",          "free": True},
             {"value": "google/gemma-3-27b-it:free",                    "label": "Gemma 3 27B",             "free": True},
             {"value": "mistralai/mistral-small-3.1-24b-instruct:free", "label": "Mistral Small 3.1 24B",   "free": True},
-            {"value": "qwen/qwen3-next-80b-a3b-instruct:free",         "label": "Qwen3 80B",               "free": True},
             {"value": "anthropic/claude-sonnet-4-6", "label": "Claude Sonnet 4.6", "free": False},
             {"value": "openai/gpt-4o-mini", "label": "GPT-4o Mini", "free": False},
         ],
     }
+
+
+# ── OpenAI helper ──────────────────────────────────────────────────────────────
+
+async def call_openai(system_prompt: str, user_prompt: str,
+                      model: str = "gpt-4o-mini", max_tokens: int = 500) -> str:
+    if not settings.openai_api_key:
+        raise HTTPException(status_code=503, detail="No OpenAI API key configured. Set OPENAI_API_KEY.")
+    if model not in OPENAI_MODELS:
+        model = settings.openai_default_model
+
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {settings.openai_api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                "max_tokens": max_tokens,
+                "temperature": 0.7,
+            },
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"OpenAI error {response.status_code}: {response.text}")
+
+    return response.json()["choices"][0]["message"]["content"].strip()
+
+
+# ── OpenAI-powered output endpoints ───────────────────────────────────────────
+
+@router.post("/generate_ai_output_checkin", response_model=GenerateAIOutputResponse)
+async def generate_ai_output_checkin(payload: GenerateAIOutputRequest, db: Session = Depends(get_db)):
+    """
+    Generate an AI reflection on a user's recent check-ins using OpenAI.
+    Fetches the last 10 check-ins for user_id and produces a personalised insight.
+    """
+    from models import CheckIn
+    user = db.query(User).filter(User.id == payload.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    entries = (
+        db.query(CheckIn)
+        .filter(CheckIn.user_id == payload.user_id)
+        .order_by(CheckIn.created_at.desc())
+        .limit(10)
+        .all()
+    )
+    if not entries:
+        raise HTTPException(status_code=400, detail="No check-ins found for this user")
+
+    entries_data = [
+        {
+            "date": e.created_at.strftime("%Y-%m-%d"),
+            "emotions": [em.id for em in e.emotions],
+            "intensity": e.intensity,
+            "note": e.note or "",
+        }
+        for e in reversed(entries)
+    ]
+
+    response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")
+    system_prompt = f"""You are a compassionate emotional wellness coach.
+Analyse these emotional check-ins and identify patterns with warmth.
+Write in {response_lang}
+Respond with 3-4 sentences covering:
+1. The dominant emotional pattern you notice
+2. Any shifts or tensions across the entries
+3. One gentle, actionable suggestion for emotional wellbeing"""
+
+    user_prompt = f"Analyse these check-ins:\n{json.dumps(entries_data, ensure_ascii=False, indent=2)}"
+
+    text = await call_openai(system_prompt, user_prompt, model=payload.model)
+    return GenerateAIOutputResponse(text=text, model=payload.model)
+
+
+@router.post("/generate_ai_output_journal", response_model=GenerateAIOutputResponse)
+async def generate_ai_output_journal(payload: GenerateAIOutputRequest, db: Session = Depends(get_db)):
+    """
+    Generate an AI insight on a user's recent journal entries using OpenAI.
+    Fetches the last 7 journal entries for user_id and produces a pattern analysis.
+    """
+    from models import JournalEntry
+    user = db.query(User).filter(User.id == payload.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    entries = (
+        db.query(JournalEntry)
+        .filter(JournalEntry.user_id == payload.user_id)
+        .order_by(JournalEntry.created_at.desc())
+        .limit(7)
+        .all()
+    )
+    if len(entries) < 2:
+        raise HTTPException(status_code=400, detail="At least 2 journal entries needed")
+
+    entries_data = [
+        {
+            "date": e.created_at.strftime("%Y-%m-%d"),
+            "emotions": [em.id for em in e.emotions],
+            "note": e.note or "",
+        }
+        for e in reversed(entries)
+    ]
+
+    response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")
+    system_prompt = f"""You are a compassionate emotional intelligence guide.
+Analyse journal entries and identify patterns warmly — not clinically.
+Write in {response_lang}
+Respond ONLY with valid JSON:
+{{
+  "insight": "2-3 sentences describing the overall emotional pattern",
+  "patterns": ["pattern 1", "pattern 2", "pattern 3"],
+  "suggestion": "one gentle, specific suggestion for emotional wellbeing",
+  "follow_up_question": "one personal question that invites deeper reflection"
+}}"""
+
+    user_prompt = f"Analyse these journal entries:\n{json.dumps(entries_data, ensure_ascii=False, indent=2)}"
+
+    raw = await call_openai(system_prompt, user_prompt, model=payload.model, max_tokens=600)
+
+    json_match = re.search(r"\{.*\}", raw, re.DOTALL)
+    if json_match:
+        try:
+            parsed = json.loads(json_match.group())
+            text = parsed.get("insight", raw)
+        except json.JSONDecodeError:
+            text = raw
+    else:
+        text = raw
+
+    return GenerateAIOutputResponse(text=text, model=payload.model)

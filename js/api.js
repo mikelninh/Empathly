@@ -20,12 +20,12 @@ const GefuehleAPI = (function () {
     ? APP_CONFIG.API_URL.replace(/\/$/, '')
     : 'http://localhost:8000';
   const DEVICE_ID_KEY = 'gefuehle-device-id';
+  const USER_ID_KEY   = 'gefuehle-user-id';
 
   let _backendAvailable = null; // null = not checked yet
+  let _userIdPromise    = null; // singleton promise so we only resolve once per session
 
   function getDeviceId() {
-    // Generate a stable UUID-like ID for this browser/device, stored in localStorage.
-    // This is what the backend uses to identify the user without any login flow.
     let id = localStorage.getItem(DEVICE_ID_KEY);
     if (!id) {
       id = 'device-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
@@ -36,6 +36,27 @@ const GefuehleAPI = (function () {
 
   // Keep getUserId as alias for backward compatibility
   function getUserId() { return getDeviceId(); }
+
+  /**
+   * Resolve the integer user_id from the backend.
+   * Calls POST /users/ once (get-or-create), caches the result in localStorage.
+   * All API calls that need user_id should await this.
+   */
+  async function getOrFetchUserId() {
+    const cached = localStorage.getItem(USER_ID_KEY);
+    if (cached) return parseInt(cached, 10);
+
+    if (_userIdPromise) return _userIdPromise;
+    _userIdPromise = apiFetch('/users/', {
+      method: 'POST',
+      body: JSON.stringify({ device_id: getDeviceId() }),
+    }).then(data => {
+      localStorage.setItem(USER_ID_KEY, String(data.id));
+      return data.id;
+    }).catch(() => null);
+
+    return _userIdPromise;
+  }
 
   // ── Health check (cached) ─────────────────────────────────────────────────
 
@@ -85,10 +106,13 @@ const GefuehleAPI = (function () {
 
     // Fire-and-forget to backend
     if (await checkBackend()) {
-      apiFetch('/journal/', {
-        method: 'POST',
-        body: JSON.stringify({ device_id: getDeviceId(), emotion_ids: emotions, note, lang }),
-      }).catch(() => {}); // silent — LocalStorage is source of truth for now
+      const userId = await getOrFetchUserId();
+      if (userId) {
+        apiFetch('/journal/', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId, emotion_ids: emotions, note, lang }),
+        }).catch(() => {});
+      }
     }
 
     return entry;
@@ -100,15 +124,17 @@ const GefuehleAPI = (function () {
 
   // ── Check-ins ─────────────────────────────────────────────────────────────
 
-  async function saveCheckin({ emotion_ids, category, intensity, lang }) {
+  async function saveCheckin({ emotion_ids, intensity, lang }) {
     if (await checkBackend()) {
+      const userId = await getOrFetchUserId();
+      if (!userId) return null;
       return apiFetch('/checkins/', {
         method: 'POST',
         body: JSON.stringify({
-          device_id: getDeviceId(),
+          user_id: userId,
           emotion_ids,
           intensity: intensity || 3,
-          lang: lang || 'de',
+          lang: lang || 'en',
         }),
       }).catch(() => null);
     }
@@ -119,7 +145,9 @@ const GefuehleAPI = (function () {
 
   async function getStats() {
     if (!(await checkBackend())) return null;
-    return apiFetch(`/checkins/stats/${getDeviceId()}`).catch(() => null);
+    const userId = await getOrFetchUserId();
+    if (!userId) return null;
+    return apiFetch(`/checkins/stats/${userId}`).catch(() => null);
   }
 
   // ── Cultural Bridge (via backend RAG) ─────────────────────────────────────
@@ -312,6 +340,7 @@ const GefuehleAPI = (function () {
   return {
     init,
     getUserId,
+    getOrFetchUserId,
     apiFetch,
     saveJournal,
     getJournalEntries,

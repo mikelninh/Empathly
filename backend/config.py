@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     openrouter_api_key: str = ""
     default_model: str = "meta-llama/llama-3.3-70b-instruct"
     database_url: str = "sqlite:///./gefuehle.db"
+    openai_api_key: str = ""
+    openai_default_model: str = "gpt-4o-mini"
 
     class Config:
         env_file = ".env"

@@ -5,7 +5,6 @@ LEARNING NOTE:
 - Models (models.py) = database shape
 - Schemas (schemas.py) = API shape (what the client sends / receives)
 - They're separate because the DB and API don't always match 1:1
-  Example: the DB stores user_id as an integer, but the API accepts a device_id string
 - Pydantic validates types automatically and returns a 422 error if input is wrong
 - model_config = {"from_attributes": True} lets Pydantic read SQLAlchemy objects directly
 """
@@ -17,6 +16,11 @@ from pydantic import BaseModel, Field
 
 
 # ── Users ──────────────────────────────────────────────────────────────────────
+
+class UserCreate(BaseModel):
+    device_id: str = Field(..., description="Browser UUID from localStorage")
+    display_name: Optional[str] = None
+
 
 class UserResponse(BaseModel):
     id:           int
@@ -52,17 +56,22 @@ class EmotionResponse(BaseModel):
 # ── Check-Ins ──────────────────────────────────────────────────────────────────
 
 class CheckInCreate(BaseModel):
-    device_id:  str = Field(default="default", description="Browser UUID from localStorage")
-    emotion_ids: list[str] = Field(..., min_length=1, description="At least one emotion ID")
-    intensity:  int = Field(default=3, ge=1, le=5, description="1=barely felt, 5=very intense")
-    note:       Optional[str] = None
-    lang:       str = "de"
+    user_id:     int  = Field(..., description="Integer user ID from /users/")
+    emotion_ids: list[str] = Field(..., min_length=1)
+    intensity:   int  = Field(default=3, ge=1, le=5)
+    note:        Optional[str] = None
+    lang:        str  = "en"
+
+
+class CheckInUpdate(BaseModel):
+    intensity: Optional[int] = Field(None, ge=1, le=5)
+    note:      Optional[str] = None
 
 
 class CheckInResponse(BaseModel):
     id:          int
     user_id:     int
-    emotion_ids: list[str]    # derived from the junction table relationship
+    emotion_ids: list[str]
     intensity:   int
     note:        Optional[str]
     lang:        str
@@ -84,7 +93,7 @@ class CategoryCount(BaseModel):
 
 
 class StatsResponse(BaseModel):
-    device_id:             str
+    user_id:               int
     total_checkins:        int
     streak_days:           int
     top_emotions:          list[EmotionCount]
@@ -94,16 +103,21 @@ class StatsResponse(BaseModel):
 # ── Journal ────────────────────────────────────────────────────────────────────
 
 class JournalCreate(BaseModel):
-    device_id:   str = Field(default="default", description="Browser UUID from localStorage")
+    user_id:     int  = Field(..., description="Integer user ID from /users/")
     emotion_ids: list[str] = Field(..., min_length=1)
     note:        Optional[str] = None
-    lang:        str = "de"
+    lang:        str  = "en"
+
+
+class JournalUpdate(BaseModel):
+    note:        Optional[str] = None
+    emotion_ids: Optional[list[str]] = None
 
 
 class JournalResponse(BaseModel):
     id:          int
     user_id:     int
-    emotion_ids: list[str]    # derived from the junction table relationship
+    emotion_ids: list[str]
     note:        Optional[str]
     lang:        str
     created_at:  datetime
@@ -116,9 +130,9 @@ class JournalResponse(BaseModel):
 class CulturalBridgeRequest(BaseModel):
     emotion_id:    str = Field(..., description="e.g. 'liebe', 'freude'")
     emotion_name:  str = Field(..., description="Human-readable name, e.g. 'Liebe'")
-    source_lang:   str = Field(default="de")
-    target_lang:   str = Field(default="vi")
-    response_lang: str = Field(default="de")
+    source_lang:   str = Field(default="en")
+    target_lang:   str = Field(default="el")
+    response_lang: str = Field(default="en")
 
 
 class CulturalBridgeResponse(BaseModel):
@@ -130,20 +144,20 @@ class CulturalBridgeResponse(BaseModel):
 
 
 class JournalAnalysisRequest(BaseModel):
-    device_id: str = "default"
-    lang:      str = "de"
+    user_id: int
+    lang:    str = "en"
 
 
 class JournalAnalysisResponse(BaseModel):
-    insight:          str
-    patterns:         list[str]
-    suggestion:       str
+    insight:            str
+    patterns:           list[str]
+    suggestion:         str
     follow_up_question: str = ""
 
 
 class AskRequest(BaseModel):
     question: str = Field(..., min_length=3)
-    lang:     str = "de"
+    lang:     str = "en"
 
 
 class AskResponse(BaseModel):
@@ -157,8 +171,24 @@ class DynamicPromptRequest(BaseModel):
     needs:         list[str] = []
     context:       str = ""
     user_text:     str = ""
-    lang:          str = "de"
+    lang:          str = "en"
 
 
 class DynamicPromptResponse(BaseModel):
     text: str
+
+
+# ── OpenAI AI Output ───────────────────────────────────────────────────────────
+
+OPENAI_MODELS = {"gpt-4o-mini", "gpt-4.1-mini", "gpt-5-mini"}
+
+
+class GenerateAIOutputRequest(BaseModel):
+    user_id: int
+    lang:    str = "en"
+    model:   str = Field(default="gpt-4o-mini", description="gpt-4o-mini | gpt-4.1-mini | gpt-5-mini")
+
+
+class GenerateAIOutputResponse(BaseModel):
+    text:  str
+    model: str

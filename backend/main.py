@@ -18,7 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import create_tables
-from routers import checkins, journal, ai
+from routers import checkins, journal, ai, users, emotions
 
 
 @asynccontextmanager
@@ -50,6 +50,8 @@ app.add_middleware(
 )
 
 # Register routers
+app.include_router(users.router)
+app.include_router(emotions.router)
 app.include_router(checkins.router)
 app.include_router(journal.router)
 app.include_router(ai.router)
