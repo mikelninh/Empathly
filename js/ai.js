@@ -11,24 +11,25 @@ const GefuehleAI = (function () {
   const STORAGE_KEY_ENABLED = 'gefuehle-ai-enabled';
   const CACHE_PREFIX = 'gefuehle-ai-cache-';
 
-  // Free models (cost $0 on OpenRouter) — available to ALL users
-  const DEFAULT_MODEL = 'google/gemma-3-27b-it:free';
-  const DEMO_API_KEY = ''; // Set a shared demo key here for zero-config experience
+  // OpenAI is the default provider (key on server — no user key needed)
+  const DEFAULT_MODEL = 'gpt-4o-mini';
+  const DEMO_API_KEY = '';
 
   const MODEL_OPTIONS = [
-    // Free models
-    { value: 'google/gemma-3-27b-it:free',                    label: 'Gemma 3 27B (free)',       free: true },
-    { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (free)',  free: true },
-    { value: 'meta-llama/llama-3.3-70b-instruct:free',        label: 'Llama 3.3 70B (free)',      free: true },
-    // Premium models (require paid key)
-    { value: 'anthropic/claude-sonnet-4-6',                   label: 'Claude Sonnet 4.6',         free: false },
-    { value: 'openai/gpt-4o-mini',                            label: 'GPT-4o Mini',               free: false },
-    { value: 'google/gemini-2.5-flash',                       label: 'Gemini 2.5 Flash',          free: false },
+    // OpenAI — handled by backend (no user key needed)
+    { value: 'gpt-4o-mini',  label: 'GPT-4o Mini (default)',  provider: 'openai' },
+    { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini',           provider: 'openai' },
+    { value: 'gpt-5-mini',   label: 'GPT-5 Mini',             provider: 'openai' },
+    // OpenRouter — requires your own OpenRouter key
+    { value: 'google/gemma-3-27b-it:free',                    label: 'Gemma 3 27B (OpenRouter, free)',       provider: 'openrouter' },
+    { value: 'mistralai/mistral-small-3.1-24b-instruct:free', label: 'Mistral Small 3.1 (OpenRouter, free)',  provider: 'openrouter' },
+    { value: 'anthropic/claude-sonnet-4-6',                   label: 'Claude Sonnet 4.6 (OpenRouter)',        provider: 'openrouter' },
   ];
 
   function getApiKey() { return localStorage.getItem(STORAGE_KEY_API) || DEMO_API_KEY || ''; }
   function setApiKey(key) { localStorage.setItem(STORAGE_KEY_API, key); }
-  function isUsingFreeModel() { const m = getModel(); return MODEL_OPTIONS.find(o => o.value === m)?.free === true; }
+  function isOpenAIModel() { const m = getModel(); return MODEL_OPTIONS.find(o => o.value === m)?.provider === 'openai'; }
+  function isUsingFreeModel() { return isOpenAIModel(); } // OpenAI via backend = no user cost
   // Validate stored model is still in the list; fall back to default if removed
   function getModel() {
     const stored = localStorage.getItem(STORAGE_KEY_MODEL);

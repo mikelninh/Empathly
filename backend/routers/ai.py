@@ -150,24 +150,49 @@ def retrieve_chunks(query_terms: list[str], chunks: list[dict], top_k: int = 2) 
     return [content for _, content in scored[:top_k]]
 
 
-# ── OpenRouter API call ───────────────────────────────────────────────────────
+# ── Provider helpers ──────────────────────────────────────────────────────────
+
+def _openai_headers() -> dict:
+    return {
+        "Authorization": f"Bearer {settings.openai_api_key}",
+        "Content-Type": "application/json",
+    }
+
+def _openrouter_headers() -> dict:
+    return {
+        "Authorization": f"Bearer {settings.openrouter_api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://gefuehle-memory.app",
+        "X-Title": "Gefuehle-Memory",
+    }
+
+def _stream_config() -> tuple[str, dict, str]:
+    """Returns (url, headers, model) — prefers OpenAI, falls back to OpenRouter."""
+    if settings.openai_api_key:
+        return (
+            "https://api.openai.com/v1/chat/completions",
+            _openai_headers(),
+            settings.openai_default_model,
+        )
+    return (
+        "https://openrouter.ai/api/v1/chat/completions",
+        _openrouter_headers(),
+        settings.default_model,
+    )
+
 
 async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) -> str:
     """
-    LEARNING NOTE — Calling an LLM API:
-    We use OpenRouter which provides a unified API for many models.
-    The request follows the OpenAI Chat Completions format:
-      - messages: list of {role, content} dicts
-      - system message sets the AI's persona/instructions
-      - user message is the actual query
-
-    httpx is an async HTTP client (like requests but async-compatible with FastAPI).
+    Call the preferred LLM provider.
+    Priority: OpenAI (if OPENAI_API_KEY set) → OpenRouter with fallback models.
     """
+    if settings.openai_api_key:
+        return await call_openai(system_prompt, user_prompt,
+                                 model=settings.openai_default_model,
+                                 max_tokens=max_tokens)
+
     if not settings.openrouter_api_key:
-        raise HTTPException(
-            status_code=503,
-            detail="No OpenRouter API key configured. Set OPENROUTER_API_KEY in .env"
-        )
+        raise HTTPException(status_code=503, detail="No AI API key configured.")
 
     models = [settings.default_model] + [m for m in FREE_MODEL_FALLBACKS if m != settings.default_model]
     last_error = "No models available"
@@ -177,12 +202,7 @@ async def call_llm(system_prompt: str, user_prompt: str, max_tokens: int = 600) 
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
                     "https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {settings.openrouter_api_key}",
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://gefuehle-memory.app",
-                        "X-Title": "Gefuehle-Memory",
-                    },
+                    headers=_openrouter_headers(),
                     json={
                         "model": model,
                         "messages": [
@@ -329,22 +349,17 @@ Write 3-4 sentences of insight, then list 3-5 vocabulary words from the target l
     user_prompt = f"""Compare how "{payload.emotion_name}" is expressed in {source_lang_name} vs {target_lang_name} culture.
 Focus on vocabulary nuances that reveal cultural differences."""
 
-    if not settings.openrouter_api_key:
-        raise HTTPException(status_code=503, detail="No API key configured")
+    if not settings.openai_api_key and not settings.openrouter_api_key:
+        raise HTTPException(status_code=503, detail="No AI API key configured")
+
+    stream_url, stream_headers, stream_model = _stream_config()
 
     async def generate() -> AsyncGenerator[str, None]:
         async with httpx.AsyncClient(timeout=45.0) as client:
             async with client.stream(
-                "POST",
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {settings.openrouter_api_key}",
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": "https://gefuehle-memory.app",
-                    "X-Title": "Gefuehle-Memory",
-                },
+                "POST", stream_url, headers=stream_headers,
                 json={
-                    "model": settings.default_model,
+                    "model": stream_model,
                     "messages": [
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
@@ -491,56 +506,45 @@ Answer questions about emotions, languages, and cultural differences warmly and 
 Write in {response_lang}
 {context_block}"""
 
-    if not settings.openrouter_api_key:
-        raise HTTPException(status_code=503, detail="No API key configured")
+    if not settings.openai_api_key and not settings.openrouter_api_key:
+        raise HTTPException(status_code=503, detail="No AI API key configured")
+
+    stream_url, stream_headers, stream_model = _stream_config()
 
     async def generate() -> AsyncGenerator[str, None]:
-        models = [settings.default_model] + [m for m in FREE_MODEL_FALLBACKS if m != settings.default_model]
-        for model in models:
-            try:
-                async with httpx.AsyncClient(timeout=45.0) as client:
-                    async with client.stream(
-                        "POST",
-                        "https://openrouter.ai/api/v1/chat/completions",
-                        headers={
-                            "Authorization": f"Bearer {settings.openrouter_api_key}",
-                            "Content-Type": "application/json",
-                            "HTTP-Referer": "https://gefuehle-memory.app",
-                            "X-Title": "Gefuehle-Memory",
-                        },
-                        json={
-                            "model": model,
-                            "messages": [
-                                {"role": "system", "content": system_prompt},
-                                {"role": "user", "content": payload.question},
-                            ],
-                            "max_tokens": 400,
-                            "temperature": 0.7,
-                            "stream": True,
-                        },
-                    ) as resp:
-                        if resp.status_code == 429:
-                            continue  # try next model
-                        if resp.status_code != 200:
-                            yield "data: [ERROR]\n\n"
+        try:
+            async with httpx.AsyncClient(timeout=45.0) as client:
+                async with client.stream(
+                    "POST", stream_url, headers=stream_headers,
+                    json={
+                        "model": stream_model,
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": payload.question},
+                        ],
+                        "max_tokens": 400,
+                        "temperature": 0.7,
+                        "stream": True,
+                    },
+                ) as resp:
+                    if resp.status_code != 200:
+                        yield "data: [ERROR]\n\n"
+                        return
+                    async for line in resp.aiter_lines():
+                        if not line.startswith("data: "):
+                            continue
+                        raw = line[6:]
+                        if raw == "[DONE]":
+                            yield "data: [DONE]\n\n"
                             return
-                        async for line in resp.aiter_lines():
-                            if not line.startswith("data: "):
-                                continue
-                            raw = line[6:]
-                            if raw == "[DONE]":
-                                yield "data: [DONE]\n\n"
-                                return
-                            try:
-                                token = json.loads(raw)["choices"][0]["delta"].get("content", "")
-                                if token:
-                                    yield f"data: {token}\n\n"
-                            except Exception:
-                                continue
-                        return  # finished successfully
-            except Exception:
-                continue  # try next model
-        yield "data: [ERROR]\n\n"
+                        try:
+                            token = json.loads(raw)["choices"][0]["delta"].get("content", "")
+                            if token:
+                                yield f"data: {token}\n\n"
+                        except Exception:
+                            continue
+        except Exception:
+            yield "data: [ERROR]\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
