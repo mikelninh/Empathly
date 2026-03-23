@@ -303,15 +303,21 @@
     },
     journal: {
       icon: '📓',
-      name: { de: 'Journal', vi: 'Nhật ký', en: 'Journal' },
-      desc: { de: 'Tägliche Reflexion', vi: 'Suy ngẫm hàng ngày', en: 'Daily reflection' }
+      name: { de: 'Journal', vi: 'Nhật ký', en: 'Journal', el: 'Ημερολόγιο' },
+      desc: { de: 'Tägliche Reflexion', vi: 'Suy ngẫm hàng ngày', en: 'Daily reflection', el: 'Καθημερινός στοχασμός' }
+    },
+    ask: {
+      icon: '💬',
+      name: { de: 'Frag die App', vi: 'Hỏi ứng dụng', en: 'Ask the App', el: 'Ρώτα την εφαρμογή' },
+      desc: { de: 'Stell eine Frage', vi: 'Đặt một câu hỏi', en: 'Ask a question', el: 'Κάνε μια ερώτηση' }
     }
   };
 
   const MODE_GROUPS = {
     de: { spielen: 'Spielen', entdecken: 'Entdecken', lernen: 'Lernen' },
     vi: { spielen: 'Chơi', entdecken: 'Khám phá', lernen: 'Học' },
-    en: { spielen: 'Play', entdecken: 'Discover', lernen: 'Learn' }
+    en: { spielen: 'Play', entdecken: 'Discover', lernen: 'Learn' },
+    el: { spielen: 'Παίξε', entdecken: 'Ανακάλυψε', lernen: 'Μάθε' }
   };
 
   function updateModeCards() {
@@ -324,12 +330,12 @@
       const nameEl = card.querySelector('.mode-card-name');
       const descEl = card.querySelector('.mode-card-desc');
       if (iconEl) iconEl.textContent = data.icon;
-      if (nameEl) nameEl.textContent = data.name[lang] || data.name.de;
-      if (descEl) descEl.textContent = data.desc[lang] || data.desc.de;
+      if (nameEl) nameEl.textContent = data.name[lang] || data.name.en;
+      if (descEl) descEl.textContent = data.desc[lang] || data.desc.en;
     });
 
     // Update group labels
-    const groups = MODE_GROUPS[lang] || MODE_GROUPS.de;
+    const groups = MODE_GROUPS[lang] || MODE_GROUPS.en;
     const labels = $$('.mode-group-label');
     if (labels[0]) labels[0].textContent = groups.spielen;
     if (labels[1]) labels[1].textContent = groups.entdecken;
@@ -732,7 +738,9 @@
     }
     const cat = CATEGORIES.find(c => c.id === emo.category);
     const catLabel = cat ? `${cat.emoji} ${cat[state.uiLang] || cat.de}` : '';
-    const cultureNote = (typeof getCultureNote === 'function') ? getCultureNote(emo.id, state.uiLang) : null;
+    // Only show a static note if one is written for the actual target language — no fallback to unrelated de/vi content
+    const _cultureNotes = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emo.id] : null;
+    const cultureNote = _cultureNotes ? (_cultureNotes[state.lang2] || _cultureNotes[state.lang1] || null) : null;
     const cultureHTML = cultureNote ? `
         <div class="hint-divider"></div>
         <div class="hint-culture">
@@ -784,8 +792,24 @@
             state.lang1,
             state.lang2
           );
-          resultEl.innerHTML = `<div class="ai-insight-box">🤖 ${text}</div>`;
+          resultEl.innerHTML = `<div class="ai-insight-box">🤖 ${text}</div>
+            <button class="ai-save-btn">${state.uiLang === 'de' ? '💾 Speichern' : '💾 Save'}</button>`;
           aiBtn.style.display = 'none';
+          const saveBtn = resultEl.querySelector('.ai-save-btn');
+          saveBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const saved = JSON.parse(localStorage.getItem('gefuehle-saved-insights') || '[]');
+            saved.push({
+              date: new Date().toISOString().split('T')[0],
+              emotionId: section.dataset.emotionId,
+              emotionName: section.dataset.emotionName,
+              lang1: state.lang1, lang2: state.lang2,
+              text,
+            });
+            localStorage.setItem('gefuehle-saved-insights', JSON.stringify(saved));
+            saveBtn.textContent = state.uiLang === 'de' ? '✓ Gespeichert' : '✓ Saved';
+            saveBtn.disabled = true;
+          });
         } catch (err) {
           resultEl.innerHTML = `<div class="ai-setup-hint">Error: ${err.message}</div>`;
           aiBtn.disabled = false;
@@ -1788,18 +1812,32 @@
         'What is Weltschmerz?',
         'How does loneliness feel in the body?',
       ],
+      el: [
+        'Τι σημαίνει φιλότιμο;',
+        'Ποια είναι η διαφορά μεταξύ ντροπής και ενοχής;',
+        'Γιατί τα Ελληνικά έχουν τόσες λέξεις για την αγάπη;',
+        'Πώς εκφράζεται η μελαγχολία στην ελληνική κουλτούρα;',
+        'Τι είναι το Weltschmerz;',
+      ],
     };
 
-    const introText = { de: 'Stell eine Frage über Gefühle, Sprache oder Kulturen — ich antworte mit Wissen aus der App.', vi: 'Đặt câu hỏi về cảm xúc, ngôn ngữ hoặc văn hóa.', en: 'Ask about emotions, language, or cultures — I answer from the app\'s knowledge base.' };
-    const placeholderText = { de: 'Deine Frage...', vi: 'Câu hỏi của bạn...', en: 'Your question...' };
-    const chips = EXAMPLES[lang] || EXAMPLES.de;
+    const introText = {
+      de: 'Stell eine Frage über Gefühle, Sprache oder Kulturen — ich antworte mit Wissen aus der App.',
+      vi: 'Đặt câu hỏi về cảm xúc, ngôn ngữ hoặc văn hóa.',
+      en: 'Ask about emotions, language, or cultures — I answer from the app\'s knowledge base.',
+      el: 'Ρώτα για συναισθήματα, γλώσσα ή πολιτισμούς — απαντώ με βάση τη γνώση της εφαρμογής.',
+    };
+    const placeholderText = {
+      de: 'Deine Frage...', vi: 'Câu hỏi của bạn...', en: 'Your question...', el: 'Η ερώτησή σου...',
+    };
+    const chips = EXAMPLES[lang] || EXAMPLES.en;
 
     container.innerHTML = `
-      <p class="ask-intro">${introText[lang] || introText.de}</p>
+      <p class="ask-intro">${introText[lang] || introText.en}</p>
       <div class="ask-examples">${chips.map(q => `<button class="ask-example-chip">${q}</button>`).join('')}</div>
       <div class="ask-chat" id="ask-chat"></div>
       <div class="ask-input-row">
-        <input class="ask-input" type="text" placeholder="${placeholderText[lang] || placeholderText.de}" maxlength="300">
+        <input class="ask-input" type="text" placeholder="${placeholderText[lang] || placeholderText.en}" maxlength="300">
         <button class="ask-send-btn" aria-label="Senden">→</button>
       </div>`;
 
