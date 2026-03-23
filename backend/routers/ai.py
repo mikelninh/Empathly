@@ -557,10 +557,11 @@ Write in {lang}. Output ONLY the question, no preamble.""",
     "checkin_reflection": (
         """You are a compassionate emotional coach.
 The person has identified these needs today: {needs}
+You MUST weave ALL of these needs into your response — do not focus on just one.
 Write a warm, personal reflection of 2-3 sentences that:
-1. Acknowledges what they're seeking without judgment
-2. Notes any inner tension if needs feel contradictory
-3. Offers one small, concrete suggestion for today
+1. Acknowledges the full picture of what they're carrying — name each need
+2. Notes any interesting tension or harmony between the needs
+3. Offers one small, concrete suggestion that honours the combination
 Write in {lang}. Be warm and specific, not clinical.""",
         "You're carrying several needs today. That awareness itself is meaningful — noticing what we need is the first step toward meeting it."
     ),

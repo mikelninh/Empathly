@@ -1162,7 +1162,7 @@
       if (!summary.querySelector('.btn-checkin-reflection')) {
         const reflBtn = document.createElement('button');
         reflBtn.className = 'btn-checkin-reflection';
-        reflBtn.textContent = 'KI-Reflexion 🤖';
+        reflBtn.textContent = state.uiLang === 'de' ? 'KI-Reflexion 🤖' : state.uiLang === 'el' ? 'Αντανάκλαση AI 🤖' : 'AI Reflection 🤖';
         const reflResult = document.createElement('div');
         reflResult.className = 'checkin-reflection-box';
         summary.appendChild(reflBtn);
@@ -1177,7 +1177,7 @@
             needs: needNames,
             lang: state.uiLang,
           });
-          reflBtn.textContent = 'KI-Reflexion 🤖';
+          reflBtn.textContent = state.uiLang === 'de' ? 'KI-Reflexion 🤖' : state.uiLang === 'el' ? 'Αντανάκλαση AI 🤖' : 'AI Reflection 🤖';
           reflBtn.disabled = false;
           if (res?.text) {
             reflResult.textContent = res.text;
