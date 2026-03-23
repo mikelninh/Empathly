@@ -59,7 +59,9 @@ FREE_MODEL_FALLBACKS = [
     "meta-llama/llama-3.3-70b-instruct:free",
     "google/gemma-3-27b-it:free",
     "mistralai/mistral-small-3.1-24b-instruct:free",
-    "qwen/qwen2.5-vl-72b-instruct:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "deepseek/deepseek-r1:free",
+    "microsoft/phi-4:free",
 ]
 
 LANGUAGE_NAMES = {
