@@ -38,7 +38,7 @@ from sqlalchemy.orm import Session
 
 from config import settings
 from database import get_db
-from models import JournalEntry
+from models import JournalEntry, User
 from schemas import (
     AskRequest,
     AskResponse,
@@ -378,9 +378,13 @@ async def journal_analysis(payload: JournalAnalysisRequest, db: Session = Depend
     """
     Analyze the last 7 journal entries for a user and return patterns + suggestions.
     """
+    user = db.query(User).filter(User.device_id == payload.device_id).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="At least 2 journal entries needed for analysis.")
+
     entries = (
         db.query(JournalEntry)
-        .filter(JournalEntry.user_id == payload.user_id)
+        .filter(JournalEntry.user_id == user.id)
         .order_by(JournalEntry.created_at.desc())
         .limit(7)
         .all()
@@ -395,10 +399,10 @@ async def journal_analysis(payload: JournalAnalysisRequest, db: Session = Depend
     entries_data = [
         {
             "date": e.created_at.strftime("%Y-%m-%d"),
-            "emotions": e.emotions,
+            "emotions": [em.id for em in e.emotions],
             "note": e.note or "",
         }
-        for e in reversed(entries)  # chronological order
+        for e in reversed(entries)
     ]
 
     response_lang = RESPONSE_LANGUAGE_NAMES.get(payload.lang, "English.")

@@ -19,18 +19,23 @@ const GefuehleAPI = (function () {
   const BASE_URL = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.API_URL)
     ? APP_CONFIG.API_URL.replace(/\/$/, '')
     : 'http://localhost:8000';
-  const USER_ID_KEY = 'gefuehle-user-id';
+  const DEVICE_ID_KEY = 'gefuehle-device-id';
 
   let _backendAvailable = null; // null = not checked yet
 
-  function getUserId() {
-    let id = localStorage.getItem(USER_ID_KEY);
+  function getDeviceId() {
+    // Generate a stable UUID-like ID for this browser/device, stored in localStorage.
+    // This is what the backend uses to identify the user without any login flow.
+    let id = localStorage.getItem(DEVICE_ID_KEY);
     if (!id) {
-      id = 'user_' + Math.random().toString(36).slice(2, 9);
-      localStorage.setItem(USER_ID_KEY, id);
+      id = 'device-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+      localStorage.setItem(DEVICE_ID_KEY, id);
     }
     return id;
   }
+
+  // Keep getUserId as alias for backward compatibility
+  function getUserId() { return getDeviceId(); }
 
   // ── Health check (cached) ─────────────────────────────────────────────────
 
@@ -82,7 +87,7 @@ const GefuehleAPI = (function () {
     if (await checkBackend()) {
       apiFetch('/journal/', {
         method: 'POST',
-        body: JSON.stringify({ user_id: getUserId(), emotions, note, lang }),
+        body: JSON.stringify({ device_id: getDeviceId(), emotion_ids: emotions, note, lang }),
       }).catch(() => {}); // silent — LocalStorage is source of truth for now
     }
 
@@ -100,9 +105,8 @@ const GefuehleAPI = (function () {
       return apiFetch('/checkins/', {
         method: 'POST',
         body: JSON.stringify({
-          user_id: getUserId(),
+          device_id: getDeviceId(),
           emotion_ids,
-          category: category || null,
           intensity: intensity || 3,
           lang: lang || 'de',
         }),
@@ -115,7 +119,7 @@ const GefuehleAPI = (function () {
 
   async function getStats() {
     if (!(await checkBackend())) return null;
-    return apiFetch(`/checkins/stats/${getUserId()}`).catch(() => null);
+    return apiFetch(`/checkins/stats/${getDeviceId()}`).catch(() => null);
   }
 
   // ── Cultural Bridge (via backend RAG) ─────────────────────────────────────
