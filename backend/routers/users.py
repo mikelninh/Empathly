@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from schemas import UserCreate, UserResponse
+from schemas import UserCreate, UserUpdate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -38,6 +38,20 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@router.put("/{user_id}", response_model=UserResponse)
+def update_user(user_id: int, payload: UserUpdate, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if payload.display_name is not None:
+        user.display_name = payload.display_name
+    if payload.avatar_emoji is not None:
+        user.avatar_emoji = payload.avatar_emoji
+    db.commit()
+    db.refresh(user)
     return user
 
 

@@ -9,6 +9,7 @@ Endpoints:
   GET    /checkins/stats/{user_id} - emotion statistics for a user
 """
 
+import json
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
@@ -19,7 +20,7 @@ from database import get_db
 from models import CheckIn, Emotion, User
 from schemas import (
     CheckInCreate, CheckInResponse, CheckInUpdate,
-    StatsResponse, EmotionCount, CategoryCount,
+    StatsResponse, EmotionCount, CategoryCount, DimensionCount,
 )
 
 router = APIRouter(prefix="/checkins", tags=["Check-Ins"])
@@ -37,6 +38,8 @@ def checkin_to_response(entry: CheckIn) -> CheckInResponse:
         id=entry.id,
         user_id=entry.user_id,
         emotion_ids=[e.id for e in entry.emotions],
+        need_ids=json.loads(entry.needs_json) if entry.needs_json else [],
+        dimensions=json.loads(entry.dimensions) if entry.dimensions else [],
         intensity=entry.intensity,
         note=entry.note,
         lang=entry.lang,
@@ -64,6 +67,8 @@ def create_checkin(payload: CheckInCreate, db: Session = Depends(get_db)):
         intensity=payload.intensity,
         note=payload.note,
         lang=payload.lang,
+        needs_json=json.dumps(payload.need_ids) if payload.need_ids else None,
+        dimensions=json.dumps(payload.dimensions) if payload.dimensions else None,
     )
     db.add(entry)
     db.flush()
@@ -121,7 +126,8 @@ def get_stats(user_id: int, db: Session = Depends(get_db)):
     entries = db.query(CheckIn).filter(CheckIn.user_id == user_id).all()
     if not entries:
         return StatsResponse(user_id=user_id, total_checkins=0,
-                             streak_days=0, top_emotions=[], category_distribution=[])
+                             streak_days=0, top_emotions=[], category_distribution=[],
+                             dimension_distribution=[])
 
     all_emotion_ids = [e.id for entry in entries for e in entry.emotions]
     top_emotions = [
@@ -133,6 +139,16 @@ def get_stats(user_id: int, db: Session = Depends(get_db)):
     category_distribution = [
         CategoryCount(category=cat, count=cnt)
         for cat, cnt in Counter(all_categories).most_common()
+    ]
+
+    all_dims = [
+        dim
+        for entry in entries
+        for dim in (json.loads(entry.dimensions) if entry.dimensions else [])
+    ]
+    dimension_distribution = [
+        DimensionCount(dimension=dim, count=cnt)
+        for dim, cnt in Counter(all_dims).most_common()
     ]
 
     checkin_dates = sorted({entry.created_at.date() for entry in entries}, reverse=True)
@@ -150,4 +166,5 @@ def get_stats(user_id: int, db: Session = Depends(get_db)):
         streak_days=streak,
         top_emotions=top_emotions,
         category_distribution=category_distribution,
+        dimension_distribution=dimension_distribution,
     )

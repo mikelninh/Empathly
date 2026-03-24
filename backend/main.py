@@ -16,8 +16,9 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 
-from database import create_tables
+from database import create_tables, engine
 from routers import checkins, journal, ai, users, emotions
 
 
@@ -25,6 +26,14 @@ from routers import checkins, journal, ai, users, emotions
 async def lifespan(app: FastAPI):
     """Runs on startup: create DB tables if they don't exist."""
     create_tables()
+    # Add new columns to existing tables (SQLite doesn't support IF NOT EXISTS on columns)
+    with engine.connect() as conn:
+        for col in ("needs_json TEXT", "dimensions TEXT"):
+            try:
+                conn.execute(text(f"ALTER TABLE checkins ADD COLUMN {col}"))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
     yield
     # (cleanup code would go here, after yield)
 

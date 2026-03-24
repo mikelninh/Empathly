@@ -22,6 +22,11 @@ class UserCreate(BaseModel):
     display_name: Optional[str] = None
 
 
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = None
+    avatar_emoji: Optional[str] = None
+
+
 class UserResponse(BaseModel):
     id:           int
     device_id:    str
@@ -57,7 +62,9 @@ class EmotionResponse(BaseModel):
 
 class CheckInCreate(BaseModel):
     user_id:     int  = Field(..., description="Integer user ID from /users/")
-    emotion_ids: list[str] = Field(..., min_length=1)
+    emotion_ids: list[str] = Field(default=[], min_length=0)
+    need_ids:    list[str] = []
+    dimensions:  list[str] = []   # unique need dimensions, e.g. ["koerper", "geist"]
     intensity:   int  = Field(default=3, ge=1, le=5)
     note:        Optional[str] = None
     lang:        str  = "en"
@@ -72,6 +79,8 @@ class CheckInResponse(BaseModel):
     id:          int
     user_id:     int
     emotion_ids: list[str]
+    need_ids:    list[str]
+    dimensions:  list[str]
     intensity:   int
     note:        Optional[str]
     lang:        str
@@ -92,12 +101,18 @@ class CategoryCount(BaseModel):
     count:    int
 
 
+class DimensionCount(BaseModel):
+    dimension: str
+    count:     int
+
+
 class StatsResponse(BaseModel):
-    user_id:               int
-    total_checkins:        int
-    streak_days:           int
-    top_emotions:          list[EmotionCount]
-    category_distribution: list[CategoryCount]
+    user_id:                int
+    total_checkins:         int
+    streak_days:            int
+    top_emotions:           list[EmotionCount]
+    category_distribution:  list[CategoryCount]
+    dimension_distribution: list[DimensionCount]
 
 
 # ── Journal ────────────────────────────────────────────────────────────────────

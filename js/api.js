@@ -24,6 +24,7 @@ const GefuehleAPI = (function () {
 
   let _backendAvailable = null; // null = not checked yet
   let _userIdPromise    = null; // singleton promise so we only resolve once per session
+  let _retryScheduled   = false;
 
   function getDeviceId() {
     let id = localStorage.getItem(DEVICE_ID_KEY);
@@ -60,13 +61,24 @@ const GefuehleAPI = (function () {
 
   // ── Health check (cached) ─────────────────────────────────────────────────
 
+  function isBackendOnline() { return _backendAvailable === true; }
+
   async function checkBackend() {
-    if (_backendAvailable === true) return true; // only cache success; always re-check if previously failed
+    if (_backendAvailable === true) return true;
     try {
-      const res = await fetch(`${BASE_URL}/health`, { signal: AbortSignal.timeout(2000) });
+      const res = await fetch(`${BASE_URL}/health`, { signal: AbortSignal.timeout(8000) });
       _backendAvailable = res.ok ? true : null;
     } catch {
       _backendAvailable = null;
+      // One background retry to handle Railway cold starts (can take 10–20s)
+      if (!_retryScheduled) {
+        _retryScheduled = true;
+        setTimeout(async () => {
+          _retryScheduled = false;
+          const ok = await checkBackend();
+          if (ok) document.dispatchEvent(new Event('backend-online'));
+        }, 10000);
+      }
     }
     updateStatusIndicator(_backendAvailable === true);
     return _backendAvailable === true;
@@ -124,7 +136,22 @@ const GefuehleAPI = (function () {
 
   // ── Check-ins ─────────────────────────────────────────────────────────────
 
-  async function saveCheckin({ emotion_ids, intensity, lang }) {
+  const CHECKIN_KEY = 'gefuehle-checkins';
+
+  function getCheckinEntries() {
+    return JSON.parse(localStorage.getItem(CHECKIN_KEY) || '[]');
+  }
+
+  async function saveCheckin({ emotion_ids = [], need_ids = [], dimensions = [], intensity, lang }) {
+    // Always save to localStorage first
+    const dateStr = new Date().toISOString().split('T')[0];
+    const all = getCheckinEntries();
+    // Update today's entry or add new one
+    const todayIdx = all.findIndex(e => e.date === dateStr);
+    const entry = { date: dateStr, need_ids, dimensions, emotion_ids };
+    if (todayIdx >= 0) all[todayIdx] = entry; else all.push(entry);
+    localStorage.setItem(CHECKIN_KEY, JSON.stringify(all));
+
     if (await checkBackend()) {
       const userId = await getOrFetchUserId();
       if (!userId) return null;
@@ -133,6 +160,8 @@ const GefuehleAPI = (function () {
         body: JSON.stringify({
           user_id: userId,
           emotion_ids,
+          need_ids,
+          dimensions,
           intensity: intensity || 3,
           lang: lang || 'en',
         }),
@@ -290,6 +319,21 @@ const GefuehleAPI = (function () {
     }).catch(() => null);
   }
 
+  // ── Update user profile ───────────────────────────────────────────────────
+
+  async function updateProfile({ display_name, avatar_emoji }) {
+    localStorage.setItem('gefuehle-profile', JSON.stringify({ name: display_name || '', emoji: avatar_emoji || '💛' }));
+    if (await checkBackend()) {
+      const userId = await getOrFetchUserId();
+      if (!userId) return null;
+      return apiFetch(`/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ display_name, avatar_emoji }),
+      }).catch(() => null);
+    }
+    return null;
+  }
+
   // ── Share an emotion card ─────────────────────────────────────────────────
 
   async function shareEmotion({ emotionId, lang1, lang2 }) {
@@ -345,6 +389,7 @@ const GefuehleAPI = (function () {
     saveJournal,
     getJournalEntries,
     saveCheckin,
+    getCheckinEntries,
     getStats,
     culturalBridge,
     streamCulturalBridge,
@@ -353,5 +398,7 @@ const GefuehleAPI = (function () {
     renderStatsWidget,
     shareEmotion,
     checkBackend,
+    isBackendOnline,
+    updateProfile,
   };
 })();

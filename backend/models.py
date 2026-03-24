@@ -114,6 +114,8 @@ class CheckIn(Base):
     intensity  = Column(Integer,  default=3)      # 1 = barely felt, 5 = very intense
     note       = Column(Text,     nullable=True)
     lang       = Column(String,   default="de")
+    needs_json = Column(Text,     nullable=True)   # JSON list of need IDs, e.g. '["ruhe","fokus"]'
+    dimensions = Column(Text,     nullable=True)   # JSON list of unique dimensions, e.g. '["koerper","geist"]'
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     user     = relationship("User",    back_populates="checkins")

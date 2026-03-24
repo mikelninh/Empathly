@@ -40,7 +40,12 @@ const GefuehleAI = (function () {
   function isEnabled() { return localStorage.getItem(STORAGE_KEY_ENABLED) !== 'false'; }
   function setEnabled(v) { localStorage.setItem(STORAGE_KEY_ENABLED, v ? 'true' : 'false'); }
 
-  function isConfigured() { return !!(getApiKey() && isEnabled()); }
+  function isConfigured() {
+    if (!isEnabled()) return false;
+    // Backend online → AI works without user key (server handles it)
+    if (typeof GefuehleAPI !== 'undefined' && GefuehleAPI.isBackendOnline()) return true;
+    return !!getApiKey();
+  }
 
   // ── API Call ──
   async function callOpenRouter(prompt, systemPrompt) {
@@ -167,44 +172,50 @@ const GefuehleAI = (function () {
 
   // ── Settings Modal ──
   function createSettingsModal(uiLang) {
-    let modal = document.querySelector('.settings-modal-overlay');
-    if (modal) { modal.classList.add('visible'); return; }
+    const existing = document.querySelector('.settings-modal-overlay');
+    if (existing) existing.remove(); // rebuild to reflect current backend state
 
-    modal = document.createElement('div');
+    const backendOnline = typeof GefuehleAPI !== 'undefined' && GefuehleAPI.isBackendOnline();
+    const L = (de, en, vi) => uiLang === 'de' ? de : uiLang === 'vi' ? vi : en;
+
+    const statusBlock = backendOnline
+      ? `<div class="settings-status settings-status-ok">
+           ✅ ${L('KI aktiv — kein eigener Key nötig', 'AI active — no key required', 'AI đang hoạt động — không cần khóa')}
+         </div>`
+      : `<div class="settings-status settings-status-warn">
+           ⚡ ${L('Server nicht erreichbar — eigenen Key verwenden', 'Server unavailable — use your own key', 'Máy chủ không khả dụng')}
+         </div>`;
+
+    const keyHint = `<a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent)">openrouter.ai/keys</a>`;
+    const advancedFields = `
+      <div class="settings-field">
+        <label>OpenRouter API Key</label>
+        <input type="password" class="settings-input" id="ai-api-key" placeholder="sk-or-..." value="${getApiKey() === DEMO_API_KEY ? '' : getApiKey()}">
+        <small class="settings-help">${L('Kostenlos auf', 'Free at', 'Miễn phí tại')} ${keyHint}</small>
+      </div>
+      <div class="settings-field">
+        <label>${L('KI-Modell', 'AI Model', 'Mô hình AI')}</label>
+        <select class="settings-select" id="ai-model">
+          ${MODEL_OPTIONS.map(m => `<option value="${m.value}" ${m.value === getModel() ? 'selected' : ''}>${m.label}</option>`).join('')}
+        </select>
+      </div>`;
+
+    const modal = document.createElement('div');
     modal.className = 'settings-modal-overlay';
-    const freeHint = {
-      de: '🆓 Kostenlose KI-Modelle verfügbar! Du brauchst nur einen kostenlosen OpenRouter-Key.',
-      vi: '🆓 Có mô hình AI miễn phí! Bạn chỉ cần một khóa OpenRouter miễn phí.',
-      en: '🆓 Free AI models available! You just need a free OpenRouter key.'
-    };
-    const keyHint = {
-      de: 'Kostenlos erstellen auf <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent)">openrouter.ai/keys</a> (30 Sekunden, kein Abo)',
-      vi: 'Tạo miễn phí tại <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent)">openrouter.ai/keys</a> (30 giây, không cần đăng ký)',
-      en: 'Create for free at <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--accent)">openrouter.ai/keys</a> (30 seconds, no subscription)'
-    };
     modal.innerHTML = `
       <div class="settings-modal">
-        <h3 class="settings-title">⚙️ ${uiLang === 'de' ? 'KI-Einstellungen' : uiLang === 'vi' ? 'Cài đặt AI' : 'AI Settings'}</h3>
-        <div class="settings-hint">${freeHint[uiLang] || freeHint.en}</div>
-        <div class="settings-field">
-          <label>OpenRouter API Key</label>
-          <input type="password" class="settings-input" id="ai-api-key" placeholder="sk-or-..." value="${getApiKey() === DEMO_API_KEY ? '' : getApiKey()}">
-          <small class="settings-help">${keyHint[uiLang] || keyHint.en}</small>
-        </div>
-        <div class="settings-field">
-          <label>${uiLang === 'de' ? 'KI-Modell' : uiLang === 'vi' ? 'Mô hình AI' : 'AI Model'}</label>
-          <select class="settings-select" id="ai-model">
-            ${MODEL_OPTIONS.map(m => `<option value="${m.value}" ${m.value === getModel() ? 'selected' : ''}>${m.label}</option>`).join('')}
-          </select>
-          <small class="settings-help" style="color:var(--text-soft)">🆓 = ${uiLang === 'de' ? 'kostenlos, keine Kosten' : uiLang === 'vi' ? 'miễn phí, không tốn tiền' : 'free, no cost'} · ⭐ = ${uiLang === 'de' ? 'besser, kostet pro Nachricht' : uiLang === 'vi' ? 'tốt hơn, tốn phí mỗi tin nhắn' : 'better quality, costs per message'}</small>
-        </div>
+        <h3 class="settings-title">⚙️ ${L('KI-Einstellungen', 'AI Settings', 'Cài đặt AI')}</h3>
+        ${statusBlock}
+        ${backendOnline
+          ? `<details class="settings-advanced"><summary>${L('Eigenen Key / Modell verwenden', 'Use custom key / model', 'Dùng khóa/mô hình riêng')}</summary><div class="settings-advanced-body">${advancedFields}</div></details>`
+          : advancedFields}
         <div class="settings-field settings-toggle-row">
-          <label>${uiLang === 'de' ? 'KI-Funktionen' : uiLang === 'vi' ? 'Tính năng AI' : 'AI Features'}</label>
+          <label>${L('KI-Funktionen', 'AI Features', 'Tính năng AI')}</label>
           <button class="settings-toggle ${isEnabled() ? 'on' : ''}" id="ai-toggle">${isEnabled() ? 'ON' : 'OFF'}</button>
         </div>
         <div class="settings-actions">
-          <button class="btn btn-primary settings-save">${uiLang === 'de' ? 'Speichern' : uiLang === 'vi' ? 'Lưu' : 'Save'}</button>
-          <button class="btn btn-secondary settings-close">${uiLang === 'de' ? 'Schließen' : uiLang === 'vi' ? 'Đóng' : 'Close'}</button>
+          <button class="btn btn-primary settings-save">${L('Speichern', 'Save', 'Lưu')}</button>
+          <button class="btn btn-secondary settings-close">${L('Schließen', 'Close', 'Đóng')}</button>
         </div>
       </div>`;
 
@@ -217,8 +228,10 @@ const GefuehleAI = (function () {
     });
 
     modal.querySelector('.settings-save').addEventListener('click', () => {
-      setApiKey(modal.querySelector('#ai-api-key').value.trim());
-      setModel(modal.querySelector('#ai-model').value);
+      const keyInput = modal.querySelector('#ai-api-key');
+      const modelSelect = modal.querySelector('#ai-model');
+      if (keyInput) setApiKey(keyInput.value.trim());
+      if (modelSelect) setModel(modelSelect.value);
       setEnabled(toggleBtn.classList.contains('on'));
       modal.classList.remove('visible');
     });
