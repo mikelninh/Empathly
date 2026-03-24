@@ -52,6 +52,13 @@ const GefuehleAI = (function () {
     const apiKey = getApiKey();
     if (!apiKey) throw new Error('No API key configured');
 
+    // Inject active persona system prompt unless a custom one is provided
+    const effectiveSystem = systemPrompt || (
+      typeof GefuehlePersonas !== 'undefined'
+        ? GefuehlePersonas.getPersonaSystemPrompt(state?.lang1 || 'en')
+        : null
+    );
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -63,7 +70,7 @@ const GefuehleAI = (function () {
       body: JSON.stringify({
         model: getModel(),
         messages: [
-          ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+          ...(effectiveSystem ? [{ role: 'system', content: effectiveSystem }] : []),
           { role: 'user', content: prompt }
         ],
         max_tokens: 300,

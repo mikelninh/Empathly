@@ -96,7 +96,10 @@
     dom.journalMode = $('.journal-mode');
     dom.learnMode = $('.learn-mode');
     dom.askMode = $('.ask-mode');
+    dom.wotdMode = $('.wotd-mode');
     dom.settingsBtn = $('#btn-settings');
+    dom.soundBtn = $('#btn-sound');
+    dom.classroomBtn = $('#btn-classroom');
     // Landing & navigation
     dom.landingScreen = $('#landing-screen');
     dom.activeModeContainer = $('#active-mode-container');
@@ -216,6 +219,243 @@
     if (meta) meta.content = state.darkMode ? '#0D0B14' : '#FFF8F0';
   }
 
+  /* ---- Emotion Bookmarks ---- */
+  const BOOKMARKS_KEY = 'gefuehle-bookmarks';
+
+  function getBookmarks() {
+    try { return JSON.parse(localStorage.getItem(BOOKMARKS_KEY) || '[]'); }
+    catch { return []; }
+  }
+
+  function toggleBookmark(emotionId) {
+    const bookmarks = getBookmarks();
+    const idx = bookmarks.indexOf(emotionId);
+    if (idx === -1) {
+      bookmarks.push(emotionId);
+    } else {
+      bookmarks.splice(idx, 1);
+    }
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks));
+    return idx === -1; // true = added
+  }
+
+  function isBookmarked(emotionId) {
+    return getBookmarks().includes(emotionId);
+  }
+
+  function renderFavoritesSection() {
+    const el = document.getElementById('favorites-section');
+    if (!el) return;
+    const bookmarks = getBookmarks();
+    if (bookmarks.length === 0) { el.style.display = 'none'; return; }
+    const lang = state.uiLang;
+    const title = lang === 'de' ? 'Meine Favoriten' : lang === 'vi' ? 'Yêu thích của tôi'
+      : lang === 'el' ? 'Τα αγαπημένα μου' : 'My Favourites';
+    const chips = bookmarks.map(id => {
+      const emo = EMOTIONS.find(e => e.id === id);
+      if (!emo) return '';
+      const color = getCategoryColor(emo.category);
+      return `<button class="fav-chip" data-id="${id}" style="--fav-color:${color}">${emo.emoji} ${emo[lang] || emo.de}</button>`;
+    }).join('');
+    el.style.display = '';
+    el.innerHTML = `<h3 class="fav-title">★ ${title}</h3><div class="fav-chips">${chips}</div>`;
+    el.querySelectorAll('.fav-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const emo = EMOTIONS.find(e => e.id === chip.dataset.id);
+        if (!emo) return;
+        // Show the card hint for this emotion
+        showCardHint({ emotion: emo, emotionId: emo.id, lang: state.lang1, word: emo[state.lang1] });
+      });
+    });
+  }
+
+  /* ---- Emotion Collection ---- */
+  const COLLECTION_KEY = 'gefuehle-collection';
+
+  function getCollection() {
+    try { return new Set(JSON.parse(localStorage.getItem(COLLECTION_KEY) || '[]')); }
+    catch { return new Set(); }
+  }
+
+  function discoverEmotion(emotionId) {
+    const col = getCollection();
+    const isNew = !col.has(emotionId);
+    col.add(emotionId);
+    localStorage.setItem(COLLECTION_KEY, JSON.stringify([...col]));
+    return isNew;
+  }
+
+  function renderCollectionBar() {
+    const el = document.getElementById('collection-bar');
+    if (!el) return;
+    const col = getCollection();
+    const count = col.size;
+    const total = EMOTIONS.length;
+    const pct = Math.round((count / total) * 100);
+    const lang = state.uiLang;
+    const label = lang === 'de' ? `Du hast ${count} von ${total} Gefühlen entdeckt`
+      : lang === 'vi' ? `Bạn đã khám phá ${count}/${total} cảm xúc`
+      : lang === 'el' ? `Ανακάλυψες ${count} από ${total} συναισθήματα`
+      : `You've discovered ${count} of ${total} emotions`;
+    el.style.display = count > 0 ? '' : 'none';
+    el.innerHTML = `
+      <div class="cbar-label"><span class="cbar-icon">🌟</span>${label}</div>
+      <div class="cbar-track"><div class="cbar-fill" style="width:${pct}%"></div></div>`;
+  }
+
+  function showDiscoveryBadge(emotionId, emotionName, emoji) {
+    const lang = state.uiLang;
+    const text = lang === 'de' ? `✨ Neu entdeckt: ${emoji} ${emotionName}`
+      : lang === 'vi' ? `✨ Mới khám phá: ${emoji} ${emotionName}`
+      : lang === 'el' ? `✨ Νέα ανακάλυψη: ${emoji} ${emotionName}`
+      : `✨ New discovery: ${emoji} ${emotionName}`;
+    let badge = document.getElementById('discovery-badge');
+    if (!badge) {
+      badge = document.createElement('div');
+      badge.id = 'discovery-badge';
+      badge.className = 'discovery-badge';
+      document.body.appendChild(badge);
+    }
+    badge.textContent = text;
+    badge.classList.add('visible');
+    clearTimeout(badge._timer);
+    badge._timer = setTimeout(() => badge.classList.remove('visible'), 2800);
+  }
+
+  /* ---- Sound Engine ---- */
+  let _audioCtx = null;
+  function getAudioCtx() {
+    if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return _audioCtx;
+  }
+
+  function isSoundOn() {
+    return localStorage.getItem('gefuehle-sound') !== 'false';
+  }
+
+  function toggleSound() {
+    const on = !isSoundOn();
+    localStorage.setItem('gefuehle-sound', on ? 'true' : 'false');
+    if (dom.soundBtn) dom.soundBtn.textContent = on ? '🔊' : '🔇';
+  }
+
+  function initSound() {
+    if (dom.soundBtn) {
+      dom.soundBtn.textContent = isSoundOn() ? '🔊' : '🔇';
+      dom.soundBtn.addEventListener('click', toggleSound);
+    }
+  }
+
+  function playMatchSound() {
+    if (!isSoundOn()) return;
+    try {
+      const ctx = getAudioCtx();
+      // Two-note chime: root + fifth
+      [[523.25, 0, 0.12], [784, 0.08, 0.18]].forEach(([freq, delay, dur]) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0, ctx.currentTime + delay);
+        gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + delay + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + dur + 0.05);
+      });
+    } catch (_) {}
+  }
+
+  function playNoMatchSound() {
+    if (!isSoundOn()) return;
+    try {
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(280, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(220, ctx.currentTime + 0.15);
+      gain.gain.setValueAtTime(0.1, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.25);
+    } catch (_) {}
+  }
+
+  function playCongratsSound() {
+    if (!isSoundOn()) return;
+    try {
+      const ctx = getAudioCtx();
+      // Ascending arpeggio
+      [523.25, 659.25, 784, 1046.5].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        const t = ctx.currentTime + i * 0.1;
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.15, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+        osc.start(t);
+        osc.stop(t + 0.4);
+      });
+    } catch (_) {}
+  }
+
+  /* ---- Classroom / Presentation Mode ---- */
+  let _classroomMode = false;
+
+  function isClassroomMode() { return _classroomMode; }
+
+  function toggleClassroomMode() {
+    _classroomMode = !_classroomMode;
+    document.body.classList.toggle('classroom-mode', _classroomMode);
+    if (dom.classroomBtn) {
+      dom.classroomBtn.textContent = _classroomMode ? '🏫' : '📽';
+      dom.classroomBtn.title = _classroomMode ? 'Präsentationsmodus beenden' : 'Präsentationsmodus';
+    }
+    if (_classroomMode) {
+      // Request fullscreen
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } else {
+      if (document.exitFullscreen && document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  }
+
+  function initClassroomMode() {
+    if (dom.classroomBtn) {
+      dom.classroomBtn.addEventListener('click', toggleClassroomMode);
+    }
+    // Exit classroom mode on Escape
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && _classroomMode) {
+        _classroomMode = false;
+        document.body.classList.remove('classroom-mode');
+        if (dom.classroomBtn) dom.classroomBtn.textContent = '📽';
+      }
+    });
+  }
+
+  // Auto-speak prompt in classroom mode
+  function classroomSpeakPrompt(text, lang) {
+    if (!_classroomMode || !isSoundOn()) return;
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = LANG_SPEECH_MAP[lang] || 'de-DE';
+    utter.rate = 0.85;
+    window.speechSynthesis.speak(utter);
+  }
+
   /* ---- Star Rating ---- */
   function calculateStars(moves, totalPairs) {
     if (moves <= totalPairs * 2) return 3;
@@ -247,6 +487,174 @@
     }
   }
 
+  /* ---- Premium ---- */
+  function isPremium() {
+    return localStorage.getItem('gefuehle-premium') === 'true';
+  }
+
+  function showPremiumGate(uiLang) {
+    const L = (de, en, vi, el) => uiLang === 'de' ? de : uiLang === 'vi' ? vi : uiLang === 'el' ? el : en;
+    const overlay = document.createElement('div');
+    overlay.className = 'premium-gate-overlay';
+    overlay.innerHTML = `
+      <div class="premium-gate-card">
+        <div class="premium-gate-icon">✨</div>
+        <h3>${L('Premium freischalten', 'Unlock Premium', 'Mở khóa Premium', 'Ξεκλείδωσε Premium')}</h3>
+        <p>${L('Alle KI-Funktionen, Tandem-Modus und mehr — für €4,99 / Monat.', 'All AI features, Tandem mode and more — €4.99 / month.', 'Tất cả tính năng AI và chế độ Tandem — €4,99/tháng.', 'Όλες οι λειτουργίες AI και Tandem — €4,99/μήνα.')}</p>
+        <div class="premium-gate-features">
+          <div>🤖 ${L('Unbegrenzte KI-Gespräche', 'Unlimited AI conversations', 'Hội thoại AI không giới hạn', 'Απεριόριστες συνομιλίες AI')}</div>
+          <div>🌍 ${L('Tandem mit echten Partnern', 'Tandem with real partners', 'Tandem với đối tác thật', 'Tandem με πραγματικούς συνεργάτες')}</div>
+          <div>🎴 ${L('Physisches Kartenset (Rabatt)', 'Physical card deck (discount)', 'Bộ bài vật lý (giảm giá)', 'Φυσική τράπουλα (έκπτωση)')}</div>
+          <div>📊 ${L('Fortschritts-Analytics', 'Progress analytics', 'Phân tích tiến độ', 'Ανάλυση προόδου')}</div>
+        </div>
+        <button class="btn btn-primary premium-upgrade-btn">
+          ${L('Jetzt upgraden — €4,99/Monat', 'Upgrade now — €4.99/month', 'Nâng cấp ngay — €4,99/tháng', 'Αναβάθμιση τώρα — €4,99/μήνα')}
+        </button>
+        <button class="btn btn-ghost premium-demo-btn">
+          ${L('Demo ausprobieren', 'Try demo', 'Dùng thử demo', 'Δοκίμασε demo')}
+        </button>
+        <button class="premium-gate-close">✕</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+    overlay.querySelector('.premium-gate-close').addEventListener('click', () => overlay.remove());
+    overlay.querySelector('.premium-demo-btn').addEventListener('click', () => {
+      // Demo: temporarily grant premium
+      localStorage.setItem('gefuehle-premium', 'true');
+      overlay.remove();
+    });
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  }
+
+  /* ---- Tandem Overlay ---- */
+  function showTandemOverlay() {
+    const overlay = document.createElement('div');
+    overlay.className = 'tandem-overlay';
+    const container = document.createElement('div');
+    container.className = 'tandem-overlay-inner';
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'tandem-overlay-close';
+    closeBtn.textContent = '✕';
+    closeBtn.addEventListener('click', () => overlay.remove());
+    overlay.appendChild(closeBtn);
+    overlay.appendChild(container);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    if (typeof GefuehleTandem === 'undefined') {
+      container.innerHTML = '<p style="padding:2rem;text-align:center;color:var(--text-muted)">Tandem module not loaded.</p>';
+      return;
+    }
+
+    const result = GefuehleTandem.connect(
+      state.lang1, state.lang2,
+      (matchData) => {
+        if (matchData.error) {
+          GefuehleTandem.renderWaitlistForm(container, state.uiLang);
+          return;
+        }
+        GefuehleTandem.renderMatchedScreen(container, matchData, state.uiLang);
+      },
+      () => {}
+    );
+
+    if (result.mode === 'waitlist') {
+      GefuehleTandem.renderWaitlistForm(container, state.uiLang);
+    } else {
+      GefuehleTandem.renderMatchingScreen(container, state.lang1, state.lang2, state.uiLang);
+      // Simulate a match after a few seconds for demo purposes
+      GefuehleTandem.simulateMatch((matchData) => {
+        if (overlay.isConnected) GefuehleTandem.renderMatchedScreen(container, matchData, state.uiLang);
+      });
+      const cancelBtn = container.querySelector?.('.tandem-cancel-btn');
+      if (cancelBtn) cancelBtn.addEventListener('click', () => { GefuehleTandem.disconnect(); overlay.remove(); });
+    }
+  }
+
+  /* ---- Physical Deck Configurator ---- */
+  function showDeckConfigurator() {
+    const uiLang = state.uiLang;
+    const L = (de, en, vi, el) => uiLang === 'de' ? de : uiLang === 'vi' ? vi : uiLang === 'el' ? el : en;
+    const overlay = document.createElement('div');
+    overlay.className = 'deck-overlay';
+    overlay.innerHTML = `
+      <div class="deck-configurator">
+        <button class="deck-close-btn">✕</button>
+        <div class="deck-header">
+          <div class="deck-header-icon">🎴</div>
+          <h2>${L('Dein Gefühle-Kartenset', 'Your Emotion Card Deck', 'Bộ bài cảm xúc của bạn', 'Η τράπουλά σου')}</h2>
+          <p>${L('Wähle deine Sprachkombination — wir drucken und liefern weltweit.', 'Choose your language pair — we print and ship worldwide.', 'Chọn cặp ngôn ngữ — chúng tôi in và giao toàn cầu.', 'Διάλεξε ζεύγος γλωσσών — τυπώνουμε και στέλνουμε παγκοσμίως.')}</p>
+        </div>
+        <div class="deck-preview-row">
+          <div class="deck-card-preview" id="deck-preview">
+            <div class="deck-preview-word" id="deck-preview-word">Freude</div>
+            <div class="deck-preview-translation" id="deck-preview-trans">Joy</div>
+            <div class="deck-preview-langs" id="deck-preview-langs">🇩🇪 · 🇬🇧</div>
+          </div>
+          <div class="deck-options">
+            <div class="deck-option-group">
+              <label>${L('Sprache 1', 'Language 1', 'Ngôn ngữ 1', 'Γλώσσα 1')}</label>
+              <select id="deck-lang1">${Object.entries(LANGUAGES).map(([k,v]) => `<option value="${k}" ${k===state.lang1?'selected':''}>${v.flag} ${v.name}</option>`).join('')}</select>
+            </div>
+            <div class="deck-option-group">
+              <label>${L('Sprache 2', 'Language 2', 'Ngôn ngữ 2', 'Γλώσσα 2')}</label>
+              <select id="deck-lang2">${Object.entries(LANGUAGES).map(([k,v]) => `<option value="${k}" ${k===state.lang2?'selected':''}>${v.flag} ${v.name}</option>`).join('')}</select>
+            </div>
+            <div class="deck-option-group">
+              <label>${L('Format', 'Format', 'Định dạng', 'Μορφή')}</label>
+              <select id="deck-format">
+                <option value="67">67 ${L('Gefühle', 'Emotions', 'Cảm xúc', 'Συναισθήματα')} (${L('Komplett', 'Complete', 'Đầy đủ', 'Πλήρης')})</option>
+                <option value="30">30 ${L('Gefühle', 'Emotions', 'Cảm xúc', 'Συναισθήματα')} (${L('Starter', 'Starter', 'Khởi đầu', 'Εκκίνηση')})</option>
+              </select>
+            </div>
+            <div class="deck-price-display">
+              <span class="deck-price" id="deck-price">€24,99</span>
+              <span class="deck-price-note">${L('inkl. Versand weltweit', 'incl. worldwide shipping', 'gồm giao hàng toàn cầu', 'συμπ. παγκόσμια αποστολή')}</span>
+            </div>
+          </div>
+        </div>
+        <div class="deck-actions">
+          <button class="btn btn-primary deck-order-btn" id="deck-order-btn">
+            🎴 ${L('Jetzt bestellen', 'Order Now', 'Đặt hàng ngay', 'Παράγγειλε τώρα')}
+          </button>
+          <p class="deck-waitlist-note">${L('Aktuell in Entwicklung — trage dich für Early Access ein!', 'Currently in development — join the waitlist for early access!', 'Đang phát triển — đăng ký để truy cập sớm!', 'Σε ανάπτυξη — εγγράψου για πρώιμη πρόσβαση!')}</p>
+          <form class="deck-waitlist-form" id="deck-waitlist-form">
+            <input type="email" class="deck-email-input" placeholder="${L('E-Mail', 'Email', 'Email', 'Email')}" required>
+            <button type="submit" class="btn btn-secondary">${L('Benachrichtigen', 'Notify me', 'Thông báo', 'Ειδοποίησέ με')}</button>
+          </form>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    overlay.querySelector('.deck-close-btn').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+
+    // Live preview update
+    function updatePreview() {
+      const l1 = overlay.querySelector('#deck-lang1').value;
+      const l2 = overlay.querySelector('#deck-lang2').value;
+      const sampleEmotion = EMOTIONS[0];
+      overlay.querySelector('#deck-preview-word').textContent = sampleEmotion[l1] || sampleEmotion.de;
+      overlay.querySelector('#deck-preview-trans').textContent = sampleEmotion[l2] || sampleEmotion.en;
+      overlay.querySelector('#deck-preview-langs').textContent = `${LANGUAGES[l1]?.flag || ''} · ${LANGUAGES[l2]?.flag || ''}`;
+      const format = overlay.querySelector('#deck-format').value;
+      overlay.querySelector('#deck-price').textContent = format === '30' ? '€14,99' : '€24,99';
+    }
+    overlay.querySelector('#deck-lang1').addEventListener('change', updatePreview);
+    overlay.querySelector('#deck-lang2').addEventListener('change', updatePreview);
+    overlay.querySelector('#deck-format').addEventListener('change', updatePreview);
+
+    overlay.querySelector('#deck-waitlist-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const email = overlay.querySelector('.deck-email-input').value.trim();
+      if (!email) return;
+      const saved = JSON.parse(localStorage.getItem('gefuehle-deck-waitlist') || '[]');
+      if (!saved.includes(email)) { saved.push(email); localStorage.setItem('gefuehle-deck-waitlist', JSON.stringify(saved)); }
+      overlay.querySelector('#deck-waitlist-form').innerHTML = `<p style="color:var(--success);font-weight:600">✓ ${L('Du bist dabei!', 'You\'re on the list!', 'Bạn đã đăng ký!', 'Είσαι στη λίστα!')}</p>`;
+    });
+  }
+
   /* ---- Landing / Navigation ---- */
   function showLanding() {
     state.showLanding = true;
@@ -255,6 +663,13 @@
     updateSettingsSummary();
     renderStreakCard();
     renderWeeklyRecap();
+    renderDailyFunFact();
+    renderTodaysEmotion();
+    renderCollectionBar();
+    renderFavoritesSection();
+    if (typeof GefuehlePersonas !== 'undefined') {
+      GefuehlePersonas.renderPersonaPicker(state.uiLang);
+    }
   }
 
   function hideLanding() {
@@ -281,43 +696,58 @@
   const MODE_CARD_DATA = {
     classic: {
       icon: '🃏',
-      name: { de: 'Klassisch', vi: 'Cổ điển', en: 'Classic' },
-      desc: { de: 'Finde passende Paare', vi: 'Tìm các cặp phù hợp', en: 'Find matching pairs' }
+      name: { de: 'Klassisch', vi: 'Cổ điển', en: 'Classic', tr: 'Klasik', ar: 'كلاسيكي', es: 'Clásico', fr: 'Classique', uk: 'Класика', pl: 'Klasyk', el: 'Κλασικό', ta: 'கிளாசிக்' },
+      desc: { de: 'Wer findet zuerst alle Paare?', vi: 'Ai tìm đủ cặp trước?', en: 'Who finds all pairs first?', tr: 'Kim önce tüm çiftleri bulur?', ar: 'من يجد كل الأزواج أولاً؟', es: '¿Quién encuentra todos los pares primero?', fr: 'Qui trouve toutes les paires en premier?', uk: 'Хто знайде всі пари першим?', pl: 'Kto pierwszy znajdzie wszystkie pary?', el: 'Ποιος βρίσκει πρώτος όλα τα ζεύγη;', ta: 'யார் முதலில் அனைத்து ஜோடிகளையும் கண்டுபிடிப்பார்?' }
     },
     talk: {
       icon: '💬',
-      name: { de: 'Gesprächsrunde', vi: 'Trò chuyện', en: 'Talk Round' },
-      desc: { de: 'Zieh Karten & sprich', vi: 'Rút thẻ & chia sẻ', en: 'Draw cards & talk' }
+      name: { de: 'Gesprächsrunde', vi: 'Trò chuyện', en: 'Talk Round', tr: 'Konuşma Turu', ar: 'جولة الحديث', es: 'Ronda de Conversación', fr: 'Tour de Parole', uk: 'Коло розмови', pl: 'Runda rozmowy', el: 'Γύρος Συζήτησης', ta: 'உரையாடல் சுற்று' },
+      desc: { de: 'Zieh eine Karte — wer redet zuerst?', vi: 'Rút thẻ — ai nói trước?', en: 'Draw a card — who speaks first?', tr: 'Kart çek — kim önce konuşur?', ar: 'اسحب بطاقة — من يتحدث أولاً؟', es: 'Saca una carta — ¿quién habla primero?', fr: 'Tire une carte — qui parle en premier?', uk: 'Витягни картку — хто говорить першим?', pl: 'Wyciągnij kartę — kto mówi pierwszy?', el: 'Τράβα κάρτα — ποιος μιλά πρώτος;', ta: 'ஒரு அட்டையை எடு — யார் முதலில் பேசுவார்?' }
     },
     story: {
       icon: '📖',
-      name: { de: 'Geschichten', vi: 'Kể chuyện', en: 'Stories' },
-      desc: { de: 'Erzähle eine Geschichte', vi: 'Kể một câu chuyện', en: 'Tell a story' }
+      name: { de: 'Geschichten', vi: 'Kể chuyện', en: 'Stories', tr: 'Hikayeler', ar: 'القصص', es: 'Historias', fr: 'Histoires', uk: 'Історії', pl: 'Historie', el: 'Ιστορίες', ta: 'கதைகள்' },
+      desc: { de: 'Drei Gefühle. Eine Geschichte. Los.', vi: 'Ba cảm xúc. Một câu chuyện. Bắt đầu.', en: 'Three emotions. One story. Go.', tr: 'Üç duygu. Bir hikaye. Başla.', ar: 'ثلاثة مشاعر. قصة واحدة. ابدأ.', es: 'Tres emociones. Una historia. ¡Adelante!', fr: 'Trois émotions. Une histoire. Partez.', uk: 'Три почуття. Одна історія. Вперед.', pl: 'Trzy emocje. Jedna historia. Zaczynaj.', el: 'Τρία συναισθήματα. Μια ιστορία. Ε, λοιπόν.', ta: 'மூன்று உணர்வுகள். ஒரு கதை. போ.' }
     },
     wheel: {
       icon: '🎡',
-      name: { de: 'Emotions-Rad', vi: 'Vòng cảm xúc', en: 'Emotion Wheel' },
-      desc: { de: 'Alle 67 Gefühle erkunden', vi: 'Khám phá 67 cảm xúc', en: 'Explore all 67 emotions' }
+      name: { de: 'Emotions-Rad', vi: 'Vòng cảm xúc', en: 'Emotion Wheel', tr: 'Duygu Çarkı', ar: 'عجلة المشاعر', es: 'Rueda de Emociones', fr: 'Roue des Émotions', uk: 'Колесо емоцій', pl: 'Koło Emocji', el: 'Τροχός Συναισθημάτων', ta: 'உணர்வு சக்கரம்' },
+      desc: { de: 'Alle 67 Gefühle — welche kennst du schon?', vi: 'Tất cả 67 cảm xúc — bạn biết bao nhiêu?', en: 'All 67 emotions — how many do you know?', tr: 'Tüm 67 duygu — kaçını biliyorsun?', ar: '67 مشعوراً — كم منها تعرف؟', es: '67 emociones — ¿cuántas conoces?', fr: '67 émotions — combien en connais-tu?', uk: '67 емоцій — скільки ти знаєш?', pl: '67 emocji — ile znasz?', el: '67 συναισθήματα — πόσα ξέρεις;', ta: '67 உணர்வுகள் — எத்தனை உங்களுக்குத் தெரியும்?' }
     },
     checkin: {
       icon: '🌿',
-      name: { de: 'Check-in', vi: 'Tự vấn', en: 'Check-in' },
-      desc: { de: 'Was brauchst du heute?', vi: 'Hôm nay bạn cần gì?', en: 'What do you need today?' }
+      name: { de: 'Check-in', vi: 'Tự vấn', en: 'Check-in', tr: 'Kontrol', ar: 'تسجيل الحضور', es: 'Check-in', fr: 'Check-in', uk: 'Чек-ін', pl: 'Check-in', el: 'Αυτοέλεγχος', ta: 'செக்-இன்' },
+      desc: { de: '2 Minuten: Wie geht\'s dir wirklich?', vi: '2 phút: Bạn thực sự cảm thấy thế nào?', en: '2 minutes: How are you, really?', tr: '2 dakika: Gerçekten nasılsın?', ar: 'دقيقتان: كيف حالك حقاً؟', es: '2 minutos: ¿Cómo estás de verdad?', fr: '2 minutes: Comment tu vas vraiment?', uk: '2 хвилини: Як ти насправді?', pl: '2 minuty: Jak naprawdę się czujesz?', el: '2 λεπτά: Πώς είσαι πραγματικά;', ta: '2 நிமிடங்கள்: நீங்கள் உண்மையில் எப்படி இருக்கிறீர்கள்?' }
     },
     learn: {
       icon: '🧠',
-      name: { de: 'Karteikarten', vi: 'Thẻ ghi nhớ', en: 'Flashcards' },
-      desc: { de: 'Vokabeln mit Wiederholung', vi: 'Từ vựng lặp lại', en: 'Vocabulary with repetition' }
+      name: { de: 'Karteikarten', vi: 'Thẻ ghi nhớ', en: 'Flashcards', tr: 'Kartlar', ar: 'البطاقات', es: 'Tarjetas', fr: 'Fiches', uk: 'Картки', pl: 'Fiszki', el: 'Κάρτες', ta: 'ஃபிளாஷ்கார்டுகள்' },
+      desc: { de: 'Lerne Gefühle — Wort für Wort', vi: 'Học cảm xúc — từng từ một', en: 'Learn emotions — word by word', tr: 'Duyguları öğren — kelime kelime', ar: 'تعلّم المشاعر — كلمة بكلمة', es: 'Aprende emociones — palabra a palabra', fr: 'Apprends les émotions — mot à mot', uk: 'Вчи емоції — слово за словом', pl: 'Ucz się emocji — słowo po słowie', el: 'Μάθε συναισθήματα — λέξη προς λέξη', ta: 'உணர்வுகளைக் கற்றுக்கொள் — வார்த்தை வார்த்தையாக' }
     },
     journal: {
       icon: '📓',
-      name: { de: 'Journal', vi: 'Nhật ký', en: 'Journal', el: 'Ημερολόγιο' },
-      desc: { de: 'Tägliche Reflexion', vi: 'Suy ngẫm hàng ngày', en: 'Daily reflection', el: 'Καθημερινός στοχασμός' }
+      name: { de: 'Journal', vi: 'Nhật ký', en: 'Journal', tr: 'Günlük', ar: 'مفكرة', es: 'Diario', fr: 'Journal', uk: 'Щоденник', pl: 'Dziennik', el: 'Ημερολόγιο', ta: 'நாட்குறிப்பு' },
+      desc: { de: 'Schreib auf, was dich bewegt', vi: 'Viết những gì chạm đến bạn', en: 'Write what moves you', tr: 'Seni etkileyen şeyi yaz', ar: 'اكتب ما يحرّكك', es: 'Escribe lo que te mueve', fr: 'Écris ce qui te touche', uk: 'Запиши те, що тебе хвилює', pl: 'Zapisz to, co cię porusza', el: 'Γράψε ό,τι σε συγκινεί', ta: 'உன்னை நகர்த்துவதை எழுது' }
+    },
+    wotd: {
+      icon: '🌅',
+      name: { de: 'Wort des Tages', vi: 'Từ của ngày', en: 'Word of the Day', tr: 'Günün Kelimesi', ar: 'كلمة اليوم', es: 'Palabra del Día', fr: 'Mot du Jour', uk: 'Слово дня', pl: 'Słowo dnia', el: 'Λέξη της ημέρας', ta: 'இன்றைய வார்த்தை' },
+      desc: { de: 'Ein neues Gefühl täglich entdecken', vi: 'Khám phá một cảm xúc mỗi ngày', en: 'Discover one new emotion daily', tr: 'Her gün yeni bir duygu keşfet', ar: 'اكتشف شعوراً جديداً يومياً', es: 'Descubre una emoción nueva cada día', fr: 'Découvre une nouvelle émotion chaque jour', uk: 'Відкривай нову емоцію щодня', pl: 'Odkrywaj nową emocję każdego dnia', el: 'Ανακάλυψε ένα νέο συναίσθημα κάθε μέρα', ta: 'ஒவ்வொரு நாளும் ஒரு புதிய உணர்வைக் கண்டறியுங்கள்' }
     },
     ask: {
-      icon: '💬',
-      name: { de: 'Frag die App', vi: 'Hỏi ứng dụng', en: 'Ask the App', el: 'Ρώτα την εφαρμογή' },
-      desc: { de: 'Stell eine Frage', vi: 'Đặt một câu hỏi', en: 'Ask a question', el: 'Κάνε μια ερώτηση' }
+      icon: '🤖',
+      name: { de: 'Frag die App', vi: 'Hỏi ứng dụng', en: 'Ask the App', tr: 'Uygulamaya Sor', ar: 'اسأل التطبيق', es: 'Pregunta a la App', fr: 'Demande à l\'App', uk: 'Запитай додаток', pl: 'Zapytaj aplikację', el: 'Ρώτα την εφαρμογή', ta: 'ஆப்பை கேள்' },
+      desc: { de: 'Deine Frage zu Gefühlen — KI antwortet', vi: 'Câu hỏi về cảm xúc — AI trả lời', en: 'Your emotion question — AI answers', tr: 'Duygularla ilgili sorun — AI yanıtlar', ar: 'سؤالك عن المشاعر — الذكاء الاصطناعي يجيب', es: 'Tu pregunta emocional — la IA responde', fr: 'Ta question émotionnelle — l\'IA répond', uk: 'Твоє питання про емоції — ШІ відповідає', pl: 'Twoje pytanie o emocje — AI odpowiada', el: 'Η ερώτησή σου για τα συναισθήματα — η AI απαντά', ta: 'உணர்வு கேள்வி — AI பதிலளிக்கும்' }
+    },
+    tandem: {
+      icon: '🌍',
+      name: { de: 'Tandem', vi: 'Tandem', en: 'Tandem', tr: 'Tandem', ar: 'تاندم', es: 'Tándem', fr: 'Tandem', uk: 'Тандем', pl: 'Tandem', el: 'Tandem', ta: 'டான்டம்' },
+      desc: { de: 'Lerne Gefühle mit echten Menschen weltweit', vi: 'Học cảm xúc với người thật', en: 'Learn emotions with real people worldwide', tr: 'Dünya genelinde gerçek insanlarla', ar: 'تعلم المشاعر مع أشخاص حقيقيين', es: 'Aprende emociones con personas reales', fr: 'Apprends avec de vraies personnes', uk: 'Вчися з реальними людьми', pl: 'Ucz się z prawdziwymi ludźmi', el: 'Μάθε με πραγματικούς ανθρώπους', ta: 'உண்மையான மனிதர்களுடன் கற்றுக்கொள்' }
+    },
+    deck: {
+      icon: '🎴',
+      name: { de: 'Kartenset', vi: 'Bộ bài', en: 'Card Deck', tr: 'Kart Seti', ar: 'مجموعة البطاقات', es: 'Mazo de Cartas', fr: 'Jeu de Cartes', uk: 'Набір карт', pl: 'Talia kart', el: 'Τράπουλα', ta: 'அட்டை தொகுப்பு' },
+      desc: { de: 'Dein physisches Gefühle-Kartenset gestalten', vi: 'Tạo bộ bài vật lý của bạn', en: 'Design your physical emotion card deck', tr: 'Fiziksel duygu kartı setini tasarla', ar: 'صمم مجموعة بطاقات المشاعر الفيزيائية', es: 'Diseña tu baraja física de emociones', fr: 'Crée ton jeu de cartes physique', uk: 'Створи свій фізичний набір карток', pl: 'Zaprojektuj swój fizyczny zestaw kart', el: 'Σχεδίασε τη φυσική τράπουλα συναισθημάτων', ta: 'உங்கள் இயற்பியல் அட்டை தொகுப்பை வடிவமைக்கவும்' }
     }
   };
 
@@ -330,6 +760,8 @@
 
   function updateModeCards() {
     const lang = state.uiLang;
+    const sessionCount = parseInt(localStorage.getItem('gefuehle-session-count') || '0');
+    const showRecommended = sessionCount < 4;
     dom.modeCards.forEach(card => {
       const mode = card.dataset.mode;
       const data = MODE_CARD_DATA[mode];
@@ -340,6 +772,18 @@
       if (iconEl) iconEl.textContent = data.icon;
       if (nameEl) nameEl.textContent = data.name[lang] || data.name.en;
       if (descEl) descEl.textContent = data.desc[lang] || data.desc.en;
+      // Add "Empfohlen" badge to Talk Mode for first 4 sessions
+      let badge = card.querySelector('.mode-card-badge');
+      if (mode === 'talk' && showRecommended) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'mode-card-badge';
+          card.appendChild(badge);
+        }
+        badge.textContent = lang === 'de' ? '✨ Empfohlen' : lang === 'vi' ? '✨ Đề xuất' : lang === 'el' ? '✨ Προτείνεται' : '✨ Recommended';
+      } else if (badge) {
+        badge.remove();
+      }
     });
 
     // Update group labels
@@ -580,10 +1024,11 @@
     const isJournal = state.mode === 'journal';
     const isLearn = state.mode === 'learn';
     const isAsk = state.mode === 'ask';
+    const isWotd = state.mode === 'wotd';
 
     dom.board.style.display = isClassic ? '' : 'none';
     dom.statsBar.style.display = isClassic ? '' : 'none';
-    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk) ? 'none' : '';
+    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk || isWotd) ? 'none' : '';
     dom.talkMode.classList.toggle('active', isTalk);
     dom.storyMode.classList.toggle('active', isStory);
     dom.checkinMode.classList.toggle('active', isCheckin);
@@ -591,6 +1036,7 @@
     dom.journalMode.classList.toggle('active', isJournal);
     if (dom.learnMode) dom.learnMode.classList.toggle('active', isLearn);
     if (dom.askMode) dom.askMode.classList.toggle('active', isAsk);
+    if (dom.wotdMode) dom.wotdMode.classList.toggle('active', isWotd);
     dom.turnIndicator.classList.remove('active');
     dom.playerSetup.classList.remove('active');
 
@@ -610,6 +1056,7 @@
     if (isJournal) initJournalMode();
     if (isLearn && window.initLearnMode) window.initLearnMode();
     if (isAsk) initAskMode();
+    if (isWotd) initWotdMode();
   }
 
   function startClassicGame() {
@@ -679,12 +1126,16 @@
           setTimeout(() => c.classList.remove('match-burst'), 650);
         });
         if ('vibrate' in navigator) navigator.vibrate([20, 8, 20]);
+        playMatchSound();
+        const isNewDiscovery = discoverEmotion(a.emotionId);
+        if (isNewDiscovery) showDiscoveryBadge(a.emotionId, a.emotion[state.lang1] || a.emotion.de, a.emotion.emoji);
         state.flipped = []; state.locked = false;
         showPrompt(a.emotion);
         if (state.pairsFound === state.totalPairs) setTimeout(showCongrats, 1200);
       }, 500);
     } else {
       state.locked = true;
+      playNoMatchSound();
       showDismissBar();
       const dismiss = () => {
         hideDismissBar();
@@ -854,6 +1305,21 @@
         dom.promptCulture.style.display = 'none';
       }
     }
+    // Auto-speak the prompt question in classroom mode
+    classroomSpeakPrompt(emotion.prompt[state.uiLang] || emotion.prompt.de, state.uiLang);
+    // Bookmark button in prompt overlay
+    const shareBtn = dom.promptShare;
+    if (shareBtn) {
+      const bookmarked = isBookmarked(emotion.id);
+      shareBtn.textContent = bookmarked ? '★' : '☆';
+      shareBtn.title = bookmarked ? (state.uiLang === 'de' ? 'Gespeichert' : 'Saved') : (state.uiLang === 'de' ? 'Speichern' : 'Save');
+      shareBtn.onclick = (e) => {
+        e.stopPropagation();
+        const added = toggleBookmark(emotion.id);
+        shareBtn.textContent = added ? '★' : '☆';
+        shareBtn.title = added ? (state.uiLang === 'de' ? 'Gespeichert' : 'Saved') : (state.uiLang === 'de' ? 'Speichern' : 'Save');
+      };
+    }
     dom.promptOverlay.classList.add('visible');
   }
   function hidePrompt() { dom.promptOverlay.classList.remove('visible'); }
@@ -900,6 +1366,7 @@
       dom.congratsBest.textContent = isNewBest ? `⭐ ${t('newBest')}` : '';
     }
 
+    playCongratsSound();
     dom.congratsOverlay.classList.add('visible');
   }
   function hideCongrats() { dom.congratsOverlay.classList.remove('visible'); }
@@ -936,10 +1403,12 @@
 
     function show() {
       currentEmo = deck[index % deck.length];
-      // Mark as explored
+      // Mark as explored + discovered
       const explored = new Set(JSON.parse(localStorage.getItem(TALK_EXPLORED_KEY) || '[]'));
       explored.add(currentEmo.id);
       localStorage.setItem(TALK_EXPLORED_KEY, JSON.stringify([...explored]));
+      const isTalkNew = discoverEmotion(currentEmo.id);
+      if (isTalkNew) showDiscoveryBadge(currentEmo.id, currentEmo[state.lang1] || currentEmo.de, currentEmo.emoji);
 
       const color = getCategoryColor(currentEmo.category);
       const isNew = !explored.has(currentEmo.id) || index < fresh.length;
@@ -1057,6 +1526,8 @@
           starterEl.textContent = res.text;
           starterEl.classList.add('visible');
           panel.querySelector('.story-write-area').style.display = '';
+          // Discover emotions when story starter is generated
+          currentThree.forEach(e => discoverEmotion(e.id));
         }
       });
 
@@ -1080,6 +1551,36 @@
           const fbEl = panel.querySelector('.story-feedback-result');
           fbEl.textContent = res.text;
           fbEl.classList.add('visible');
+          // Show "Save to journal" button after reflection
+          if (!panel.querySelector('.btn-story-save')) {
+            const saveBtn = document.createElement('button');
+            saveBtn.className = 'btn-story-save';
+            const lang = state.uiLang;
+            saveBtn.textContent = lang === 'de' ? '📓 In Journal speichern'
+              : lang === 'vi' ? '📓 Lưu vào nhật ký'
+              : lang === 'el' ? '📓 Αποθήκευση στο ημερολόγιο'
+              : '📓 Save to Journal';
+            fbEl.after(saveBtn);
+            saveBtn.addEventListener('click', () => {
+              const starterEl = panel.querySelector('.story-ai-starter');
+              const JOURNAL_KEY = 'gefuehle-journal';
+              const entries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+              entries.push({
+                date: new Date().toISOString().split('T')[0],
+                type: 'story',
+                emotions: names,
+                starter: starterEl ? starterEl.textContent : '',
+                text: storyText,
+                reflection: res.text,
+              });
+              localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+              saveBtn.textContent = lang === 'de' ? '✓ Gespeichert!' : lang === 'vi' ? '✓ Đã lưu!' : '✓ Saved!';
+              saveBtn.disabled = true;
+              if (typeof GefuehleAPI !== 'undefined') {
+                GefuehleAPI.saveJournal({ date: entries[entries.length - 1].date, note: storyText, emotions: names });
+              }
+            });
+          }
         }
       });
     }
@@ -1269,6 +1770,79 @@
     }
   }
 
+  /* ---- Emotion Journey Paths ---- */
+  const EMOTION_JOURNEYS = {
+    angst: {
+      de: 'Du hast Gefühle der Schutzzone gespürt. Möchtest du tiefer gehen?',
+      en: 'You felt some protective emotions. Want to explore deeper?',
+      el: 'Αισθάνθηκες συναισθήματα προστασίας. Θέλεις να εξερευνήσεις;',
+      vi: 'Bạn cảm thấy một số cảm xúc bảo vệ. Muốn khám phá sâu hơn?',
+      emotions: ['angst', 'einsamkeit', 'scham', 'erschoepfung', 'niedergeschlagenheit'],
+      icon: '⚡',
+    },
+    licht: {
+      de: 'Schöne Energie! Lass uns in Freude und Weite eintauchen.',
+      en: 'Great energy! Let\'s dive into joy and expanse.',
+      el: 'Θαυμάσια ενέργεια! Ας εμβαθύνουμε στη χαρά.',
+      vi: 'Năng lượng tuyệt vời! Hãy đắm chìm vào niềm vui.',
+      emotions: ['freude', 'dankbarkeit', 'frieden', 'leichtigkeit', 'begeisterung'],
+      icon: '🌟',
+    },
+    schwere: {
+      de: 'Tiefe Gefühle verdienen Raum. Diese Karten begleiten dich.',
+      en: 'Deep feelings deserve space. These cards will accompany you.',
+      el: 'Τα βαθιά συναισθήματα αξίζουν χώρο.',
+      vi: 'Cảm xúc sâu sắc xứng đáng có không gian.',
+      emotions: ['trauer', 'einsamkeit', 'sehnsucht', 'nostalgie', 'mitgefuehl'],
+      icon: '🌑',
+    },
+    beziehung: {
+      de: 'Verbindung und Beziehung stehen im Mittelpunkt. Diese Runde ist für dich und deine Menschen.',
+      en: 'Connection and relationship are central. This round is for you and your people.',
+      el: 'Η σύνδεση είναι κεντρική. Αυτή η σειρά είναι για σας.',
+      vi: 'Kết nối là trung tâm. Vòng này dành cho bạn và những người thân.',
+      emotions: ['liebe', 'vertrauen', 'dankbarkeit', 'mitgefuehl', 'zugehoerigkeit'],
+      icon: '💛',
+    },
+  };
+
+  function showJourneyOffer(lang, dominantCategory) {
+    const journey = EMOTION_JOURNEYS[dominantCategory];
+    if (!journey) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'journey-offer-overlay';
+    const exploreLabel = lang === 'de' ? 'Jetzt erkunden' : lang === 'vi' ? 'Khám phá ngay' : lang === 'el' ? 'Εξερεύνησε' : 'Explore now';
+    const skipLabel = lang === 'de' ? 'Nicht jetzt' : lang === 'vi' ? 'Không phải bây giờ' : lang === 'el' ? 'Όχι τώρα' : 'Not now';
+    overlay.innerHTML = `
+      <div class="journey-offer-card">
+        <div class="journey-offer-icon">${journey.icon}</div>
+        <div class="journey-offer-text">${journey[lang] || journey.en}</div>
+        <div class="journey-offer-actions">
+          <button class="journey-explore-btn">${exploreLabel}</button>
+          <button class="journey-skip-btn">${skipLabel}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.classList.add('visible'));
+
+    overlay.querySelector('.journey-explore-btn').addEventListener('click', () => {
+      overlay.remove();
+      // Start Talk Mode with journey emotions
+      const journeyEmotions = journey.emotions
+        .map(id => EMOTIONS.find(e => e.id === id))
+        .filter(Boolean);
+      state.mode = 'talk';
+      state._journeyEmotions = journeyEmotions;
+      hideLanding();
+      startGame();
+    });
+
+    overlay.querySelector('.journey-skip-btn').addEventListener('click', () => {
+      overlay.classList.remove('visible');
+      setTimeout(() => { overlay.remove(); showLanding(); }, 350);
+    });
+  }
+
   function showCheckinRitual(lang, selections) {
     const dims = [...new Set(Object.values(selections))];
     const AFFIRMATIONS = {
@@ -1298,7 +1872,20 @@
     requestAnimationFrame(() => overlay.classList.add('visible'));
     overlay.querySelector('.ritual-close').addEventListener('click', () => {
       overlay.classList.remove('visible');
-      setTimeout(() => { overlay.remove(); showLanding(); }, 400);
+      // Determine dominant emotional category to offer a journey
+      const dimCounts = {};
+      dims.forEach(d => { dimCounts[d] = (dimCounts[d] || 0) + 1; });
+      const dominant = Object.entries(dimCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+      const CATEGORY_MAP = { koerper: 'schwere', herz: 'licht', geist: 'angst', seele: 'schwere', beziehung: 'beziehung' };
+      const emotionCategory = CATEGORY_MAP[dominant];
+      setTimeout(() => {
+        overlay.remove();
+        if (emotionCategory && EMOTION_JOURNEYS[emotionCategory]) {
+          showJourneyOffer(lang, emotionCategory);
+        } else {
+          showLanding();
+        }
+      }, 400);
     });
   }
 
@@ -1899,6 +2486,96 @@
     }
   }
 
+  /* ---- Word of the Day Mode ---- */
+  function initWotdMode() {
+    const container = dom.wotdMode;
+    const lang = state.uiLang;
+    const dayIndex = Math.floor(Date.now() / 86400000) % EMOTIONS.length;
+    const emo = EMOTIONS[dayIndex];
+    const color = getCategoryColor(emo.category);
+    const cat = CATEGORIES.find(c => c.id === emo.category);
+    const catLabel = cat ? `${cat.emoji} ${cat[lang] || cat.en}` : '';
+    const col = getCollection();
+    const alreadyLearned = col.has(emo.id);
+
+    const WOTD_KEY = 'gefuehle-wotd-date';
+    const todayStr = new Date().toISOString().split('T')[0];
+    const learnedToday = localStorage.getItem(WOTD_KEY) === todayStr;
+
+    const titleLabel = lang === 'de' ? 'Wort des Tages' : lang === 'vi' ? 'Từ của ngày' : lang === 'el' ? 'Λέξη της ημέρας' : 'Word of the Day';
+    const learnBtnLabel = learnedToday
+      ? (lang === 'de' ? '✓ Heute gelernt' : '✓ Learned today')
+      : (lang === 'de' ? '✓ Gelernt — nächstes Wort morgen' : lang === 'el' ? '✓ Έμαθα — επόμενη λέξη αύριο' : '✓ Learned — next word tomorrow');
+    const promptLabel = lang === 'de' ? 'Frage für heute' : lang === 'vi' ? 'Câu hỏi hôm nay' : lang === 'el' ? 'Ερώτηση της ημέρας' : 'Today\'s question';
+    const journalLabel = lang === 'de' ? '📓 Im Journal notieren' : lang === 'el' ? '📓 Σημείωση στο ημερολόγιο' : '📓 Note in journal';
+
+    const cultureNote = (typeof CULTURE_NOTES !== 'undefined' && CULTURE_NOTES[emo.id])
+      ? CULTURE_NOTES[emo.id][lang] || null : null;
+
+    container.innerHTML = `
+      <div class="wotd-card" style="--wotd-color:${color}">
+        <div class="wotd-label">${titleLabel}</div>
+        <div class="wotd-emoji">${emo.emoji}</div>
+        <div class="wotd-word">${emo[state.lang1] || emo.de}</div>
+        <div class="wotd-word-secondary">${emo[state.lang2] || emo.en}</div>
+        <div class="wotd-speak-row">
+          <button class="speak-btn wotd-speak" data-speak-word="${emo[state.lang1] || emo.de}" data-speak-lang="${state.lang1}">🔊 ${LANGUAGES[state.lang1]?.name || state.lang1}</button>
+          <button class="speak-btn wotd-speak" data-speak-word="${emo[state.lang2] || emo.en}" data-speak-lang="${state.lang2}">🔊 ${LANGUAGES[state.lang2]?.name || state.lang2}</button>
+        </div>
+        <div class="wotd-category">${catLabel}</div>
+        <div class="wotd-divider"></div>
+        <div class="wotd-prompt-label">${promptLabel}</div>
+        <div class="wotd-prompt">${emo.prompt[lang] || emo.prompt.en || emo.prompt.de}</div>
+        ${cultureNote ? `<div class="wotd-culture"><span class="wotd-culture-label">🌍</span>${cultureNote}</div>` : ''}
+        <div class="wotd-actions">
+          <button class="wotd-learn-btn${learnedToday ? ' learned' : ''}"${learnedToday ? ' disabled' : ''}>${learnBtnLabel}</button>
+          <button class="wotd-journal-btn">${journalLabel}</button>
+        </div>
+        <div class="wotd-journal-area" style="display:none">
+          <textarea class="wotd-textarea" placeholder="${lang === 'de' ? 'Deine Gedanken...' : 'Your thoughts...'}"></textarea>
+          <button class="wotd-journal-save">${lang === 'de' ? 'Speichern' : 'Save'}</button>
+        </div>
+      </div>`;
+
+    container.querySelectorAll('.wotd-speak').forEach(btn => {
+      btn.addEventListener('click', () => speakWord(btn.dataset.speakWord, btn.dataset.speakLang));
+    });
+
+    const learnBtn = container.querySelector('.wotd-learn-btn');
+    if (learnBtn && !learnedToday) {
+      learnBtn.addEventListener('click', () => {
+        discoverEmotion(emo.id);
+        localStorage.setItem(WOTD_KEY, todayStr);
+        learnBtn.classList.add('learned');
+        learnBtn.disabled = true;
+        learnBtn.textContent = lang === 'de' ? '✓ Gelernt!' : '✓ Learned!';
+        playMatchSound();
+      });
+    }
+
+    const journalBtn = container.querySelector('.wotd-journal-btn');
+    const journalArea = container.querySelector('.wotd-journal-area');
+    journalBtn.addEventListener('click', () => {
+      journalArea.style.display = journalArea.style.display === 'none' ? '' : 'none';
+      if (journalArea.style.display !== 'none') container.querySelector('.wotd-textarea')?.focus();
+    });
+
+    container.querySelector('.wotd-journal-save')?.addEventListener('click', () => {
+      const text = container.querySelector('.wotd-textarea').value.trim();
+      if (!text) return;
+      const JOURNAL_KEY = 'gefuehle-journal';
+      const entries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+      entries.push({ date: todayStr, type: 'wotd', emotions: [emo[lang] || emo.de], note: text });
+      localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries));
+      if (typeof GefuehleAPI !== 'undefined') {
+        GefuehleAPI.saveJournal({ date: todayStr, note: text, emotions: [emo.id] });
+      }
+      const saveBtn = container.querySelector('.wotd-journal-save');
+      saveBtn.textContent = lang === 'de' ? '✓ Gespeichert' : '✓ Saved';
+      saveBtn.disabled = true;
+    });
+  }
+
   /* ---- Ask Mode (RAG Q&A chat) ---- */
   function initAskMode() {
     const container = dom.askMode;
@@ -1945,9 +2622,26 @@
     };
     const chips = EXAMPLES[lang] || EXAMPLES.en;
 
+    const backendOnline = typeof GefuehleAPI !== 'undefined' && GefuehleAPI.isBackendOnline();
+    const offlineMsg = {
+      de: '⚡ Backend gerade nicht erreichbar — Fragen werden gespeichert, sobald die Verbindung steht.',
+      vi: '⚡ Backend chưa kết nối — câu hỏi sẽ hoạt động khi kết nối lại.',
+      en: '⚡ Backend offline — questions will work once the connection is restored.',
+      el: '⚡ Backend εκτός σύνδεσης — οι ερωτήσεις θα λειτουργούν όταν αποκατασταθεί η σύνδεση.',
+    };
+    const offlineBanner = !backendOnline
+      ? `<div class="ask-offline-banner">${offlineMsg[lang] || offlineMsg.en}
+           <div class="ask-offline-hint">${lang === 'de' ? 'Du kannst schon tippen — die App merkt sich deine Frage.' : lang === 'vi' ? 'Bạn có thể gõ trước — ứng dụng sẽ nhớ câu hỏi.' : 'You can still type — the app will remember your question.'}</div>
+         </div>`
+      : '';
+
     container.innerHTML = `
       <p class="ask-intro">${introText[lang] || introText.en}</p>
-      <div class="ask-examples">${chips.map(q => `<button class="ask-example-chip">${q}</button>`).join('')}</div>
+      ${offlineBanner}
+      <div class="ask-examples">
+        <p class="ask-examples-label">${lang === 'de' ? 'Zum Beispiel:' : lang === 'vi' ? 'Ví dụ:' : lang === 'el' ? 'Για παράδειγμα:' : 'For example:'}</p>
+        ${chips.map(q => `<button class="ask-example-chip">${q}</button>`).join('')}
+      </div>
       <div class="ask-chat" id="ask-chat"></div>
       <div class="ask-input-row">
         <input class="ask-input" type="text" placeholder="${placeholderText[lang] || placeholderText.en}" maxlength="300">
@@ -1979,10 +2673,14 @@
       const aiDiv = addMsg('ai', '<span class="ask-dots"><span></span><span></span><span></span></span>');
       const textEl = aiDiv.querySelector('.ask-msg-text');
 
-      if (typeof GefuehleAPI === 'undefined') {
+      if (typeof GefuehleAPI === 'undefined' || !GefuehleAPI.isBackendOnline()) {
         textEl.textContent = lang === 'de'
-          ? 'KI nicht verfügbar.'
-          : 'AI not available.';
+          ? '🔌 Backend gerade nicht erreichbar. Versuch es in ein paar Sekunden noch einmal — Railway-Server starten manchmal etwas langsam.'
+          : lang === 'vi'
+          ? '🔌 Backend chưa kết nối. Thử lại sau vài giây — máy chủ Railway đôi khi khởi động chậm.'
+          : lang === 'el'
+          ? '🔌 Το backend δεν είναι διαθέσιμο. Δοκίμασε ξανά σε λίγα δευτερόλεπτα.'
+          : '🔌 Backend not reachable right now. Try again in a few seconds — Railway servers sometimes take a moment to wake up.';
         sendBtn.disabled = false;
         return;
       }
@@ -2084,8 +2782,11 @@
     // Mode card clicks (landing grid)
     dom.modeCards.forEach(card => {
       card.addEventListener('click', () => {
+        const mode = card.dataset.mode;
+        if (mode === 'tandem') { showTandemOverlay(); return; }
+        if (mode === 'deck') { showDeckConfigurator(); return; }
         syncSettingsFromLanding();
-        state.mode = card.dataset.mode;
+        state.mode = mode;
         state.multiplayerStarted = false;
         hideLanding();
         updateUIText();
@@ -2214,10 +2915,10 @@
     ];
 
     const MODE_OPTIONS = [
-      { mode: 'classic', players: 2, icon: '👨‍👩‍👧‍👦', de: 'Familie',    en: 'Family',    desc_de: 'Memory zusammen spielen',    desc_en: 'Play Memory together' },
-      { mode: 'talk',                  icon: '💬',        de: 'Gespräch',   en: 'Talk',      desc_de: 'Karten ziehen & reden',       desc_en: 'Draw cards & talk' },
-      { mode: 'checkin',               icon: '🌿',        de: 'Täglich',    en: 'Daily',     desc_de: 'Check-in & Bedürfnisse',     desc_en: 'Daily check-in & needs' },
-      { mode: 'learn',                 icon: '🧠',        de: 'Lernen',     en: 'Learn',     desc_de: 'Vokabeln & Sprache',          desc_en: 'Vocabulary & language' },
+      { mode: 'talk',    recommended: true,  icon: '💬', de: 'Gesprächsrunde', en: 'Talk Round',  desc_de: 'Zieh eine Karte — wer redet zuerst?',   desc_en: 'Draw a card — who speaks first?' },
+      { mode: 'classic', players: 2,         icon: '🃏', de: 'Klassisch',      en: 'Classic',     desc_de: 'Wer findet zuerst alle Paare?',          desc_en: 'Who finds all pairs first?' },
+      { mode: 'checkin',                     icon: '🌿', de: 'Check-in',       en: 'Check-in',    desc_de: '2 Minuten: Wie geht\'s dir wirklich?',   desc_en: '2 minutes: How are you, really?' },
+      { mode: 'learn',                       icon: '🧠', de: 'Karteikarten',   en: 'Flashcards',  desc_de: 'Lerne Gefühle — Wort für Wort',          desc_en: 'Learn emotions — word by word' },
     ];
 
     const PROFILE_EMOJIS = ['💛', '🌙', '🌿', '🦋', '🔥', '⭐', '🌸', '🎯', '🧠', '💬', '🐬', '☀️'];
@@ -2261,7 +2962,8 @@
         <p class="ob-subtitle" style="margin-bottom:16px">${obt('modeQ')}</p>
         <div class="ob-mode-grid">
           ${MODE_OPTIONS.map(m => `
-            <button class="ob-mode-btn" data-mode="${m.mode}"${m.players ? ` data-players="${m.players}"` : ''}>
+            <button class="ob-mode-btn${m.recommended ? ' ob-mode-recommended' : ''}" data-mode="${m.mode}"${m.players ? ` data-players="${m.players}"` : ''}>
+              ${m.recommended ? `<span class="ob-recommended-badge">${OB_LANG === 'de' ? '✨ Empfohlen' : OB_LANG === 'vi' ? '✨ Đề xuất' : '✨ Recommended'}</span>` : ''}
               <span class="ob-mode-icon">${m.icon}</span>
               <span class="ob-mode-name">${OB_LANG === 'de' ? m.de : m.en}</span>
               <span class="ob-mode-desc">${OB_LANG === 'de' ? m.desc_de : m.desc_en}</span>
@@ -2428,50 +3130,122 @@
     return streak;
   }
 
+  /* ---- Daily Fun Fact card on landing ---- */
+  function renderDailyFunFact() {
+    const el = document.getElementById('daily-funfact-card');
+    if (!el || typeof FunFacts === 'undefined') return;
+    const fact = FunFacts.getDailyFact();
+    const idx = FunFacts.getDailyIndex();
+    if (!fact) return;
+    // Strip HTML tags for the preview teaser
+    const plainBody = fact.body.replace(/<[^>]+>/g, '');
+    const teaser = plainBody.length > 110 ? plainBody.slice(0, 110) + '…' : plainBody;
+    el.style.display = '';
+    el.innerHTML = `
+      <div class="dff-tag" style="background:${fact.color}22;color:${fact.color}">${fact.tag}</div>
+      <div class="dff-header">
+        <span class="dff-flag">${fact.flag}</span>
+        <span class="dff-word">${fact.word}</span>
+        <span class="dff-lang">${fact.langName}</span>
+      </div>
+      <div class="dff-title">${fact.title}</div>
+      <div class="dff-teaser">${teaser}</div>
+      <button class="dff-cta">💡 Mehr erfahren</button>`;
+    el.querySelector('.dff-cta').addEventListener('click', () => FunFacts.open(false, idx));
+    el.addEventListener('click', (e) => {
+      if (!e.target.closest('.dff-cta')) FunFacts.open(false, idx);
+    });
+  }
+
+  /* ---- Today's Emotion card on landing ---- */
+  function renderTodaysEmotion() {
+    const el = document.getElementById('todays-emotion-card');
+    if (!el) return;
+    const dayIndex = Math.floor(Date.now() / 86400000) % EMOTIONS.length;
+    const emo = EMOTIONS[dayIndex];
+    if (!emo) return;
+    const lang1 = state.lang1;
+    const lang2 = state.lang2;
+    const color = getCategoryColor(emo.category);
+    const cat = CATEGORIES.find(c => c.id === emo.category);
+    const catLabel = cat ? `${cat.emoji} ${cat[state.uiLang] || cat.en}` : '';
+    const todayLabel = state.uiLang === 'de' ? 'Gefühl des Tages'
+      : state.uiLang === 'vi' ? 'Cảm xúc hôm nay'
+      : state.uiLang === 'el' ? 'Συναίσθημα της ημέρας'
+      : 'Emotion of the Day';
+    const exploreLabel = state.uiLang === 'de' ? 'Jetzt erkunden →'
+      : state.uiLang === 'vi' ? 'Khám phá ngay →'
+      : state.uiLang === 'el' ? 'Εξερεύνησε τώρα →'
+      : 'Explore now →';
+    el.style.display = '';
+    el.style.setProperty('--tde-color', color);
+    el.innerHTML = `
+      <div class="tde-label">${todayLabel}</div>
+      <div class="tde-emoji">${emo.emoji}</div>
+      <div class="tde-word">${emo[lang1] || emo.de}</div>
+      <div class="tde-word-secondary">${emo[lang2] || emo.en}</div>
+      <div class="tde-category">${catLabel}</div>
+      <button class="tde-cta">${exploreLabel}</button>`;
+    el.querySelector('.tde-cta').addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Open Talk Mode pre-loaded with today's emotion
+      state.mode = 'talk';
+      state._todaysEmotion = emo;
+      hideLanding();
+      startGame();
+    });
+  }
+
   function renderStreakCard() {
     const el = document.getElementById('streak-card');
     if (!el) return;
     const entries = typeof GefuehleAPI !== 'undefined' ? GefuehleAPI.getCheckinEntries() : [];
-    if (!entries.length) {
-      const lang = state.uiLang;
-      el.innerHTML = `<div class="streak-empty">
-        <span class="streak-empty-icon">🌱</span>
-        <div class="streak-empty-body">
-          <span class="streak-empty-text">${lang === 'de' ? 'Wie geht es dir heute?' : lang === 'el' ? 'Πώς νιώθεις σήμερα;' : lang === 'vi' ? 'Hôm nay bạn cảm thấy thế nào?' : 'How are you feeling today?'}</span>
-          <button class="streak-cta">${lang === 'de' ? 'Check-in starten →' : lang === 'el' ? 'Ξεκίνα check-in →' : lang === 'vi' ? 'Bắt đầu →' : 'Start check-in →'}</button>
-        </div>
-      </div>`;
-      el.style.display = '';
-      el.querySelector('.streak-cta').addEventListener('click', () => {
-        syncSettingsFromLanding(); state.mode = 'checkin'; hideLanding(); startGame();
-      });
-      return;
-    }
-    const streak = computeLocalStreak(entries);
+    const lang = state.uiLang;
+    const today = new Date().toISOString().split('T')[0];
+    const hasToday = entries.some(e => e.date === today);
+    const streak = entries.length ? computeLocalStreak(entries) : 0;
+
+    // Build 7-day heatmap
+    const heatDots = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      const dateStr = d.toISOString().split('T')[0];
+      const done = entries.some(e => e.date === dateStr);
+      const isToday = dateStr === today;
+      return `<span class="streak-dot${done ? ' done' : ''}${isToday ? ' today' : ''}" title="${dateStr}"></span>`;
+    }).join('');
+
     // Update PWA badge icon with streak count (iOS Safari 16.4+, Chrome)
     if ('setAppBadge' in navigator) {
       if (streak > 0) navigator.setAppBadge(streak).catch(() => {});
       else navigator.clearAppBadge().catch(() => {});
     }
-    const lang = state.uiLang;
-    const today = new Date().toISOString().split('T')[0];
-    const hasToday = entries.some(e => e.date === today);
-    const streakBadge = streak > 1
-      ? `<span class="streak-badge">🔥 ${streak} ${lang === 'de' ? 'Tage am Stück' : lang === 'el' ? 'μέρες συνεχόμενα' : 'days in a row'}</span>`
-      : streak === 1
-        ? `<span class="streak-badge">🌱 ${lang === 'de' ? 'Heute dabei!' : lang === 'el' ? 'Σήμερα εδώ!' : 'You showed up!'}</span>`
-        : '';
-    const statusText = hasToday
-      ? `✓ ${lang === 'de' ? 'Heute eingecheckt' : lang === 'el' ? 'Σήμερα check-in' : 'Checked in today'}`
-      : `${lang === 'de' ? 'Noch kein Check-in heute' : lang === 'el' ? 'Δεν έγινε check-in σήμερα' : 'No check-in yet today'}`;
-    const actionText = hasToday
-      ? (lang === 'de' ? 'Check-in anschauen →' : lang === 'el' ? 'Προβολή check-in →' : 'View check-in →')
-      : (lang === 'de' ? 'Jetzt einchecken →' : lang === 'el' ? 'Check-in τώρα →' : 'Check in now →');
-    el.innerHTML = `<div class="streak-inner">
-      ${streakBadge}
-      <span class="streak-status">${statusText}</span>
-      <button class="streak-cta">${actionText}</button>
-    </div>`;
+
+    const flameIcon = streak >= 7 ? '🌟' : streak >= 3 ? '🔥' : streak >= 1 ? '🌱' : '💭';
+    const streakClass = streak >= 3 ? 'streak-fire' : '';
+
+    let topLine, actionText;
+    if (!entries.length) {
+      topLine = lang === 'de' ? 'Wie geht es dir heute wirklich?' : lang === 'el' ? 'Πώς νιώθεις σήμερα;' : lang === 'vi' ? 'Hôm nay bạn cảm thấy thế nào?' : 'How are you, really?';
+      actionText = lang === 'de' ? 'Check-in starten →' : lang === 'el' ? 'Ξεκίνα check-in →' : lang === 'vi' ? 'Bắt đầu →' : 'Start check-in →';
+    } else if (hasToday) {
+      topLine = streak > 1
+        ? `${flameIcon} ${streak} ${lang === 'de' ? 'Tage am Stück' : lang === 'el' ? 'μέρες συνεχόμενα' : 'days in a row'}`
+        : `${flameIcon} ${lang === 'de' ? 'Heute dabei!' : lang === 'el' ? 'Σήμερα εδώ!' : 'You showed up today!'}`;
+      actionText = lang === 'de' ? 'Check-in anschauen →' : lang === 'el' ? 'Προβολή →' : 'View today →';
+    } else {
+      topLine = streak > 0
+        ? `🔥 ${lang === 'de' ? `${streak} Tage — heute noch nicht!` : lang === 'el' ? `${streak} μέρες — όχι σήμερα ακόμα!` : `${streak} days — not yet today!`}`
+        : (lang === 'de' ? 'Heute noch kein Check-in' : lang === 'el' ? 'Δεν έγινε check-in σήμερα' : 'No check-in yet today');
+      actionText = lang === 'de' ? 'Jetzt einchecken →' : lang === 'el' ? 'Check-in τώρα →' : 'Check in now →';
+    }
+
+    el.innerHTML = `
+      <div class="streak-inner ${streakClass}">
+        <div class="streak-top">${topLine}</div>
+        <div class="streak-heatmap">${heatDots}</div>
+        <button class="streak-cta">${actionText}</button>
+      </div>`;
     el.style.display = '';
     el.querySelector('.streak-cta').addEventListener('click', () => {
       syncSettingsFromLanding(); state.mode = 'checkin'; hideLanding(); startGame();
@@ -2546,12 +3320,17 @@
   function init() {
     cacheDom();
     initDarkMode();
+    initSound();
+    initClassroomMode();
     bindEvents();
     updateUIText();
     checkReminder();
     // Restore profile display
     const savedProfile = JSON.parse(localStorage.getItem('gefuehle-profile') || 'null');
     if (savedProfile) renderProfileInHeader(savedProfile);
+    // Track session count for progressive disclosure
+    const sessionCount = parseInt(localStorage.getItem('gefuehle-session-count') || '0');
+    localStorage.setItem('gefuehle-session-count', sessionCount + 1);
     // When backend comes online, refresh AI-dependent UI
     document.addEventListener('backend-online', () => {
       renderStreakCard();

@@ -275,7 +275,10 @@ const GefuehleAPI = (function () {
       const res = await fetch(`${BASE_URL}/ai/ask/stream`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question, lang }),
+        body: JSON.stringify({
+          question, lang,
+          persona_id: typeof GefuehlePersonas !== 'undefined' ? GefuehlePersonas.getActivePersona().id : undefined,
+        }),
         signal: AbortSignal.timeout(30000),
       });
       if (!res.ok) {
@@ -313,9 +316,10 @@ const GefuehleAPI = (function () {
 
   async function dynamicPrompt({ type, emotion_ids = [], emotion_names = [], needs = [], context = '', user_text = '', lang }) {
     if (!(await checkBackend())) return null;
+    const personaId = typeof GefuehlePersonas !== 'undefined' ? GefuehlePersonas.getActivePersona().id : undefined;
     return apiFetch('/ai/dynamic-prompt', {
       method: 'POST',
-      body: JSON.stringify({ type, emotion_ids, emotion_names, needs, context, user_text, lang }),
+      body: JSON.stringify({ type, emotion_ids, emotion_names, needs, context, user_text, lang, persona_id: personaId }),
     }).catch(() => null);
   }
 

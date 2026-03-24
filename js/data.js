@@ -1574,7 +1574,11 @@ const LANGUAGES = {
   uk: { name: 'Українська',  flag: '🇺🇦' },
   pl: { name: 'Polski',      flag: '🇵🇱' },
   el: { name: 'Ελληνικά',   flag: '🇬🇷' },
-  ta: { name: 'தமிழ்',      flag: '🇮🇳' }
+  ta: { name: 'தமிழ்',      flag: '🇮🇳' },
+  ja: { name: '日本語',      flag: '🇯🇵' },
+  zh: { name: '中文',        flag: '🇨🇳' },
+  ko: { name: '한국어',      flag: '🇰🇷' },
+  sa: { name: 'Sanskrit',   flag: '🕉️' }
 };
 
 const UI_TEXT = {
