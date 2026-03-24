@@ -195,7 +195,8 @@
     if (saved !== null) {
       state.darkMode = saved === 'true';
     } else {
-      state.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // Dark is default; only switch to light if user explicitly prefers light
+      state.darkMode = !window.matchMedia('(prefers-color-scheme: light)').matches;
     }
     applyDarkMode();
   }
@@ -212,7 +213,7 @@
     dom.darkModeBtn.textContent = state.darkMode ? '☀️' : '🌙';
     dom.darkModeBtn.title = t('darkMode');
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = state.darkMode ? '#1A1714' : '#FFF8F0';
+    if (meta) meta.content = state.darkMode ? '#0D0B14' : '#FFF8F0';
   }
 
   /* ---- Star Rating ---- */

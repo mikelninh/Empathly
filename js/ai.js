@@ -97,7 +97,7 @@ const GefuehleAI = (function () {
     if (cached) return cached;
 
     // Try backend RAG endpoint first (richer, knowledge-grounded response)
-    if (typeof GefuehleAPI !== 'undefined') {
+    if (typeof GefuehleAPI !== 'undefined' && GefuehleAPI.isBackendOnline()) {
       try {
         const res = await GefuehleAPI.culturalBridge({
           emotion_id: emotionId,
@@ -118,6 +118,9 @@ const GefuehleAI = (function () {
     }
 
     // Fallback: direct OpenRouter call (requires user API key)
+    if (!getApiKey()) {
+      throw new Error('KI nicht verfügbar — Backend offline und kein eigener API-Key. Bitte in den Einstellungen einen OpenRouter-Key eingeben.');
+    }
     const langNames = {
       de: 'German', vi: 'Vietnamese', en: 'English', tr: 'Turkish',
       ar: 'Arabic', es: 'Spanish', fr: 'French', uk: 'Ukrainian',
