@@ -198,11 +198,16 @@ const GefuehlePersonas = (function () {
     });
   }
 
+  function getAllPersonas() {
+    return PERSONAS;
+  }
+
   return {
     PERSONAS,
     getActivePersona,
     setActivePersona,
     getPersonaSystemPrompt,
     renderPersonaPicker,
+    getAllPersonas,
   };
 })();

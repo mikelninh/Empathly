@@ -47,17 +47,39 @@ const GefuehleAI = (function () {
     return !!getApiKey();
   }
 
+  // ── Persona memory context ──
+  function buildPersonaMemoryContext() {
+    try {
+      const mem = JSON.parse(localStorage.getItem('gefuehle-persona-memory') || '{}');
+      const persona = (typeof GefuehlePersonas !== 'undefined') ? GefuehlePersonas.getActivePersona() : null;
+      const personaId = persona ? persona.id : 'default';
+      const entries = mem[personaId] || [];
+      if (!entries.length) return '';
+      const feels = entries.filter(e => e.resonance === 'feel').slice(0, 5).map(e => `${e.emoji} ${e.word}`);
+      const knows = entries.filter(e => e.resonance === 'know').slice(0, 3).map(e => `${e.emoji} ${e.word}`);
+      const surprises = entries.filter(e => e.resonance === 'surprise').slice(0, 3).map(e => `${e.emoji} ${e.word}`);
+      let ctx = '\n\nUser emotional context (from their interactions):';
+      if (feels.length) ctx += `\n- Currently resonating with: ${feels.join(', ')}`;
+      if (knows.length) ctx += `\n- Familiar emotions: ${knows.join(', ')}`;
+      if (surprises.length) ctx += `\n- Surprised by: ${surprises.join(', ')}`;
+      return ctx;
+    } catch (e) { return ''; }
+  }
+
   // ── API Call ──
   async function callOpenRouter(prompt, systemPrompt) {
     const apiKey = getApiKey();
     if (!apiKey) throw new Error('No API key configured');
 
     // Inject active persona system prompt unless a custom one is provided
-    const effectiveSystem = systemPrompt || (
+    const baseSystem = systemPrompt || (
       typeof GefuehlePersonas !== 'undefined'
         ? GefuehlePersonas.getPersonaSystemPrompt(state?.lang1 || 'en')
         : null
     );
+    // Append persona memory context
+    const memCtx = buildPersonaMemoryContext();
+    const effectiveSystem = baseSystem ? (baseSystem + memCtx) : (memCtx || null);
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',

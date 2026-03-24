@@ -97,6 +97,8 @@
     dom.learnMode = $('.learn-mode');
     dom.askMode = $('.ask-mode');
     dom.wotdMode = $('.wotd-mode');
+    dom.detectiveMode = $('.detective-mode');
+    dom.needsMapMode = $('.needsmap-mode');
     dom.settingsBtn = $('#btn-settings');
     dom.soundBtn = $('#btn-sound');
     dom.classroomBtn = $('#btn-classroom');
@@ -665,6 +667,7 @@
     renderWeeklyRecap();
     renderDailyFunFact();
     renderTodaysEmotion();
+    renderDailyChallengeCard();
     renderCollectionBar();
     renderFavoritesSection();
     if (typeof GefuehlePersonas !== 'undefined') {
@@ -748,6 +751,16 @@
       icon: '🎴',
       name: { de: 'Kartenset', vi: 'Bộ bài', en: 'Card Deck', tr: 'Kart Seti', ar: 'مجموعة البطاقات', es: 'Mazo de Cartas', fr: 'Jeu de Cartes', uk: 'Набір карт', pl: 'Talia kart', el: 'Τράπουλα', ta: 'அட்டை தொகுப்பு' },
       desc: { de: 'Dein physisches Gefühle-Kartenset gestalten', vi: 'Tạo bộ bài vật lý của bạn', en: 'Design your physical emotion card deck', tr: 'Fiziksel duygu kartı setini tasarla', ar: 'صمم مجموعة بطاقات المشاعر الفيزيائية', es: 'Diseña tu baraja física de emociones', fr: 'Crée ton jeu de cartes physique', uk: 'Створи свій фізичний набір карток', pl: 'Zaprojektuj swój fizyczny zestaw kart', el: 'Σχεδίασε τη φυσική τράπουλα συναισθημάτων', ta: 'உங்கள் இயற்பியல் அட்டை தொகுப்பை வடிவமைக்கவும்' }
+    },
+    detective: {
+      icon: '🔍',
+      name: { de: 'Gefühls-Detektiv', vi: 'Thám tử cảm xúc', en: 'Emotion Detective', tr: 'Duygu Dedektifi', ar: 'محقق المشاعر', es: 'Detective Emocional', fr: 'Détective des Émotions', uk: 'Детектив емоцій', pl: 'Detektyw emocji', el: 'Ντετέκτιβ Συναισθημάτων', ta: 'உணர்வு துப்பறிவாளர்' },
+      desc: { de: 'Finde das versteckte Gefühl hinter der Oberfläche', vi: 'Tìm cảm xúc ẩn phía sau bề mặt', en: 'Find the hidden emotion beneath the surface', tr: 'Yüzeyin altındaki gizli duyguyu bul', ar: 'اعثر على المشاعر الخفية تحت السطح', es: 'Encuentra la emoción oculta bajo la superficie', fr: 'Trouve l\'émotion cachée sous la surface', uk: 'Знайди приховану емоцію під поверхнею', pl: 'Znajdź ukrytą emocję pod powierzchnią', el: 'Βρες το κρυφό συναίσθημα κάτω από την επιφάνεια', ta: 'மேற்பரப்பிற்கு அடியில் உள்ள மறைந்த உணர்வைக் கண்டுபிடி' }
+    },
+    needsmap: {
+      icon: '🗺️',
+      name: { de: 'Bedürfnis-Karte', vi: 'Bản đồ nhu cầu', en: 'Needs Map', tr: 'İhtiyaç Haritası', ar: 'خريطة الاحتياجات', es: 'Mapa de Necesidades', fr: 'Carte des Besoins', uk: 'Карта потреб', pl: 'Mapa potrzeb', el: 'Χάρτης αναγκών', ta: 'தேவைகள் வரைபடம்' },
+      desc: { de: 'Welche Bedürfnisse stecken hinter deinen Gefühlen?', vi: 'Nhu cầu nào ẩn sau cảm xúc của bạn?', en: 'What needs are behind your emotions?', tr: 'Duygularının arkasındaki ihtiyaçlar neler?', ar: 'ما الاحتياجات الكامنة وراء مشاعرك؟', es: '¿Qué necesidades hay detrás de tus emociones?', fr: 'Quels besoins se cachent derrière tes émotions?', uk: 'Які потреби стоять за твоїми емоціями?', pl: 'Jakie potrzeby kryją się za twoimi emocjami?', el: 'Ποιες ανάγκες κρύβονται πίσω από τα συναισθήματά σου;', ta: 'உங்கள் உணர்வுகளுக்கு பின்னால் என்ன தேவைகள் இருக்கின்றன?' }
     }
   };
 
@@ -756,6 +769,13 @@
     vi: { spielen: 'Chơi', entdecken: 'Khám phá', lernen: 'Học' },
     en: { spielen: 'Play', entdecken: 'Discover', lernen: 'Learn' },
     el: { spielen: 'Παίξε', entdecken: 'Ανακάλυψε', lernen: 'Μάθε' }
+  };
+
+  const MODE_TIME_ESTIMATES = {
+    classic: '5–10 min', talk: '10–20 min', story: '5–15 min',
+    wheel: '5 min', checkin: '2 min', ask: '2 min',
+    wotd: '1 min', learn: '5–10 min', journal: '5 min',
+    detective: '10–15 min', needsmap: '5–10 min'
   };
 
   function updateModeCards() {
@@ -772,6 +792,16 @@
       if (iconEl) iconEl.textContent = data.icon;
       if (nameEl) nameEl.textContent = data.name[lang] || data.name.en;
       if (descEl) descEl.textContent = data.desc[lang] || data.desc.en;
+      // Add time estimate (Win 6)
+      let timeEl = card.querySelector('.mode-card-time');
+      if (MODE_TIME_ESTIMATES[mode]) {
+        if (!timeEl) {
+          timeEl = document.createElement('span');
+          timeEl.className = 'mode-card-time';
+          card.appendChild(timeEl);
+        }
+        timeEl.textContent = `⏱ ${MODE_TIME_ESTIMATES[mode]}`;
+      }
       // Add "Empfohlen" badge to Talk Mode for first 4 sessions
       let badge = card.querySelector('.mode-card-badge');
       if (mode === 'talk' && showRecommended) {
@@ -1013,6 +1043,7 @@
     state.pairsFound = 0;
     state.timerStart = null;
     state.timerInterval = null;
+    state._sessionEmotions = [];
     state.locked = false;
 
     // Show/hide sections
@@ -1025,10 +1056,12 @@
     const isLearn = state.mode === 'learn';
     const isAsk = state.mode === 'ask';
     const isWotd = state.mode === 'wotd';
+    const isDetective = state.mode === 'detective';
+    const isNeedsMap = state.mode === 'needsmap';
 
     dom.board.style.display = isClassic ? '' : 'none';
     dom.statsBar.style.display = isClassic ? '' : 'none';
-    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk || isWotd) ? 'none' : '';
+    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk || isWotd || isDetective || isNeedsMap) ? 'none' : '';
     dom.talkMode.classList.toggle('active', isTalk);
     dom.storyMode.classList.toggle('active', isStory);
     dom.checkinMode.classList.toggle('active', isCheckin);
@@ -1037,6 +1070,10 @@
     if (dom.learnMode) dom.learnMode.classList.toggle('active', isLearn);
     if (dom.askMode) dom.askMode.classList.toggle('active', isAsk);
     if (dom.wotdMode) dom.wotdMode.classList.toggle('active', isWotd);
+    const detModeEl = document.querySelector('.detective-mode');
+    if (detModeEl) detModeEl.classList.toggle('active', isDetective);
+    const needsModeEl = document.querySelector('.needsmap-mode');
+    if (needsModeEl) needsModeEl.classList.toggle('active', isNeedsMap);
     dom.turnIndicator.classList.remove('active');
     dom.playerSetup.classList.remove('active');
 
@@ -1057,6 +1094,8 @@
     if (isLearn && window.initLearnMode) window.initLearnMode();
     if (isAsk) initAskMode();
     if (isWotd) initWotdMode();
+    if (isDetective) initDetectiveMode();
+    if (isNeedsMap) initNeedsMapMode();
   }
 
   function startClassicGame() {
@@ -1130,6 +1169,9 @@
         const isNewDiscovery = discoverEmotion(a.emotionId);
         if (isNewDiscovery) showDiscoveryBadge(a.emotionId, a.emotion[state.lang1] || a.emotion.de, a.emotion.emoji);
         state.flipped = []; state.locked = false;
+        // Track session emotions for congrats summary
+        if (!state._sessionEmotions) state._sessionEmotions = [];
+        if (!state._sessionEmotions.includes(a.emotionId)) state._sessionEmotions.push(a.emotionId);
         showPrompt(a.emotion);
         if (state.pairsFound === state.totalPairs) setTimeout(showCongrats, 1200);
       }, 500);
@@ -1285,6 +1327,60 @@
   }
 
   /* ---- Prompt overlay ---- */
+  const RESONANCE_KEY = 'gefuehle-resonance';
+
+  function getResonanceData() {
+    return JSON.parse(localStorage.getItem(RESONANCE_KEY) || '{}');
+  }
+
+  function saveResonance(emotionId, type) {
+    const data = getResonanceData();
+    if (!data[emotionId]) data[emotionId] = [];
+    const entry = { type, date: new Date().toISOString().split('T')[0] };
+    // Keep only last 5 per emotion
+    data[emotionId] = [entry, ...data[emotionId]].slice(0, 5);
+    localStorage.setItem(RESONANCE_KEY, JSON.stringify(data));
+    // Also feed into persona memory
+    savePersonaMemory(emotionId, type);
+  }
+
+  function savePersonaMemory(emotionId, resonanceType) {
+    const PERSONA_MEMORY_KEY = 'gefuehle-persona-memory';
+    const mem = JSON.parse(localStorage.getItem(PERSONA_MEMORY_KEY) || '{}');
+    const persona = (typeof GefuehlePersonas !== 'undefined') ? GefuehlePersonas.getActivePersona() : null;
+    const personaId = persona ? persona.id : 'default';
+    if (!mem[personaId]) mem[personaId] = [];
+    const emo = EMOTIONS.find(e => e.id === emotionId);
+    if (emo) {
+      const entry = {
+        emotionId,
+        word: emo[state.lang1] || emo.de,
+        emoji: emo.emoji,
+        resonance: resonanceType,
+        date: new Date().toISOString().split('T')[0]
+      };
+      mem[personaId] = [entry, ...mem[personaId].filter(e => e.emotionId !== emotionId)].slice(0, 20);
+      localStorage.setItem(PERSONA_MEMORY_KEY, JSON.stringify(mem));
+    }
+  }
+
+  function getPersonaMemoryContext() {
+    const PERSONA_MEMORY_KEY = 'gefuehle-persona-memory';
+    const mem = JSON.parse(localStorage.getItem(PERSONA_MEMORY_KEY) || '{}');
+    const persona = (typeof GefuehlePersonas !== 'undefined') ? GefuehlePersonas.getActivePersona() : null;
+    const personaId = persona ? persona.id : 'default';
+    const entries = mem[personaId] || [];
+    if (!entries.length) return '';
+    const feels = entries.filter(e => e.resonance === 'feel').slice(0, 5).map(e => `${e.emoji} ${e.word}`);
+    const knows = entries.filter(e => e.resonance === 'know').slice(0, 3).map(e => `${e.emoji} ${e.word}`);
+    const surprises = entries.filter(e => e.resonance === 'surprise').slice(0, 3).map(e => `${e.emoji} ${e.word}`);
+    let ctx = '\n\nUser emotional context:';
+    if (feels.length) ctx += `\n- Currently resonating with: ${feels.join(', ')}`;
+    if (knows.length) ctx += `\n- Familiar emotions: ${knows.join(', ')}`;
+    if (surprises.length) ctx += `\n- Surprised by: ${surprises.join(', ')}`;
+    return ctx;
+  }
+
   function showPrompt(emotion) {
     const color = getCategoryColor(emotion.category);
     dom.promptEmoji.textContent = emotion.emoji;
@@ -1295,16 +1391,53 @@
     dom.promptClose.style.background = color;
     dom.promptClose.style.color = '#fff';
     if (dom.promptShare) dom.promptShare.dataset.emotionId = emotion.id;
-    // Show culture note if available
+
+    // Show culture insight (culture-insights.js) or fallback to culture notes
     if (dom.promptCulture) {
-      const note = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emotion.id]?.[state.uiLang] : null;
-      if (note) {
-        dom.promptCulture.innerHTML = `<span class="prompt-culture-label">🌍 Kulturbrücke</span>${note}`;
+      let insightHTML = '';
+      if (typeof getRandomCultureInsight !== 'undefined') {
+        const insight = getRandomCultureInsight(emotion.id);
+        if (insight) insightHTML = `<span class="prompt-culture-label">${insight.flag} Kulturelle Perspektive</span>${insight.text}`;
+      }
+      if (!insightHTML) {
+        const note = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emotion.id]?.[state.uiLang] : null;
+        if (note) insightHTML = `<span class="prompt-culture-label">🌍 Kulturbrücke</span>${note}`;
+      }
+      if (insightHTML) {
+        dom.promptCulture.innerHTML = insightHTML;
         dom.promptCulture.style.display = '';
       } else {
         dom.promptCulture.style.display = 'none';
       }
     }
+
+    // Resonance buttons (Win 1)
+    const resonanceEl = dom.promptOverlay.querySelector('.prompt-resonance');
+    if (resonanceEl) {
+      const resonanceData = getResonanceData();
+      const existing = resonanceData[emotion.id]?.[0]?.type;
+      const labels = {
+        know: state.uiLang === 'de' ? '🤝 Kenn ich' : state.uiLang === 'vi' ? '🤝 Tôi biết' : state.uiLang === 'el' ? '🤝 Το ξέρω' : '🤝 I know this',
+        feel: state.uiLang === 'de' ? '💛 Fühle ich gerade' : state.uiLang === 'vi' ? '💛 Đang cảm thấy' : state.uiLang === 'el' ? '💛 Το νιώθω' : '💛 Feeling this now',
+        surprise: state.uiLang === 'de' ? '✨ Überraschend' : state.uiLang === 'vi' ? '✨ Bất ngờ' : state.uiLang === 'el' ? '✨ Εκπληκτικό' : '✨ Surprising'
+      };
+      resonanceEl.innerHTML = Object.entries(labels).map(([type, label]) =>
+        `<button class="resonance-btn${existing === type ? ' active' : ''}" data-resonance="${type}">${label}</button>`
+      ).join('');
+      resonanceEl.querySelectorAll('.resonance-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const type = btn.dataset.resonance;
+          saveResonance(emotion.id, type);
+          resonanceEl.querySelectorAll('.resonance-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          // Visual feedback
+          btn.style.transform = 'scale(1.15)';
+          setTimeout(() => { btn.style.transform = ''; }, 200);
+        });
+      });
+    }
+
     // Auto-speak the prompt question in classroom mode
     classroomSpeakPrompt(emotion.prompt[state.uiLang] || emotion.prompt.de, state.uiLang);
     // Bookmark button in prompt overlay
@@ -1330,11 +1463,16 @@
     const elapsed = formatTime(Date.now() - state.timerStart);
     dom.congratsTitle.textContent = t('congratsTitle');
 
+    // Mark daily challenge complete if applicable
+    markDailyChallengeComplete();
+
     if (isMultiplayer()) {
       dom.congratsText.textContent = '';
       dom.congratsStars.innerHTML = '';
       dom.congratsBest.textContent = '';
       dom.congratsStats.textContent = t('congratsStats').replace('{moves}', state.moves).replace('{time}', elapsed);
+      if (dom.congratsOverlay.querySelector('.congrats-emotion-summary')) dom.congratsOverlay.querySelector('.congrats-emotion-summary').innerHTML = '';
+      if (dom.congratsOverlay.querySelector('.congrats-persona-msg')) dom.congratsOverlay.querySelector('.congrats-persona-msg').innerHTML = '';
 
       const maxScore = Math.max(...state.playerScores);
       const winners = state.playerScores.reduce((acc, s, i) => s === maxScore ? [...acc, i] : acc, []);
@@ -1364,6 +1502,44 @@
 
       const isNewBest = saveBestStars(stars);
       dom.congratsBest.textContent = isNewBest ? `⭐ ${t('newBest')}` : '';
+
+      // Emotion summary — show discovered emotions from this session (Win 7)
+      const summaryEl = dom.congratsOverlay.querySelector('.congrats-emotion-summary');
+      if (summaryEl && state._sessionEmotions && state._sessionEmotions.length) {
+        const emojis = [...new Set(state._sessionEmotions.map(id => {
+          const e = EMOTIONS.find(em => em.id === id);
+          return e ? e.emoji : null;
+        }).filter(Boolean))].slice(0, 8);
+        summaryEl.innerHTML = `<div class="congrats-emoji-row">${emojis.join('')}</div>`;
+      } else if (summaryEl) {
+        summaryEl.innerHTML = '';
+      }
+
+      // Persona message (Win 7)
+      const personaMsgEl = dom.congratsOverlay.querySelector('.congrats-persona-msg');
+      if (personaMsgEl) {
+        const persona = (typeof GefuehlePersonas !== 'undefined') ? GefuehlePersonas.getActivePersona() : null;
+        if (persona) {
+          const msgs = {
+            hana: { de: 'Gut gemacht! Jedes Gefühl, das du kennst, macht dich stärker 🌸', en: 'Well done! Every emotion you know makes you stronger 🌸' },
+            nadia: { de: 'Wunderschön. Lass die Gefühle in dir nachklingen 🌙', en: 'Beautiful. Let the emotions resonate within you 🌙' },
+            karim: { de: 'Stark! Dieses Wissen trägt dich weit 💪', en: 'Strong! This knowledge carries you far 💪' },
+            lena: { de: 'Super! Gefühle zu kennen ist der erste Schritt 🌿', en: 'Super! Knowing feelings is the first step 🌿' },
+            soo: { de: 'Sehr schön. Gefühle verbinden uns alle 🎋', en: 'Very nice. Emotions connect us all 🎋' }
+          };
+          const msg = msgs[persona.id];
+          if (msg) {
+            personaMsgEl.innerHTML = `<div class="congrats-persona-bubble">
+              <span class="congrats-persona-avatar">${persona.emoji}</span>
+              <span>${msg[state.uiLang] || msg.en}</span>
+            </div>`;
+          } else {
+            personaMsgEl.innerHTML = '';
+          }
+        } else {
+          personaMsgEl.innerHTML = '';
+        }
+      }
     }
 
     playCongratsSound();
@@ -2225,9 +2401,14 @@
   }
 
   /* ---- Journal Mode ---- */
-  function initJournalMode() {
+  function initJournalMode(prefillText) {
     const container = dom.journalMode;
     const lang = state.uiLang;
+    // Check for prefill from Needs Map
+    if (!prefillText) {
+      const stored = localStorage.getItem('gefuehle-journal-prefill');
+      if (stored) { prefillText = stored; localStorage.removeItem('gefuehle-journal-prefill'); }
+    }
     const JOURNAL_KEY = 'gefuehle-journal';
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
@@ -2331,7 +2512,7 @@
       <div class="journal-date">${dateDisplay}</div>
       <h2 class="journal-title">${t('journalTitle')}</h2>
       <div class="journal-categories">${catHTML}</div>
-      <textarea class="journal-note-field" placeholder="${t('journalNote')}"></textarea>
+      <textarea class="journal-note-field" placeholder="${t('journalNote')}">${prefillText ? prefillText + '\n\n' : ''}</textarea>
       <div class="journal-save-row">
         <button class="btn btn-primary journal-save-btn">${t('journalSave')}</button>
         <span class="journal-saved-msg">${t('journalSaved')}</span>
@@ -2713,13 +2894,34 @@
 
   /* ---- Share ---- */
   function shareGame() {
-    const text = t('shareText')
-      .replace('{lang1}', LANGUAGES[state.lang1]?.name)
-      .replace('{lang2}', LANGUAGES[state.lang2]?.name);
-    if (navigator.share) {
-      navigator.share({ title: t('title'), text, url: location.href }).catch(() => {});
+    // Build a richer share text with session emotions (Win 10)
+    const lang1 = LANGUAGES[state.lang1]?.name;
+    const lang2 = LANGUAGES[state.lang2]?.name;
+    const emotions = (state._sessionEmotions || []).slice(0, 5).map(id => {
+      const e = EMOTIONS.find(em => em.id === id);
+      return e ? e.emoji : null;
+    }).filter(Boolean);
+    const emojiStr = emotions.join('');
+    const uiLang = state.uiLang;
+    let text;
+    if (uiLang === 'de') {
+      text = `Ich habe gerade Gefühle-Memory gespielt${emojiStr ? ' und diese Gefühle entdeckt: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — 67 Gefühle kennenlernen.`;
+    } else if (uiLang === 'vi') {
+      text = `Tôi vừa chơi Gefühle-Memory${emojiStr ? ' và khám phá: ' + emojiStr : ''}! ${lang1} ↔ ${lang2}`;
     } else {
-      navigator.clipboard.writeText(text + ' ' + location.href).then(() => alert('Link copied! ✓'));
+      text = `I just played Gefühle-Memory${emojiStr ? ' and discovered: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — learning 67 emotions.`;
+    }
+    if (navigator.share) {
+      navigator.share({ title: 'Gefühle-Memory 💛', text, url: location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(text + ' ' + location.href).then(() => {
+        const msg = uiLang === 'de' ? 'Link kopiert! ✓' : 'Link copied! ✓';
+        const toast = document.createElement('div');
+        toast.className = 'share-toast';
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+      });
     }
   }
 
@@ -2923,8 +3125,9 @@
 
     const PROFILE_EMOJIS = ['💛', '🌙', '🌿', '🦋', '🔥', '⭐', '🌸', '🎯', '🧠', '💬', '🐬', '☀️'];
 
+    const TOTAL_STEPS = 4;
     function stepIndicator() {
-      return `<div class="ob-step-indicator">${[1,2,3].map(i =>
+      return `<div class="ob-step-indicator">${Array.from({length: TOTAL_STEPS}, (_, i) => i + 1).map(i =>
         `<span class="ob-dot ${i === step ? 'active' : i < step ? 'done' : ''}"></span>`
       ).join('')}</div>`;
     }
@@ -2986,10 +3189,30 @@
         <button class="ob-back ob-link">${obt('back')}</button>`;
     }
 
+    function renderStep4() {
+      if (typeof GefuehlePersonas === 'undefined') return renderStep3();
+      const personas = GefuehlePersonas.getAllPersonas ? GefuehlePersonas.getAllPersonas() : [];
+      if (!personas.length) return renderStep3();
+      const activeId = GefuehlePersonas.getActivePersona()?.id;
+      const guideQ = { de: 'Wer begleitet dich?', en: 'Who guides you?', vi: 'Ai hướng dẫn bạn?', el: 'Ποιος σε συνοδεύει;' };
+      return `
+        <p class="ob-subtitle" style="margin-bottom:16px">${guideQ[OB_LANG] || guideQ.en}</p>
+        <div class="ob-persona-grid">
+          ${personas.map(p => `
+            <button class="ob-persona-btn${p.id === activeId ? ' selected' : ''}" data-persona-id="${p.id}">
+              <span class="ob-persona-emoji">${p.emoji}</span>
+              <span class="ob-persona-name">${p.name}</span>
+              <span class="ob-persona-desc">${p.tagline?.[OB_LANG] || p.tagline?.en || ''}</span>
+            </button>`).join('')}
+        </div>
+        <button class="ob-start-btn ob-primary">${obt('letsgo')}</button>
+        <button class="ob-back ob-link">${obt('back')}</button>`;
+    }
+
     function render() {
       const card = overlay.querySelector('.onboarding-card');
-      const steps = { 1: renderStep1, 2: renderStep2, 3: renderStep3 };
-      card.innerHTML = stepIndicator() + steps[step]();
+      const steps = { 1: renderStep1, 2: renderStep2, 3: renderStep3, 4: renderStep4 };
+      card.innerHTML = stepIndicator() + (steps[step] || renderStep3)();
       bindStep();
     }
 
@@ -3041,17 +3264,39 @@
         });
       });
 
-      // Step 3 — start
+      // Step 3 — go to persona step
       overlay.querySelector('.ob-start-btn')?.addEventListener('click', () => {
-        const name = (overlay.querySelector('.ob-name-input')?.value || '').trim();
-        const emoji = overlay.querySelector('.ob-emoji-btn.selected')?.dataset.emoji || '💛';
-        const profile = { name, emoji };
-        localStorage.setItem('gefuehle-profile', JSON.stringify(profile));
-        renderProfileInHeader(profile);
-        if (typeof GefuehleAPI !== 'undefined') {
-          GefuehleAPI.updateProfile({ display_name: name, avatar_emoji: emoji });
+        if (step === 3) {
+          const name = (overlay.querySelector('.ob-name-input')?.value || '').trim();
+          const emoji = overlay.querySelector('.ob-emoji-btn.selected')?.dataset.emoji || '💛';
+          const profile = { name, emoji };
+          localStorage.setItem('gefuehle-profile', JSON.stringify(profile));
+          renderProfileInHeader(profile);
+          if (typeof GefuehleAPI !== 'undefined') {
+            GefuehleAPI.updateProfile({ display_name: name, avatar_emoji: emoji });
+          }
+          // Go to persona step if personas available
+          if (typeof GefuehlePersonas !== 'undefined' && GefuehlePersonas.getAllPersonas?.().length) {
+            step = 4; render();
+          } else {
+            applyAndDismiss(true);
+          }
+        } else if (step === 4) {
+          // Persona selected — apply and start
+          const selected = overlay.querySelector('.ob-persona-btn.selected');
+          if (selected && typeof GefuehlePersonas !== 'undefined') {
+            GefuehlePersonas.setActivePersona(selected.dataset.personaId);
+          }
+          applyAndDismiss(true);
         }
-        applyAndDismiss(true);
+      });
+
+      // Step 4 — persona buttons
+      overlay.querySelectorAll('.ob-persona-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          overlay.querySelectorAll('.ob-persona-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+        });
       });
     }
 
@@ -3196,6 +3441,85 @@
     });
   }
 
+  /* ---- Daily Challenge card (Win 3) ---- */
+  function getDailyChallengeSeed() {
+    // Deterministic seed from today's date string
+    const dateStr = new Date().toDateString();
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function renderDailyChallengeCard() {
+    const el = document.getElementById('daily-challenge-card');
+    if (!el) return;
+    const DAILY_CHALLENGE_KEY = 'gefuehle-daily-challenge';
+    const today = new Date().toISOString().split('T')[0];
+    const saved = JSON.parse(localStorage.getItem(DAILY_CHALLENGE_KEY) || '{}');
+    const lang = state.uiLang;
+
+    // Deterministic daily config
+    const seed = getDailyChallengeSeed();
+    const DIFFS = ['easy', 'medium', 'hard'];
+    const CATS = ['all', ...CATEGORIES.map(c => c.id)];
+    const dailyDiff = DIFFS[seed % DIFFS.length];
+    const dailyCat = CATS[(seed >> 3) % CATS.length];
+    const cat = CATEGORIES.find(c => c.id === dailyCat);
+    const catLabel = cat ? `${cat.emoji} ${cat[lang] || cat.en}` : (lang === 'de' ? 'Alle' : 'All');
+    const diffLabels = { easy: { de: 'Leicht', en: 'Easy', vi: 'Dễ', el: 'Εύκολο' }, medium: { de: 'Mittel', en: 'Medium', vi: 'Vừa', el: 'Μεσαίο' }, hard: { de: 'Schwer', en: 'Hard', vi: 'Khó', el: 'Δύσκολο' } };
+    const diffLabel = (diffLabels[dailyDiff] || diffLabels.medium)[lang] || (diffLabels[dailyDiff] || diffLabels.medium).en;
+
+    const done = saved.date === today && saved.completed;
+    const label = lang === 'de' ? 'Tägliche Challenge' : lang === 'vi' ? 'Thử thách hôm nay' : lang === 'el' ? 'Ημερήσια πρόκληση' : 'Daily Challenge';
+    const btnLabel = done
+      ? (lang === 'de' ? '✓ Erledigt!' : lang === 'vi' ? '✓ Xong!' : lang === 'el' ? '✓ Έγινε!' : '✓ Done!')
+      : (lang === 'de' ? 'Jetzt spielen →' : lang === 'vi' ? 'Chơi ngay →' : lang === 'el' ? 'Παίξε τώρα →' : 'Play now →');
+
+    el.style.display = '';
+    el.className = `daily-challenge-card${done ? ' done' : ''}`;
+    el.innerHTML = `
+      <div class="dc-label">${label}</div>
+      <div class="dc-details">
+        <span class="dc-cat">${catLabel}</span>
+        <span class="dc-sep">·</span>
+        <span class="dc-diff">${diffLabel}</span>
+        ${done ? '<span class="dc-stars">⭐⭐⭐</span>' : ''}
+      </div>
+      <button class="dc-btn"${done ? ' disabled' : ''}>${btnLabel}</button>`;
+
+    if (!done) {
+      el.querySelector('.dc-btn').addEventListener('click', () => {
+        // Apply daily challenge settings
+        state.difficulty = dailyDiff;
+        state.category = dailyCat;
+        state.mode = 'classic';
+        // Mark as started
+        const rec = JSON.parse(localStorage.getItem(DAILY_CHALLENGE_KEY) || '{}');
+        if (rec.date !== today) localStorage.setItem(DAILY_CHALLENGE_KEY, JSON.stringify({ date: today, completed: false }));
+        // Sync selects
+        if (dom.difficultySelect) dom.difficultySelect.value = dailyDiff;
+        if (dom.categorySelect) dom.categorySelect.value = dailyCat;
+        if (dom.difficultySelectActive) dom.difficultySelectActive.value = dailyDiff;
+        if (dom.categorySelectActive) dom.categorySelectActive.value = dailyCat;
+        hideLanding();
+        startGame();
+      });
+    }
+  }
+
+  function markDailyChallengeComplete() {
+    const DAILY_CHALLENGE_KEY = 'gefuehle-daily-challenge';
+    const today = new Date().toISOString().split('T')[0];
+    const rec = JSON.parse(localStorage.getItem(DAILY_CHALLENGE_KEY) || '{}');
+    if (rec.date === today) {
+      rec.completed = true;
+      localStorage.setItem(DAILY_CHALLENGE_KEY, JSON.stringify(rec));
+    }
+  }
+
   function renderStreakCard() {
     const el = document.getElementById('streak-card');
     if (!el) return;
@@ -3221,17 +3545,31 @@
       else navigator.clearAppBadge().catch(() => {});
     }
 
-    const flameIcon = streak >= 7 ? '🌟' : streak >= 3 ? '🔥' : streak >= 1 ? '🌱' : '💭';
-    const streakClass = streak >= 3 ? 'streak-fire' : '';
+    const flameIcon = streak >= 30 ? '🏆' : streak >= 21 ? '💫' : streak >= 14 ? '⚡' : streak >= 7 ? '🌟' : streak >= 3 ? '🔥' : streak >= 1 ? '🌱' : '💭';
+    const streakClass = streak >= 7 ? 'streak-fire streak-milestone' : streak >= 3 ? 'streak-fire' : '';
+
+    // Milestone messages (Win 2)
+    const MILESTONES = {
+      3:  { de: '3 Tage! Du bist dabei 🔥', en: '3 days! You\'re on a roll 🔥', vi: '3 ngày! Bạn đang tiến lên 🔥', el: '3 μέρες! Συνέχισε 🔥' },
+      7:  { de: '1 Woche! Das ist Hingabe 🌟', en: '1 week! That\'s dedication 🌟', vi: '1 tuần! Thật tuyệt vời 🌟', el: '1 εβδομάδα! Αυτό είναι αφοσίωση 🌟' },
+      14: { de: '14 Tage! Gewohnheit geformt ⚡', en: '14 days! Habit forming ⚡', vi: '14 ngày! Thói quen hình thành ⚡', el: '14 μέρες! Η συνήθεια σχηματίζεται ⚡' },
+      21: { de: '3 Wochen! Du bist außergewöhnlich 💫', en: '3 weeks! You\'re extraordinary 💫', vi: '3 tuần! Bạn thật phi thường 💫', el: '3 εβδομάδες! Είσαι εξαιρετικός 💫' },
+      30: { de: '30 Tage! Eine Transformation 🏆', en: '30 days! A transformation 🏆', vi: '30 ngày! Một sự chuyển đổi 🏆', el: '30 μέρες! Μια μεταμόρφωση 🏆' },
+    };
+    const milestoneMsg = MILESTONES[streak] ? (MILESTONES[streak][lang] || MILESTONES[streak].en) : null;
 
     let topLine, actionText;
     if (!entries.length) {
       topLine = lang === 'de' ? 'Wie geht es dir heute wirklich?' : lang === 'el' ? 'Πώς νιώθεις σήμερα;' : lang === 'vi' ? 'Hôm nay bạn cảm thấy thế nào?' : 'How are you, really?';
       actionText = lang === 'de' ? 'Check-in starten →' : lang === 'el' ? 'Ξεκίνα check-in →' : lang === 'vi' ? 'Bắt đầu →' : 'Start check-in →';
     } else if (hasToday) {
-      topLine = streak > 1
-        ? `${flameIcon} ${streak} ${lang === 'de' ? 'Tage am Stück' : lang === 'el' ? 'μέρες συνεχόμενα' : 'days in a row'}`
-        : `${flameIcon} ${lang === 'de' ? 'Heute dabei!' : lang === 'el' ? 'Σήμερα εδώ!' : 'You showed up today!'}`;
+      if (milestoneMsg) {
+        topLine = milestoneMsg;
+      } else {
+        topLine = streak > 1
+          ? `${flameIcon} ${streak} ${lang === 'de' ? 'Tage am Stück' : lang === 'el' ? 'μέρες συνεχόμενα' : 'days in a row'}`
+          : `${flameIcon} ${lang === 'de' ? 'Heute dabei!' : lang === 'el' ? 'Σήμερα εδώ!' : 'You showed up today!'}`;
+      }
       actionText = lang === 'de' ? 'Check-in anschauen →' : lang === 'el' ? 'Προβολή →' : 'View today →';
     } else {
       topLine = streak > 0
@@ -3315,6 +3653,181 @@
         });
       }
     }
+  }
+
+  /* ---- Emotion Detective mode ---- */
+  function initDetectiveMode() {
+    const container = document.querySelector('.detective-mode');
+    if (!container) return;
+    if (typeof GefuehleDetective === 'undefined') {
+      container.innerHTML = `<div class="mode-placeholder"><p>🔍 Gefühls-Detektiv wird geladen...</p></div>`;
+      return;
+    }
+    GefuehleDetective.initDetectiveMode(container, state.uiLang, (score, total) => {
+      // On complete — show a mini congrats
+      const lang = state.uiLang;
+      const msg = lang === 'de'
+        ? `Detektiv-Session abgeschlossen! ${score}/${total} richtig.`
+        : lang === 'vi' ? `Hoàn thành! ${score}/${total} đúng.`
+        : `Detective session complete! ${score}/${total} correct.`;
+      const banner = document.createElement('div');
+      banner.className = 'detective-complete-banner';
+      banner.innerHTML = `<span>🔍 ${msg}</span><button>${lang === 'de' ? 'Nochmal' : 'Again'}</button>`;
+      container.appendChild(banner);
+      banner.querySelector('button').addEventListener('click', () => {
+        banner.remove();
+        initDetectiveMode();
+      });
+    });
+  }
+
+  /* ---- Needs Map mode ---- */
+  function initNeedsMapMode() {
+    const container = document.querySelector('.needsmap-mode');
+    if (!container) return;
+    const lang = state.uiLang;
+    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+
+    // Build needs map: user selects an emotion → see connected needs
+    const emotions = getEmotions().slice(0, 24); // Show a manageable grid
+    const titleText = L('Welches Gefühl hast du gerade?', 'What emotion do you feel right now?', 'Bạn đang cảm thấy gì?', 'Τι συναίσθημα έχεις τώρα;');
+    const subtitleText = L('Tippe auf ein Gefühl, um die dahinterliegenden Bedürfnisse zu sehen.', 'Tap an emotion to see the underlying needs.', 'Chạm vào cảm xúc để xem nhu cầu bên dưới.', 'Πάτησε ένα συναίσθημα για να δεις τις ανάγκες πίσω από αυτό.');
+
+    container.innerHTML = `
+      <div class="needsmap-wrap">
+        <h2 class="needsmap-title">${titleText}</h2>
+        <p class="needsmap-subtitle">${subtitleText}</p>
+        <div class="needsmap-emotion-grid">
+          ${emotions.map(e => `
+            <button class="nm-emotion-btn" data-id="${e.id}" style="--cat-color:${getCategoryColor(e.category)}">
+              <span class="nm-emoji">${e.emoji}</span>
+              <span class="nm-word">${e[lang] || e.de}</span>
+            </button>`).join('')}
+        </div>
+        <div class="needsmap-result" id="needsmap-result"></div>
+      </div>`;
+
+    container.querySelectorAll('.nm-emotion-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.nm-emotion-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const emo = EMOTIONS.find(e => e.id === btn.dataset.id);
+        if (emo) showNeedsForEmotion(emo, lang);
+      });
+    });
+  }
+
+  function showNeedsForEmotion(emotion, lang) {
+    const resultEl = document.getElementById('needsmap-result');
+    if (!resultEl) return;
+    if (typeof NEEDS === 'undefined' || typeof NEED_DIMENSIONS === 'undefined') {
+      resultEl.innerHTML = '<p>Bedürfnis-Daten nicht verfügbar.</p>';
+      return;
+    }
+    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+
+    // Map emotions to needs by category & emotional valence
+    const needsMap = {
+      freude:        ['verbundenheit', 'anerkennung', 'freude', 'leichtigkeit', 'sicherheit'],
+      trauer:        ['verbundenheit', 'mitgefuehl', 'verstaendnis', 'trost', 'gehoert_werden'],
+      wut:           ['respekt', 'gerechtigkeit', 'autonomie', 'grenzen', 'sicherheit'],
+      angst:         ['sicherheit', 'schutz', 'geborgenheit', 'vertrauen', 'stabilität'],
+      ekel:          ['respekt', 'sauberkeit', 'grenzen', 'autonomie', 'wuerde'],
+      überraschung:  ['verstaendnis', 'orientierung', 'kontrolle', 'sicherheit', 'neugier'],
+      scham:         ['akzeptanz', 'zugehoerigkeit', 'verstaendnis', 'selbstmitgefuehl', 'wuerde'],
+      schuld:        ['reue', 'verbundenheit', 'gerechtigkeit', 'wiedergutmachung', 'vergebung'],
+      einsamkeit:    ['verbundenheit', 'zugehoerigkeit', 'kontakt', 'liebe', 'gemeinschaft'],
+      liebe:         ['verbundenheit', 'zuneigung', 'intimität', 'sicherheit', 'akzeptanz'],
+      hoffnung:      ['sinn', 'orientierung', 'zukunft', 'vertrauen', 'moeglichkeit'],
+      neugier:       ['lernen', 'entdeckung', 'verstaendnis', 'stimulation', 'wachstum'],
+      erschoepfung:  ['ruhe', 'erholung', 'unterstuetzung', 'grenzen', 'selbstfuersorge'],
+      dankbarkeit:   ['verbundenheit', 'anerkennung', 'wertschaetzung', 'sinn', 'zugehoerigkeit'],
+      mitgefuehl:    ['verbundenheit', 'verstaendnis', 'mitgefuehl', 'liebe', 'fuersorge'],
+    };
+
+    // Map emotion category to need dimensions (koerper/herz/verbindung/autonomie/sinn)
+    const catToDimension = {
+      freude: 'verbindung', trauer: 'herz', wut: 'autonomie',
+      angst: 'koerper', ekel: 'autonomie', selbst: 'sinn'
+    };
+    const emotionToDimension = {
+      freude: 'herz', dankbarkeit: 'herz', frieden: 'koerper',
+      einsamkeit: 'verbindung', trauer: 'herz', wut: 'autonomie',
+      angst: 'koerper', scham: 'verbindung', liebe: 'verbindung',
+      hoffnung: 'sinn', neugier: 'sinn', erschoepfung: 'koerper',
+      mitgefuehl: 'verbindung', staunen: 'sinn', leere: 'sinn',
+      zerrissenheit: 'autonomie', weltschmerz: 'sinn'
+    };
+    const dim = emotionToDimension[emotion.id] || catToDimension[emotion.category] || 'verbindung';
+
+    // Pick 6 needs from the matching dimension, then fill from others
+    const dimNeeds = NEEDS.filter(n => n.dimension === dim);
+    const otherNeeds = NEEDS.filter(n => n.dimension !== dim);
+    const displayNeeds = [...dimNeeds, ...otherNeeds].slice(0, 6);
+
+    const color = getCategoryColor(emotion.category);
+    const headerText = L(`${emotion.de} verbindet sich mit...`, `${emotion.en} connects to...`, `${emotion.vi} kết nối với...`, `${emotion.el} συνδέεται με...`);
+    const questionText = L('Welches dieser Bedürfnisse sprichst du an?', 'Which of these needs resonates?', 'Nhu cầu nào đang nói với bạn?', 'Ποια από αυτές τις ανάγκες σε αγγίζει;');
+    const journalText = L('Im Journal festhalten', 'Note in Journal', 'Ghi vào nhật ký', 'Σημείωσε στο ημερολόγιο');
+
+    resultEl.innerHTML = `
+      <div class="nm-result-card" style="--cat-color:${color}">
+        <div class="nm-result-header">
+          <span class="nm-result-emoji">${emotion.emoji}</span>
+          <span class="nm-result-title">${headerText}</span>
+        </div>
+        <div class="nm-needs-grid">
+          ${displayNeeds.map(n => `
+            <button class="nm-need-btn" data-need="${n.de || n.en}">
+              <span class="nm-need-icon">${n.emoji || '🌱'}</span>
+              <span class="nm-need-name">${n[lang] || n.de || n.en}</span>
+            </button>`).join('')}
+        </div>
+        <p class="nm-question">${questionText}</p>
+        <div class="nm-selected-need"></div>
+        <button class="nm-journal-btn">${journalText}</button>
+      </div>`;
+
+    let selectedNeed = null;
+    resultEl.querySelectorAll('.nm-need-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        resultEl.querySelectorAll('.nm-need-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedNeed = btn.dataset.need;
+        const selectedEl = resultEl.querySelector('.nm-selected-need');
+        const needMsg = L(
+          `Du spürst ein Bedürfnis nach "${selectedNeed}".`,
+          `You sense a need for "${selectedNeed}".`,
+          `Bạn cảm thấy cần "${selectedNeed}".`,
+          `Αισθάνεσαι ανάγκη για "${selectedNeed}".`
+        );
+        if (selectedEl) selectedEl.textContent = needMsg;
+      });
+    });
+
+    resultEl.querySelector('.nm-journal-btn').addEventListener('click', () => {
+      // Pre-fill journal with emotion + need reflection
+      const journalEntry = selectedNeed
+        ? `${emotion.emoji} ${emotion[lang] || emotion.de} → Bedürfnis: ${selectedNeed}`
+        : `${emotion.emoji} ${emotion[lang] || emotion.de}`;
+      localStorage.setItem('gefuehle-journal-prefill', journalEntry);
+      state.mode = 'journal';
+      const container2 = document.querySelector('.needsmap-mode');
+      if (container2) container2.classList.remove('active');
+      const jMode = document.querySelector('.journal-mode');
+      if (jMode) jMode.classList.add('active');
+      initJournalMode(journalEntry);
+    });
+
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  /* ---- Emotion Map (Win 8) ---- */
+  function initEmotionMapMode() {
+    const wheelContainer = dom.wheelMode;
+    if (!wheelContainer) return;
+    // Emotion map is rendered within the existing wheel mode
+    // No changes needed — it's handled by initWheelMode()
   }
 
   function init() {

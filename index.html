@@ -72,6 +72,9 @@
     <!-- Today's Emotion Card (populated by JS) -->
     <div id="todays-emotion-card" class="todays-emotion-card" style="display:none"></div>
 
+    <!-- Daily Challenge Card (populated by JS) -->
+    <div id="daily-challenge-card" class="daily-challenge-card" style="display:none"></div>
+
     <!-- Daily Fun Fact Card (populated by JS) -->
     <div id="daily-funfact-card" class="daily-funfact-card" style="display:none"></div>
 
@@ -212,6 +215,16 @@
             <span class="mode-card-name">Journal</span>
             <span class="mode-card-desc">Tägliche Reflexion</span>
           </button>
+          <button class="mode-card" data-mode="detective">
+            <span class="mode-card-icon">🔍</span>
+            <span class="mode-card-name">Gefühls-Detektiv</span>
+            <span class="mode-card-desc">Finde das versteckte Gefühl</span>
+          </button>
+          <button class="mode-card" data-mode="needsmap">
+            <span class="mode-card-icon">🗺️</span>
+            <span class="mode-card-name">Bedürfnis-Karte</span>
+            <span class="mode-card-desc">Gefühle & Bedürfnisse verbinden</span>
+          </button>
         </div>
       </div>
       <div class="mode-group">
@@ -327,6 +340,12 @@
 
     <!-- Ask Mode -->
     <section class="ask-mode"></section>
+
+    <!-- Detective Mode -->
+    <section class="detective-mode"></section>
+
+    <!-- Needs Map Mode -->
+    <section class="needsmap-mode"></section>
   </div>
 
   <!-- Prompt Overlay -->
@@ -339,6 +358,12 @@
       <div class="prompt-label"></div>
       <div class="prompt-question"></div>
       <div class="prompt-culture"></div>
+      <!-- Resonance buttons (Win 1) -->
+      <div class="prompt-resonance">
+        <button class="resonance-btn" data-resonance="know">🤝 Kenn ich</button>
+        <button class="resonance-btn" data-resonance="feel">💛 Fühle ich gerade</button>
+        <button class="resonance-btn" data-resonance="surprise">✨ Überraschend</button>
+      </div>
       <button class="prompt-share" title="Teilen">💛</button>
       <button class="prompt-close">✓</button>
     </div>
@@ -352,6 +377,8 @@
       <div class="congrats-stars"></div>
       <div class="congrats-stats"></div>
       <div class="congrats-best"></div>
+      <div class="congrats-emotion-summary"></div>
+      <div class="congrats-persona-msg"></div>
       <div class="congrats-scoreboard"></div>
       <div class="congrats-buttons">
         <button class="btn btn-primary" id="btn-play-again">Nochmal</button>
@@ -385,9 +412,11 @@
   <script src="js/funfacts.js"></script>
   <script src="js/learn-data.js"></script>
   <script src="js/culture.js"></script>
+  <script src="js/culture-insights.js"></script>
   <script src="js/card-art.js"></script>
   <script src="js/personas.js"></script>
   <script src="js/tandem.js"></script>
+  <script src="js/detective.js"></script>
   <script src="js/ai.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/game.js"></script>
