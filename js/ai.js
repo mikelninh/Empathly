@@ -160,9 +160,11 @@ const GefuehleAI = (function () {
     const writeLang = langNames[lang1] || 'English';
     const srcName = langNames[lang1] || lang1;
     const tgtName = langNames[lang2] || lang2;
-    const prompt = `You are a cultural psychologist. In 2-3 sentences, explain how the emotion "${emotionName}" is experienced and expressed differently in ${srcName} vs ${tgtName} culture. Be specific, nuanced, and mention concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;
 
-    const result = await callOpenRouter(prompt);
+    const systemPrompt = `You are a cultural psychologist. You MUST respond exclusively in ${writeLang} — never use any other language, not even for a single word. Write exactly 2-3 sentences of flowing prose. No bullet points, no headers, no markdown, no line breaks. Stay concise and grounded.`;
+    const prompt = `How is the emotion "${emotionName}" experienced and expressed differently in ${srcName}-speaking culture vs ${tgtName}-speaking culture? Give concrete examples (phrases, behaviors, social norms). Write in ${writeLang}.`;
+
+    const result = await callOpenRouter(prompt, systemPrompt);
     cacheCultureInsight(emotionId, lang1, lang2, result);
     return result;
   }
@@ -197,9 +199,10 @@ const GefuehleAI = (function () {
       note: e.note || ''
     })));
 
-    const prompt = `You are a compassionate emotional wellness guide. Analyze these emotion journal entries and identify patterns, trends, and gentle insights. Be warm, not clinical. Write 3-4 sentences in ${writeLang}. Entries: ${entriesJson}`;
+    const systemPrompt = `You are a compassionate emotional wellness guide. You MUST respond exclusively in ${writeLang} — never switch languages. Write exactly 3-4 sentences of warm, flowing prose. No bullet points, no headers, no markdown. Be personal and gentle, not clinical.`;
+    const prompt = `Analyze these emotion journal entries and share a gentle insight about patterns or themes you notice. Write in ${writeLang}. Entries: ${entriesJson}`;
 
-    const result = await callOpenRouter(prompt);
+    const result = await callOpenRouter(prompt, systemPrompt);
     localStorage.setItem(cacheKey, result);
     return result;
   }
