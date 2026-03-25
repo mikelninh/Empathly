@@ -72,9 +72,11 @@ const GefuehleAI = (function () {
     if (!apiKey) throw new Error('No API key configured');
 
     // Inject active persona system prompt unless a custom one is provided
+    let _uiLang = 'en';
+    try { _uiLang = state?.lang1 || 'en'; } catch (_) {}
     const baseSystem = systemPrompt || (
       typeof GefuehlePersonas !== 'undefined'
-        ? GefuehlePersonas.getPersonaSystemPrompt(state?.lang1 || 'en')
+        ? GefuehlePersonas.getPersonaSystemPrompt(_uiLang)
         : null
     );
     // Append persona memory context

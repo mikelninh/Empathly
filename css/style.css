@@ -413,6 +413,7 @@ body:not(.show-landing) .settings-bar {
 }
 
 /* More modes expandable section */
+.more-modes-grid[hidden] { display: none; }
 .more-modes-section { width: 100%; margin-top: 4px; }
 .more-modes-toggle {
   width: 100%;
@@ -1450,11 +1451,13 @@ body.dark-mode .card-word {
 /* Emotion emoji dots */
 .wheel-emoji-dot {
   cursor: pointer;
-  transition: transform .25s cubic-bezier(.34,1.56,.64,1), filter .25s ease, opacity .25s ease;
+  transition: transform .25s cubic-bezier(.34,1.56,.64,1), filter .25s ease, opacity .3s ease;
   transform-origin: center;
-  animation: emojiFloat 4s ease-in-out infinite;
-  opacity: 0.88;
+  opacity: 0.12;
 }
+/* Reveal dots when hovering or touching the segment group */
+.wheel-segment-group:hover .wheel-emoji-dot,
+.wheel-segment-group:focus-within .wheel-emoji-dot { opacity: 0.82; }
 .wheel-emoji-dot:nth-child(odd)  { animation-delay: -1.5s; }
 .wheel-emoji-dot:nth-child(3n)   { animation-delay: -0.7s; }
 .wheel-emoji-dot:nth-child(5n)   { animation-delay: -2.2s; }
