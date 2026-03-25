@@ -3745,25 +3745,43 @@
       mitgefuehl:    ['verbundenheit', 'verstaendnis', 'mitgefuehl', 'liebe', 'fuersorge'],
     };
 
-    // Map emotion category to need dimensions (koerper/herz/verbindung/autonomie/sinn)
+    // Real dimensions: koerper · herz · geist · seele · beziehung
+    // Real category IDs: licht · mitte · schwere · sturm · angst · schatten
     const catToDimension = {
-      freude: 'verbindung', trauer: 'herz', wut: 'autonomie',
-      angst: 'koerper', ekel: 'autonomie', selbst: 'sinn'
+      licht:    'herz',
+      mitte:    'seele',
+      schwere:  'herz',
+      sturm:    'beziehung',
+      angst:    'koerper',
+      schatten: 'seele'
     };
     const emotionToDimension = {
-      freude: 'herz', dankbarkeit: 'herz', frieden: 'koerper',
-      einsamkeit: 'verbindung', trauer: 'herz', wut: 'autonomie',
-      angst: 'koerper', scham: 'verbindung', liebe: 'verbindung',
-      hoffnung: 'sinn', neugier: 'sinn', erschoepfung: 'koerper',
-      mitgefuehl: 'verbindung', staunen: 'sinn', leere: 'sinn',
-      zerrissenheit: 'autonomie', weltschmerz: 'sinn'
+      freude: 'herz', dankbarkeit: 'herz', liebe: 'beziehung',
+      frieden: 'seele', geborgenheit: 'beziehung', sehnsucht: 'beziehung',
+      einsamkeit: 'beziehung', trauer: 'herz', verlust: 'herz',
+      wut: 'beziehung', frustration: 'geist', enttaeuschung: 'beziehung',
+      angst: 'koerper', panik: 'koerper', unsicherheit: 'koerper',
+      scham: 'beziehung', schuld: 'beziehung', peinlichkeit: 'beziehung',
+      hoffnung: 'seele', neugier: 'geist', begeisterung: 'geist',
+      erschoepfung: 'koerper', mitgefuehl: 'herz', staunen: 'seele',
+      leere: 'seele', zerrissenheit: 'seele', weltschmerz: 'seele',
+      stolz: 'herz', verbundenheit: 'beziehung', eifersucht: 'beziehung',
+      neid: 'beziehung', ekel: 'koerper', verwirrung: 'geist',
+      erleichterung: 'seele', zufriedenheit: 'seele', langeweile: 'geist',
+      überwaeltigung: 'koerper', überwaeltigt: 'koerper'
     };
-    const dim = emotionToDimension[emotion.id] || catToDimension[emotion.category] || 'verbindung';
+    const dim = emotionToDimension[emotion.id] || catToDimension[emotion.category] || 'herz';
 
-    // Pick 6 needs from the matching dimension, then fill from others
+    // Seeded shuffle so each emotion consistently shows different needs from that dimension
+    const seed = emotion.id.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0);
+    const seededSort = arr => [...arr].sort((a, b) => {
+      const ha = Math.abs((seed ^ a.id.charCodeAt(0) * 17) % 23);
+      const hb = Math.abs((seed ^ b.id.charCodeAt(0) * 17) % 23);
+      return ha - hb;
+    });
     const dimNeeds = NEEDS.filter(n => n.dimension === dim);
     const otherNeeds = NEEDS.filter(n => n.dimension !== dim);
-    const displayNeeds = [...dimNeeds, ...otherNeeds].slice(0, 6);
+    const displayNeeds = [...seededSort(dimNeeds), ...seededSort(otherNeeds)].slice(0, 6);
 
     const color = getCategoryColor(emotion.category);
     const headerText = L(`${emotion.de} verbindet sich mit...`, `${emotion.en} connects to...`, `${emotion.vi} kết nối với...`, `${emotion.el} συνδέεται με...`);
