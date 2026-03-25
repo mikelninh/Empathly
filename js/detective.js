@@ -174,21 +174,88 @@ const GefuehleDetective = (function () {
     },
   ];
 
+  // Difficulty star ratings
+  const DIFFICULTY_STARS = { easy: '⭐', medium: '⭐⭐', hard: '⭐⭐⭐' };
+
+  // Persona-to-psychology note mapping
+  const PSYCHOLOGY_LABELS = {
+    de: { easy: 'Leicht', medium: 'Mittel', hard: 'Schwer', case: 'Fall', of: 'von',
+          whats_hidden: 'Was steckt wirklich dahinter?',
+          clues: 'Beobachtete Hinweise',
+          instruction: 'Wähle das tiefste Gefühl — das, das nicht direkt sichtbar ist.',
+          correct: 'Richtig erkannt!', wrong: 'Das verborgene Gefühl war',
+          psychology: 'Psychologischer Hintergrund',
+          next: 'Nächster Fall →', results: 'Auswertung sehen',
+          rank_legend: 'Detective-Rang', play_again: 'Nochmal spielen', back: 'Zurück',
+          pts: 'Pkt', case_closed: 'Fall gelöst', case_missed: 'Fall offen',
+    },
+    en: { easy: 'Easy', medium: 'Medium', hard: 'Hard', case: 'Case', of: 'of',
+          whats_hidden: 'What really lies beneath?',
+          clues: 'Observed clues',
+          instruction: 'Choose the deepest emotion — the one not directly visible.',
+          correct: 'Correctly identified!', wrong: 'The hidden emotion was',
+          psychology: 'Psychological insight',
+          next: 'Next case →', results: 'See results',
+          rank_legend: 'Detective rank', play_again: 'Play again', back: 'Back',
+          pts: 'pts', case_closed: 'Case closed', case_missed: 'Case open',
+    },
+    vi: { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó', case: 'Vụ', of: '/',
+          whats_hidden: 'Điều gì thực sự ẩn sau?',
+          clues: 'Manh mối quan sát',
+          instruction: 'Chọn cảm xúc sâu nhất — cái không thể thấy rõ.',
+          correct: 'Nhận diện chính xác!', wrong: 'Cảm xúc ẩn là',
+          psychology: 'Hiểu biết tâm lý',
+          next: 'Vụ tiếp theo →', results: 'Xem kết quả',
+          rank_legend: 'Cấp bậc thám tử', play_again: 'Chơi lại', back: 'Quay lại',
+          pts: 'đ', case_closed: 'Vụ đã giải', case_missed: 'Còn mở',
+    },
+    el: { easy: 'Εύκολο', medium: 'Μέτριο', hard: 'Δύσκολο', case: 'Υπόθεση', of: 'από',
+          whats_hidden: 'Τι κρύβεται πραγματικά από κάτω;',
+          clues: 'Παρατηρηθείσες ενδείξεις',
+          instruction: 'Επίλεξε το βαθύτερο συναίσθημα — αυτό που δεν φαίνεται άμεσα.',
+          correct: 'Σωστή αναγνώριση!', wrong: 'Το κρυμμένο συναίσθημα ήταν',
+          psychology: 'Ψυχολογική κατανόηση',
+          next: 'Επόμενη υπόθεση →', results: 'Δες τα αποτελέσματα',
+          rank_legend: 'Βαθμός ντετέκτιβ', play_again: 'Παίξε ξανά', back: 'Πίσω',
+          pts: 'β', case_closed: 'Λύθηκε', case_missed: 'Ανοιχτή',
+    },
+  };
+
+  // Detective ranks by performance
+  const RANKS = {
+    de: ['Anfänger', 'Beobachter', 'Spurenleser', 'Empathie-Detektiv', 'Meister der Seelen'],
+    en: ['Novice', 'Observer', 'Clue Reader', 'Empathy Detective', 'Soul Master'],
+    vi: ['Người mới', 'Quan sát viên', 'Đọc dấu vết', 'Thám tử đồng cảm', 'Bậc thầy tâm hồn'],
+    el: ['Αρχάριος', 'Παρατηρητής', 'Αναγνώστης ιχνών', 'Ντετέκτιβ ενσυναίσθησης', 'Δάσκαλος ψυχών'],
+  };
+
+  function getRank(score, total, lang) {
+    const pct = score / total;
+    const ranks = RANKS[lang] || RANKS.en;
+    if (pct === 1) return { rank: ranks[4], badge: '🏆', color: '#F6C344' };
+    if (pct >= 0.8) return { rank: ranks[3], badge: '🔍', color: '#A78BFA' };
+    if (pct >= 0.6) return { rank: ranks[2], badge: '🕵️', color: '#06D6A0' };
+    if (pct >= 0.4) return { rank: ranks[1], badge: '👁️', color: '#74C0FC' };
+    return { rank: ranks[0], badge: '📖', color: '#F6C344' };
+  }
+
   function getScenarios(difficulty) {
     if (difficulty === 'all') return SCENARIOS;
     return SCENARIOS.filter(s => s.difficulty === difficulty);
   }
 
   function initDetectiveMode(container, uiLang, onComplete) {
-    const L = (de, en, vi, el) =>
-      uiLang === 'de' ? de : uiLang === 'vi' ? vi : uiLang === 'el' ? el : en;
+    const T = PSYCHOLOGY_LABELS[uiLang] || PSYCHOLOGY_LABELS.en;
 
-    const all = shuffle([...SCENARIOS]);
+    const all = shuffleArr([...SCENARIOS]);
     let index = 0;
     let score = 0;
-    const total = Math.min(5, all.length);
+    let streak = 0;
+    let maxStreak = 0;
+    const total = Math.min(6, all.length);
+    const history = []; // { correct: bool }
 
-    function shuffle(arr) {
+    function shuffleArr(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
@@ -197,89 +264,155 @@ const GefuehleDetective = (function () {
     }
 
     function render() {
-      if (index >= total) {
-        showResults();
-        return;
-      }
+      if (index >= total) { showResults(); return; }
       const sc = all[index];
       const situation = sc.situation[uiLang] || sc.situation.en;
+      const diffStars = DIFFICULTY_STARS[sc.difficulty] || '⭐';
 
-      // Build emotion choices from surface_emotions
+      // Extract behavioral clues from the situation text (first sentence clues)
+      const clueEmojis = extractClueEmojis(sc, situation);
+
       const emotionPool = sc.surface_emotions
         .map(id => typeof EMOTIONS !== 'undefined' ? EMOTIONS.find(e => e.id === id) : null)
         .filter(Boolean);
+      const shuffledPool = shuffleArr([...emotionPool]);
 
-      const shuffledPool = shuffle([...emotionPool]);
+      // Progress dots
+      const progressDots = Array.from({length: total}, (_, i) => {
+        if (i < history.length) return `<span class="det-dot ${history[i].correct ? 'correct' : 'wrong'}"></span>`;
+        if (i === index) return `<span class="det-dot active"></span>`;
+        return `<span class="det-dot"></span>`;
+      }).join('');
 
       container.innerHTML = `
-        <div class="detective-header">
-          <div class="detective-progress">${index + 1} / ${total}</div>
-          <div class="detective-score">${L('Punkte', 'Score', 'Điểm', 'Βαθμοί')}: ${score}</div>
-        </div>
-        <div class="detective-card">
-          <div class="detective-badge">🔍 ${L('Was steckt dahinter?', 'What lies beneath?', 'Điều gì ẩn sau?', 'Τι κρύβεται από κάτω;')}</div>
-          <div class="detective-situation">${situation}</div>
-          <p class="detective-instruction">
-            ${L(
-              'Was ist das tiefste Gefühl dieser Person — das, das nicht direkt sichtbar ist?',
-              'What is the deepest feeling here — the one not directly visible?',
-              'Cảm xúc sâu nhất của người này là gì — cái không thể thấy rõ?',
-              'Ποιο είναι το βαθύτερο συναίσθημα — αυτό που δεν φαίνεται άμεσα;'
-            )}
-          </p>
-          <div class="detective-grid">
-            ${shuffledPool.map(e => `
-              <button class="detective-choice" data-id="${e.id}">
-                <span class="detective-choice-emoji">${e.emoji}</span>
-                <span class="detective-choice-word">${e[uiLang] || e.en}</span>
-              </button>`).join('')}
+        <div class="det-wrapper">
+          <!-- Progress Bar -->
+          <div class="det-topbar">
+            <div class="det-progress-dots">${progressDots}</div>
+            <div class="det-score-pill">${score} ${T.pts}</div>
+          </div>
+
+          <!-- Case File Card -->
+          <div class="det-case-file">
+            <div class="det-case-header">
+              <div class="det-case-meta">
+                <span class="det-case-num">🔍 ${T.case} ${index + 1} ${T.of} ${total}</span>
+                <span class="det-difficulty">${diffStars} ${T[sc.difficulty]}</span>
+              </div>
+            </div>
+
+            <!-- Observed clues -->
+            ${clueEmojis.length ? `
+            <div class="det-clues">
+              <div class="det-clues-label">${T.clues}</div>
+              <div class="det-clues-row">${clueEmojis.map(c => `<span class="det-clue-chip">${c}</span>`).join('')}</div>
+            </div>` : ''}
+
+            <!-- Scenario -->
+            <div class="det-scenario-bubble">
+              <div class="det-scenario-text">${situation}</div>
+            </div>
+
+            <!-- Question -->
+            <div class="det-question">${T.whats_hidden}</div>
+            <p class="det-instruction">${T.instruction}</p>
+
+            <!-- Emotion choices -->
+            <div class="det-choices-grid">
+              ${shuffledPool.map(e => `
+                <button class="det-choice" data-id="${e.id}">
+                  <span class="det-choice-emoji">${e.emoji}</span>
+                  <span class="det-choice-label">${e[uiLang] || e.en}</span>
+                </button>`).join('')}
+            </div>
           </div>
         </div>`;
 
-      container.querySelectorAll('.detective-choice').forEach(btn => {
+      container.querySelectorAll('.det-choice').forEach(btn => {
         btn.addEventListener('click', () => handleChoice(btn.dataset.id, sc));
       });
     }
 
+    function extractClueEmojis(sc, situationText) {
+      // Build behavioral clue emojis from the scenario context
+      const clueMap = {
+        silent: '🤐', withdraw: '🚶', cry: '😢', alone: '🚪', hide: '🫥',
+        sleep: '😴', perfect: '✨', control: '🔒', help: '🤝', angry: '🌋',
+        quiet: '🤫', smile: '😊', work: '💼', family: '👨‍👩‍👧', letter: '✉️',
+        leave: '🚪', night: '🌙', phone: '📱', rewrite: '✏️', door: '🚪',
+      };
+      const clues = [];
+      const text = situationText.toLowerCase();
+      if (text.includes('weint') || text.includes('cries') || text.includes('tears')) clues.push('😢');
+      if (text.includes('still') || text.includes('silent') || text.includes('quiet')) clues.push('🤐');
+      if (text.includes('zieht sich zurück') || text.includes('withdraws') || text.includes('retreat')) clues.push('🚶');
+      if (text.includes('allein') || text.includes('alone') || text.includes('nobody')) clues.push('🚪');
+      if (text.includes('perfekt') || text.includes('perfect') || text.includes('makellos')) clues.push('✨');
+      if (text.includes('schläft') || text.includes('sleeps') || text.includes('schlafen')) clues.push('😴');
+      if (text.includes('lacht') || text.includes('laugh') || text.includes('smile')) clues.push('😊');
+      if (text.includes('erzählt niemandem') || text.includes('tells no one') || text.includes('nobody knows')) clues.push('🤫');
+      if (text.includes('arbeitet') || text.includes('works') || text.includes('job') || text.includes('arbeit')) clues.push('💼');
+      if (text.includes('schreibt') || text.includes('writes') || text.includes('message')) clues.push('✉️');
+      if (text.includes('verlässt') || text.includes('leaves') || text.includes('leave')) clues.push('🚪');
+      if (text.includes('explodiert') || text.includes('explodes') || text.includes('anger')) clues.push('🌋');
+      // Deduplicate and limit
+      return [...new Set(clues)].slice(0, 5);
+    }
+
     function handleChoice(chosenId, sc) {
       const isCorrect = chosenId === sc.hidden;
-      if (isCorrect) score++;
+      if (isCorrect) { score++; streak++; maxStreak = Math.max(maxStreak, streak); }
+      else streak = 0;
+
+      history.push({ correct: isCorrect });
 
       const hiddenEmotion = typeof EMOTIONS !== 'undefined'
         ? EMOTIONS.find(e => e.id === sc.hidden) : null;
-
       const personaNote = sc.persona_note[uiLang] || sc.persona_note.en;
       const persona = typeof GefuehlePersonas !== 'undefined'
         ? GefuehlePersonas.getActivePersona() : { emoji: '💡', name: 'Guide' };
 
-      // Mark all buttons
-      container.querySelectorAll('.detective-choice').forEach(btn => {
+      // Mark choices + disable
+      container.querySelectorAll('.det-choice').forEach(btn => {
         if (btn.dataset.id === sc.hidden) btn.classList.add('correct');
         else if (btn.dataset.id === chosenId && !isCorrect) btn.classList.add('wrong');
         btn.disabled = true;
       });
 
-      // Add feedback panel
-      const feedback = document.createElement('div');
-      feedback.className = `detective-feedback ${isCorrect ? 'correct' : 'wrong'}`;
-      feedback.innerHTML = `
-        <div class="detective-feedback-result">
+      // Update score pill immediately
+      const scorePill = container.querySelector('.det-score-pill');
+      if (scorePill) {
+        scorePill.textContent = `${score} ${T.pts}`;
+        if (isCorrect) { scorePill.classList.add('bump'); setTimeout(() => scorePill.classList.remove('bump'), 400); }
+      }
+
+      // Reveal panel
+      const reveal = document.createElement('div');
+      reveal.className = `det-reveal ${isCorrect ? 'correct' : 'wrong'}`;
+      reveal.innerHTML = `
+        <div class="det-reveal-result">
           ${isCorrect
-            ? `✓ ${L('Genau', 'Exactly', 'Chính xác', 'Ακριβώς')}!`
-            : `${L('Das verborgene Gefühl war', 'The hidden emotion was', 'Cảm xúc ẩn là', 'Το κρυμμένο συναίσθημα ήταν')}: ${hiddenEmotion?.emoji || ''} <strong>${hiddenEmotion?.[uiLang] || hiddenEmotion?.en || sc.hidden}</strong>`
+            ? `<span class="det-reveal-icon">✓</span>
+               <span class="det-reveal-title">${T.correct}</span>
+               ${streak >= 2 ? `<span class="det-streak-badge">🔥 ×${streak}</span>` : ''}`
+            : `<span class="det-reveal-icon">○</span>
+               <span class="det-reveal-title">${T.wrong}: ${hiddenEmotion?.emoji || ''} <strong>${hiddenEmotion?.[uiLang] || hiddenEmotion?.en || sc.hidden}</strong></span>`
           }
         </div>
-        <div class="detective-persona-note">
-          <span class="detective-persona-badge">${persona.emoji} ${persona.name}</span>
-          <span>${personaNote}</span>
+        <div class="det-psychology">
+          <div class="det-psychology-label">🧠 ${T.psychology}</div>
+          <div class="det-psychology-text">${personaNote}</div>
+          <div class="det-persona-credit">${persona.emoji} ${persona.name}</div>
         </div>
-        <button class="detective-next-btn btn btn-primary">
-          ${index + 1 < total
-            ? L('Weiter →', 'Next →', 'Tiếp →', 'Επόμενο →')
-            : L('Ergebnis sehen', 'See results', 'Xem kết quả', 'Δες αποτελέσματα')}
+        <button class="det-next-btn btn btn-primary">
+          ${index + 1 < total ? T.next : T.results}
         </button>`;
-      container.querySelector('.detective-card').appendChild(feedback);
-      feedback.querySelector('.detective-next-btn').addEventListener('click', () => {
+
+      const caseFile = container.querySelector('.det-case-file');
+      if (caseFile) caseFile.appendChild(reveal);
+      requestAnimationFrame(() => reveal.classList.add('visible'));
+
+      reveal.querySelector('.det-next-btn').addEventListener('click', () => {
         index++;
         render();
       });
@@ -287,30 +420,43 @@ const GefuehleDetective = (function () {
 
     function showResults() {
       const pct = Math.round((score / total) * 100);
-      const msg =
-        pct === 100 ? L('Außergewöhnlich. Du liest zwischen den Zeilen.', 'Exceptional. You read between the lines.', 'Xuất sắc. Bạn đọc được những điều ẩn.', 'Εξαιρετικό. Διαβάζεις ανάμεσα στις γραμμές.')
-        : pct >= 60 ? L('Gut. Du spürst, was nicht gesagt wird.', 'Good. You sense what is not said.', 'Tốt. Bạn cảm nhận được điều không nói ra.', 'Καλό. Νιώθεις αυτό που δεν λέγεται.')
-        : L('Jede Übung schärft die Wahrnehmung.', 'Every practice sharpens perception.', 'Luyện tập sẽ giúp cảm nhận sâu hơn.', 'Κάθε εξάσκηση οξύνει την αντίληψη.');
+      const rank = getRank(score, total, uiLang);
+
+      const historyDots = history.map((h, i) => `
+        <div class="det-history-item ${h.correct ? 'correct' : 'wrong'}">
+          ${h.correct ? '✓' : '○'}
+          <span>${T.case} ${i + 1}</span>
+        </div>`).join('');
 
       container.innerHTML = `
-        <div class="detective-results">
-          <div class="detective-results-icon">🔍</div>
-          <h3>${score} / ${total}</h3>
-          <div class="detective-results-bar">
-            <div class="detective-results-fill" style="width:${pct}%"></div>
+        <div class="det-results">
+          <div class="det-results-header">
+            <div class="det-results-badge">${rank.badge}</div>
+            <div class="det-results-rank" style="color:${rank.color}">${rank.rank}</div>
+            <div class="det-results-score">${score} / ${total}</div>
+            <div class="det-results-bar-wrap">
+              <div class="det-results-bar">
+                <div class="det-results-fill" style="width:${pct}%;background:${rank.color}"></div>
+              </div>
+            </div>
           </div>
-          <p class="detective-results-msg">${msg}</p>
-          <div class="detective-results-actions">
-            <button class="btn btn-primary detective-play-again">${L('Nochmal', 'Play again', 'Chơi lại', 'Ξανά')}</button>
-            <button class="btn btn-secondary detective-to-landing">${L('Zurück', 'Back', 'Quay lại', 'Πίσω')}</button>
+
+          <div class="det-history-grid">${historyDots}</div>
+
+          ${maxStreak >= 2 ? `<div class="det-streak-result">🔥 ${maxStreak}× ${uiLang === 'de' ? 'Serie' : 'streak'}</div>` : ''}
+
+          <div class="det-results-actions">
+            <button class="btn btn-primary det-play-again">${T.play_again}</button>
+            <button class="btn btn-secondary det-to-landing">${T.back}</button>
           </div>
         </div>`;
-      container.querySelector('.detective-play-again').addEventListener('click', () => {
-        index = 0; score = 0;
-        shuffle(all);
+
+      container.querySelector('.det-play-again').addEventListener('click', () => {
+        index = 0; score = 0; streak = 0; maxStreak = 0; history.length = 0;
+        shuffleArr(all);
         render();
       });
-      container.querySelector('.detective-to-landing').addEventListener('click', () => {
+      container.querySelector('.det-to-landing').addEventListener('click', () => {
         if (onComplete) onComplete();
       });
     }

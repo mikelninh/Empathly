@@ -4446,99 +4446,190 @@ body.classroom-mode #btn-classroom { background: var(--accent); }
 .detective-mode.active { display: block; }
 
 /* Detective JS-rendered styles */
-.detective-wrap {
-  display: flex; flex-direction: column; gap: 20px;
-}
-.detective-header {
-  text-align: center;
-}
-.detective-title {
-  font-size: 1.4rem; font-weight: 800; margin: 0 0 6px;
-}
-.detective-subtitle {
-  font-size: .88rem; color: var(--text-muted); margin: 0;
-}
-.detective-progress {
-  font-size: .75rem; font-weight: 600; color: var(--accent);
-  letter-spacing: .06em; text-align: center; text-transform: uppercase;
-}
-.detective-scenario-card {
-  background: var(--card-bg); border: 1.5px solid var(--border);
-  border-radius: 18px; padding: 22px;
-}
-.detective-scenario-label {
-  font-size: .7rem; font-weight: 700; letter-spacing: .1em;
-  text-transform: uppercase; color: var(--accent); margin-bottom: 10px;
-}
-.detective-scenario-text {
-  font-size: 1rem; line-height: 1.65; color: var(--text);
-}
-.detective-surface-emotions {
-  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
-}
-.detective-surface-label {
-  font-size: .75rem; color: var(--text-muted); font-weight: 600;
-  width: 100%; margin-bottom: 2px;
-}
-.detective-surface-tag {
-  padding: 6px 14px; border-radius: 100px;
-  background: var(--bg); border: 1.5px solid var(--border);
-  font-size: .82rem; color: var(--text); font-weight: 500;
-}
-.detective-choices {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-}
-.detective-choice-btn {
-  padding: 14px 12px; border: 2px solid var(--border);
-  border-radius: 14px; background: var(--card-bg);
-  color: var(--text); font: inherit; font-size: .88rem;
-  font-weight: 600; cursor: pointer; text-align: center;
-  transition: all .18s;
-}
-.detective-choice-btn:hover {
-  border-color: var(--accent); background: var(--accent-light);
-  transform: translateY(-1px);
-}
-.detective-choice-btn.correct {
-  border-color: #4caf50; background: rgba(76,175,80,.12); color: #4caf50;
-}
-.detective-choice-btn.wrong {
-  border-color: #ef5350; background: rgba(239,83,80,.1); color: #ef5350;
-}
-.detective-feedback {
-  background: var(--card-bg); border: 1.5px solid var(--border);
-  border-radius: 14px; padding: 16px; font-size: .9rem; line-height: 1.6;
-}
-.detective-feedback-correct { color: #4caf50; font-weight: 700; }
-.detective-feedback-wrong { color: #ef5350; font-weight: 700; }
-.detective-next-btn {
-  padding: 13px 28px; border: none; border-radius: 100px;
-  background: var(--accent); color: #0d0b14;
-  font: inherit; font-size: .95rem; font-weight: 800;
-  cursor: pointer; align-self: center;
-  transition: opacity .18s, transform .18s;
-}
-.detective-next-btn:hover { opacity: .9; transform: translateY(-1px); }
-.detective-score-card {
-  text-align: center; padding: 30px 20px;
-  background: var(--card-bg); border: 1.5px solid var(--border);
-  border-radius: 20px;
-}
-.detective-score-number {
-  font-size: 3.5rem; font-weight: 900; color: var(--accent);
-  line-height: 1;
-}
-.detective-complete-banner {
+/* ── Emotion Detective — Redesigned ── */
+.det-wrapper { display: flex; flex-direction: column; gap: 14px; }
+
+/* Top bar: progress dots + score */
+.det-topbar {
   display: flex; align-items: center; justify-content: space-between;
-  background: var(--card-bg); border: 1.5px solid var(--accent);
-  border-radius: 14px; padding: 14px 18px; margin-top: 16px;
-  font-size: .9rem; color: var(--text);
+  padding: 0 2px;
 }
-.detective-complete-banner button {
-  padding: 8px 18px; border: none; border-radius: 100px;
-  background: var(--accent); color: #0d0b14;
-  font: inherit; font-size: .82rem; font-weight: 700; cursor: pointer;
+.det-progress-dots { display: flex; gap: 6px; align-items: center; }
+.det-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--border); transition: background .2s;
 }
+.det-dot.active { background: var(--accent); transform: scale(1.3); }
+.det-dot.correct { background: #4CAF50; }
+.det-dot.wrong { background: #EF5350; }
+.det-score-pill {
+  font-size: .82rem; font-weight: 700; color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border-radius: 100px; padding: 4px 12px;
+  transition: transform .15s;
+}
+.det-score-pill.bump { transform: scale(1.25); }
+
+/* Case file card */
+.det-case-file {
+  background: var(--bg-card); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px 18px;
+  border-top: 3px solid var(--accent); position: relative;
+}
+.det-case-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.det-case-meta { display: flex; align-items: center; gap: 10px; }
+.det-case-num {
+  font-size: .72rem; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--accent);
+}
+.det-difficulty {
+  font-size: .72rem; font-weight: 600; color: var(--text-muted);
+  background: var(--bg-surface); border-radius: 100px; padding: 2px 8px;
+}
+
+/* Clues */
+.det-clues { margin-bottom: 12px; }
+.det-clues-label {
+  font-size: .65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-muted); margin-bottom: 6px;
+}
+.det-clues-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.det-clue-chip {
+  font-size: 1.2rem; width: 36px; height: 36px; display: flex;
+  align-items: center; justify-content: center;
+  background: var(--bg-surface); border-radius: 10px;
+  border: 1.5px solid var(--border);
+}
+
+/* Scenario bubble */
+.det-scenario-bubble {
+  background: var(--bg-surface); border-radius: 14px; padding: 16px 16px;
+  margin-bottom: 16px; position: relative;
+}
+.det-scenario-text {
+  font-size: .97rem; line-height: 1.7; color: var(--text);
+  font-style: italic;
+}
+
+/* Question + instruction */
+.det-question {
+  font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 4px;
+}
+.det-instruction {
+  font-size: .82rem; color: var(--text-soft); margin: 0 0 16px;
+}
+
+/* Choices grid */
+.det-choices-grid {
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+  margin-bottom: 4px;
+}
+.det-choice {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 14px 8px; border: 2px solid var(--border);
+  border-radius: 14px; background: var(--bg-surface);
+  color: var(--text); font: inherit; cursor: pointer;
+  transition: all .18s; text-align: center;
+}
+.det-choice:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-surface));
+  transform: translateY(-2px);
+}
+.det-choice-emoji { font-size: 1.8rem; line-height: 1; }
+.det-choice-label { font-size: .75rem; font-weight: 600; line-height: 1.2; }
+.det-choice.correct {
+  border-color: #4CAF50 !important;
+  background: rgba(76,175,80,.1) !important;
+}
+.det-choice.correct .det-choice-label { color: #4CAF50; }
+.det-choice.wrong {
+  border-color: #EF5350 !important;
+  background: rgba(239,83,80,.08) !important;
+  opacity: .7;
+}
+.det-choice:disabled { cursor: default; transform: none; }
+
+/* Reveal panel */
+.det-reveal {
+  margin-top: 14px; border-radius: 12px; padding: 16px;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+}
+.det-reveal.visible { opacity: 1; transform: none; }
+.det-reveal.correct { background: rgba(76,175,80,.1); border: 1.5px solid rgba(76,175,80,.3); }
+.det-reveal.wrong { background: rgba(239,83,80,.08); border: 1.5px solid rgba(239,83,80,.25); }
+.det-reveal-result {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: .95rem; font-weight: 700; margin-bottom: 12px;
+}
+.det-reveal-icon {
+  font-size: 1.1rem; font-weight: 900;
+}
+.det-reveal.correct .det-reveal-icon { color: #4CAF50; }
+.det-reveal.wrong .det-reveal-icon { color: #EF5350; }
+.det-streak-badge {
+  font-size: .75rem; font-weight: 700; background: rgba(246,195,68,.2);
+  color: #F6C344; border-radius: 100px; padding: 2px 8px;
+}
+.det-psychology {
+  background: var(--bg-card); border-radius: 10px; padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.det-psychology-label {
+  font-size: .65rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-muted); margin-bottom: 6px;
+}
+.det-psychology-text {
+  font-size: .87rem; line-height: 1.6; color: var(--text);
+}
+.det-persona-credit {
+  font-size: .72rem; color: var(--text-muted); margin-top: 6px; text-align: right;
+}
+.det-next-btn {
+  width: 100%; padding: 13px; border: none; border-radius: 100px;
+  background: var(--accent); color: #0D0B14;
+  font: inherit; font-size: .92rem; font-weight: 700;
+  cursor: pointer; transition: opacity .18s, transform .18s;
+}
+.det-next-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+/* Results screen */
+.det-results {
+  display: flex; flex-direction: column; gap: 16px;
+  padding: 8px 0;
+}
+.det-results-header {
+  background: var(--bg-card); border-radius: var(--radius);
+  padding: 28px 20px; text-align: center;
+  box-shadow: var(--shadow);
+}
+.det-results-badge { font-size: 3rem; margin-bottom: 8px; }
+.det-results-rank { font-size: 1.2rem; font-weight: 800; margin-bottom: 4px; }
+.det-results-score { font-size: 2.5rem; font-weight: 900; color: var(--text); margin: 4px 0 12px; }
+.det-results-bar-wrap { width: 100%; background: var(--bg-surface); border-radius: 100px; height: 6px; }
+.det-results-bar { width: 100%; height: 6px; border-radius: 100px; overflow: hidden; }
+.det-results-fill { height: 100%; border-radius: 100px; transition: width .6s ease-out; }
+.det-history-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+}
+.det-history-item {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 14px; border-radius: 100px;
+  font-size: .8rem; font-weight: 600;
+}
+.det-history-item.correct { background: rgba(76,175,80,.12); color: #4CAF50; }
+.det-history-item.wrong { background: rgba(239,83,80,.08); color: #EF5350; }
+.det-streak-result {
+  text-align: center; font-size: .88rem; font-weight: 700;
+  color: #F6C344;
+}
+.det-results-actions { display: flex; flex-direction: column; gap: 10px; }
+
+/* Legacy aliases kept for backward compat */
+.detective-header, .detective-card, .detective-badge,
+.detective-situation, .detective-instruction,
+.detective-grid, .detective-results { /* preserved class names */ }
 
 /* ---- Needs Map Mode ---- */
 .needsmap-mode {
