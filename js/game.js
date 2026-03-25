@@ -2169,17 +2169,33 @@
     let defs = '<defs>';
     CATEGORIES.forEach(function(cat, i) {
       const midAngle = i * anglePerCat - Math.PI / 2 + anglePerCat / 2;
-      const gx1 = Math.round(50 + 40 * Math.cos(midAngle));
-      const gy1 = Math.round(50 + 40 * Math.sin(midAngle));
-      defs += '<radialGradient id="wg-' + cat.id + '" cx="' + gx1 + '%" cy="' + gy1 + '%" r="65%">' +
-        '<stop offset="0%" stop-color="' + lightenHex(cat.color, 80) + '"/>' +
-        '<stop offset="50%" stop-color="' + cat.colorLight + '"/>' +
-        '<stop offset="100%" stop-color="' + lightenHex(cat.color, 40) + '"/>' +
+      const gx1 = Math.round(50 + 38 * Math.cos(midAngle));
+      const gy1 = Math.round(50 + 38 * Math.sin(midAngle));
+      // Rich gradient: bright inner, mid saturated, darker outer edge
+      defs += '<radialGradient id="wg-' + cat.id + '" cx="' + gx1 + '%" cy="' + gy1 + '%" r="72%">' +
+        '<stop offset="0%" stop-color="' + cat.colorLight + '" stop-opacity="0.95"/>' +
+        '<stop offset="45%" stop-color="' + cat.color + '" stop-opacity="0.72"/>' +
+        '<stop offset="100%" stop-color="' + cat.color + '" stop-opacity="0.45"/>' +
         '</radialGradient>';
+      // Glow filter per category
+      defs += '<filter id="glow-' + cat.id + '" x="-30%" y="-30%" width="160%" height="160%">' +
+        '<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>' +
+        '<feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 14 -6" result="glow"/>' +
+        '<feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+        '</filter>';
     });
-    defs += '<filter id="wheel-center-shadow" x="-20%" y="-20%" width="140%" height="140%">' +
-      '<feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="rgba(0,0,0,.12)"/>' +
+    defs += '<filter id="wheel-center-shadow" x="-30%" y="-30%" width="160%" height="160%">' +
+      '<feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="rgba(0,0,0,.35)"/>' +
       '</filter>';
+    defs += '<filter id="dot-glow" x="-60%" y="-60%" width="220%" height="220%">' +
+      '<feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>' +
+      '<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+      '</filter>';
+    // Radial gradient for center circle
+    defs += '<radialGradient id="center-grad" cx="50%" cy="40%" r="60%">' +
+      '<stop offset="0%" stop-color="var(--bg-card2)"/>' +
+      '<stop offset="100%" stop-color="var(--bg-card)"/>' +
+      '</radialGradient>';
     defs += '</defs>';
 
     let segments = '';
@@ -2193,24 +2209,27 @@
       segments += '<g class="wheel-segment-group" data-cat="' + cat.id + '">';
 
       segments += '<path class="wheel-segment" d="' + arcPath(cx, cy, innerR, outerR, startAngle, endAngle) + '"' +
-        ' fill="url(#wg-' + cat.id + ')" stroke="' + cat.color + '" stroke-width="1.5" opacity="0.82"' +
+        ' fill="url(#wg-' + cat.id + ')" stroke="' + cat.color + '" stroke-width="2.5" opacity="0.92"' +
+        ' data-cat-id="' + cat.id + '"' +
         ' tabindex="0" role="button" aria-label="' + catLabel + '"/>';
 
       if (decoGen[cat.id]) {
         segments += decoGen[cat.id](cx, cy, innerR, outerR, startAngle, endAngle, cat.color);
       }
 
-      const emojiR = innerR + 20;
+      const emojiR = innerR + 18;
       const elx = cx + emojiR * Math.cos(midAngle);
       const ely = cy + emojiR * Math.sin(midAngle);
-      segments += '<text class="wheel-cat-emoji" x="' + elx + '" y="' + ely + '" text-anchor="middle" dominant-baseline="middle">' + cat.emoji + '</text>';
+      segments += '<text class="wheel-cat-emoji" x="' + elx + '" y="' + ely + '" text-anchor="middle" dominant-baseline="middle" font-size="18">' + cat.emoji + '</text>';
 
-      const nameR = outerR - 22;
+      // Outer label ring — always visible at low opacity, full on hover
+      const nameR = outerR - 18;
       const nlx = cx + nameR * Math.cos(midAngle);
       const nly = cy + nameR * Math.sin(midAngle);
       const rotDeg = midAngle * 180 / Math.PI;
       const textRot = (rotDeg > 90 || rotDeg < -90) ? rotDeg + 180 : rotDeg;
-      segments += '<text class="wheel-cat-name" x="' + nlx + '" y="' + nly + '" text-anchor="middle" dominant-baseline="middle"' +
+      segments += '<text class="wheel-cat-name wheel-cat-name-always" x="' + nlx + '" y="' + nly + '" text-anchor="middle" dominant-baseline="middle"' +
+        ' font-size="9" fill="' + cat.color + '"' +
         ' transform="rotate(' + textRot + ', ' + nlx + ', ' + nly + ')">' + catLabel + '</text>';
 
       emotions.forEach(function(emo, emoIdx) {
@@ -2227,7 +2246,7 @@
         const emoLabel = emo[lang] || emo.de;
 
         segments += '<text class="wheel-emoji-dot" x="' + dx + '" y="' + dy + '" text-anchor="middle" dominant-baseline="central"' +
-          ' font-size="14" data-emotion-id="' + emo.id + '" data-emoji="' + emo.emoji + '" data-label="' + emoLabel + '"' +
+          ' font-size="17" data-emotion-id="' + emo.id + '" data-emoji="' + emo.emoji + '" data-label="' + emoLabel + '"' +
           ' tabindex="0" role="button" aria-label="' + emoLabel + ' ' + emo.emoji + '"' +
           ' style="transform-origin: ' + dx + 'px ' + dy + 'px">' + emo.emoji + '</text>';
       });
@@ -2235,12 +2254,19 @@
       segments += '</g>';
     });
 
-    const defaultCenterText = lang === 'de' ? 'Tippe zum Erkunden' : lang === 'vi' ? 'Chạm để khám phá' : 'Tap to explore';
+    const defaultCenterText = lang === 'de' ? 'Erkunden' : lang === 'vi' ? 'Khám phá' : 'Explore';
     let center = '<g class="wheel-center-pulse">';
-    center += '<circle class="wheel-center-circle" cx="' + cx + '" cy="' + cy + '" r="' + (innerR - 5) + '"' +
-      ' fill="var(--bg-card)" stroke="var(--accent)" stroke-width="2.5" filter="url(#wheel-center-shadow)"/>';
-    center += '<text class="wheel-center-emoji" x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" dominant-baseline="central" font-size="28">💛</text>';
-    center += '<text class="wheel-center-text" x="' + cx + '" y="' + (cy + 22) + '" text-anchor="middle" font-size="9" fill="var(--text-soft)">' + defaultCenterText + '</text>';
+    // Outer glow ring
+    center += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (innerR + 2) + '"' +
+      ' fill="none" stroke="var(--accent)" stroke-width="1" opacity="0.2"/>';
+    // Main center circle with gradient
+    center += '<circle class="wheel-center-circle" cx="' + cx + '" cy="' + cy + '" r="' + (innerR - 4) + '"' +
+      ' fill="url(#center-grad)" stroke="var(--accent)" stroke-width="2" filter="url(#wheel-center-shadow)"/>';
+    // Inner accent ring
+    center += '<circle cx="' + cx + '" cy="' + cy + '" r="' + (innerR - 14) + '"' +
+      ' fill="none" stroke="var(--accent)" stroke-width="0.8" opacity="0.3"/>';
+    center += '<text class="wheel-center-emoji" x="' + cx + '" y="' + (cy - 6) + '" text-anchor="middle" dominant-baseline="central" font-size="26">💛</text>';
+    center += '<text class="wheel-center-text" x="' + cx + '" y="' + (cy + 20) + '" text-anchor="middle" font-size="8.5" fill="var(--text-soft)" font-family="var(--font)">' + defaultCenterText + '</text>';
     center += '</g>';
 
     container.innerHTML = '<p class="wheel-intro">' + t('wheelIntro') + '</p>' +
@@ -3248,14 +3274,17 @@
     }
 
     function renderStep3() {
-      const lang = pendingLang1;
       const saved = JSON.parse(localStorage.getItem('gefuehle-profile') || '{}');
+      const emailLabel = { de: 'E-Mail (optional, für späteren Zugriff)', en: 'Email (optional, to restore your progress)', vi: 'Email (tùy chọn, để khôi phục tiến trình)', el: 'Email (προαιρετικό)' };
+      const emailPh   = { de: 'deine@email.de', en: 'your@email.com', vi: 'email@của bạn.com', el: 'το@email.σου' };
       return `
         <p class="ob-subtitle" style="margin-bottom:16px">${obt('nameQ')}</p>
         <input class="ob-name-input" type="text" placeholder="${obt('namePh')}" maxlength="30" value="${saved.name || ''}">
         <div class="ob-emoji-grid">
           ${PROFILE_EMOJIS.map(e => `<button class="ob-emoji-btn${(saved.emoji || '💛') === e ? ' selected' : ''}" data-emoji="${e}">${e}</button>`).join('')}
         </div>
+        <label class="ob-email-label">${emailLabel[OB_LANG] || emailLabel.en}</label>
+        <input class="ob-email-input" type="email" placeholder="${emailPh[OB_LANG] || emailPh.en}" maxlength="80" value="${saved.email || ''}">
         <button class="ob-start-btn ob-primary">${obt('letsgo')}</button>
         <button class="ob-back ob-link">${obt('back')}</button>`;
     }
@@ -3340,11 +3369,12 @@
         if (step === 3) {
           const name = (overlay.querySelector('.ob-name-input')?.value || '').trim();
           const emoji = overlay.querySelector('.ob-emoji-btn.selected')?.dataset.emoji || '💛';
-          const profile = { name, emoji };
+          const email = (overlay.querySelector('.ob-email-input')?.value || '').trim().toLowerCase();
+          const profile = { name, emoji, ...(email ? { email } : {}) };
           localStorage.setItem('gefuehle-profile', JSON.stringify(profile));
           renderProfileInHeader(profile);
           if (typeof GefuehleAPI !== 'undefined') {
-            GefuehleAPI.updateProfile({ display_name: name, avatar_emoji: emoji });
+            GefuehleAPI.updateProfile({ display_name: name, avatar_emoji: emoji, ...(email ? { email } : {}) });
           }
           // Go to persona step if personas available
           if (typeof GefuehlePersonas !== 'undefined' && GefuehlePersonas.getAllPersonas?.().length) {

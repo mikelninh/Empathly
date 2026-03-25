@@ -4,3 +4,7 @@ Thumbs.db
 *.log
 .env
 .idea/
+
+# Dev/design artifacts
+GAME_DESIGN_REPORT.md
+preview.html
