@@ -15,9 +15,9 @@
 
   /* ---- State ---- */
   let state = {
-    lang1: 'en',
-    lang2: 'el',
-    uiLang: 'en',
+    lang1: 'de',
+    lang2: 'vi',
+    uiLang: 'de',
     mode: 'classic',
     category: 'all',
     difficulty: 'medium',
@@ -2676,50 +2676,121 @@
     const color = getCategoryColor(emo.category);
     const cat = CATEGORIES.find(c => c.id === emo.category);
     const catLabel = cat ? `${cat.emoji} ${cat[lang] || cat.en}` : '';
-    const col = getCollection();
-    const alreadyLearned = col.has(emo.id);
 
     const WOTD_KEY = 'gefuehle-wotd-date';
     const todayStr = new Date().toISOString().split('T')[0];
     const learnedToday = localStorage.getItem(WOTD_KEY) === todayStr;
 
-    const titleLabel = lang === 'de' ? 'Wort des Tages' : lang === 'vi' ? 'Từ của ngày' : lang === 'el' ? 'Λέξη της ημέρας' : 'Word of the Day';
+    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+    const titleLabel = L('Wort des Tages', 'Word of the Day', 'Từ của ngày', 'Λέξη της ημέρας');
     const learnBtnLabel = learnedToday
-      ? (lang === 'de' ? '✓ Heute gelernt' : '✓ Learned today')
-      : (lang === 'de' ? '✓ Gelernt — nächstes Wort morgen' : lang === 'el' ? '✓ Έμαθα — επόμενη λέξη αύριο' : '✓ Learned — next word tomorrow');
-    const promptLabel = lang === 'de' ? 'Frage für heute' : lang === 'vi' ? 'Câu hỏi hôm nay' : lang === 'el' ? 'Ερώτηση της ημέρας' : 'Today\'s question';
-    const journalLabel = lang === 'de' ? '📓 Im Journal notieren' : lang === 'el' ? '📓 Σημείωση στο ημερολόγιο' : '📓 Note in journal';
+      ? L('✓ Heute gelernt', '✓ Learned today', '✓ Đã học hôm nay', '✓ Έμαθα σήμερα')
+      : L('✓ Gelernt — nächstes Wort morgen', '✓ Mark as learned', '✓ Đánh dấu đã học', '✓ Σήμανση ως μαθημένο');
+    const journalLabel = L('📓 Im Journal notieren', '📓 Reflect in journal', '📓 Viết vào nhật ký', '📓 Γράψε στο ημερολόγιο');
 
-    const cultureNote = (typeof CULTURE_NOTES !== 'undefined' && CULTURE_NOTES[emo.id])
-      ? CULTURE_NOTES[emo.id][lang] || null : null;
+    // Rich insights
+    const insights = (typeof getWotdInsights !== 'undefined') ? getWotdInsights(emo.id) : null;
+
+    // Related emotions
+    const relatedHtml = insights?.related?.length ? `
+      <div class="wotd-related">
+        <div class="wotd-section-label">${L('Verwandte Gefühle', 'Related emotions', 'Cảm xúc liên quan', 'Συγγενή συναισθήματα')}</div>
+        <div class="wotd-related-pills">
+          ${insights.related.slice(0, 4).map(id => {
+            const e = EMOTIONS.find(x => x.id === id);
+            return e ? `<button class="wotd-related-pill" data-id="${e.id}">${e.emoji} ${e[lang] || e.en}</button>` : '';
+          }).join('')}
+        </div>
+      </div>` : '';
+
+    // Cultural world words
+    const worldHtml = insights?.world?.length ? `
+      <div class="wotd-section wotd-world-section">
+        <div class="wotd-section-label">🌍 ${L('Rund um die Welt', 'Around the world', 'Khắp nơi trên thế giới', 'Παγκοσμίως')}</div>
+        <div class="wotd-world-words">
+          ${insights.world.map(w => `
+            <div class="wotd-world-item">
+              <span class="wotd-world-word">${w.word}</span>
+              <span class="wotd-world-lang">${w.lang.toUpperCase()}</span>
+              <span class="wotd-world-meaning">${w.meaning[lang === 'de' ? 'de' : 'en']}</span>
+            </div>`).join('')}
+        </div>
+      </div>` : '';
+
+    // Quote
+    const quoteHtml = insights?.quote ? `
+      <div class="wotd-section wotd-quote-section">
+        <div class="wotd-quote-text">&ldquo;${insights.quote.text}&rdquo;</div>
+        <div class="wotd-quote-author">— ${insights.quote.author}</div>
+      </div>` : '';
 
     container.innerHTML = `
       <div class="wotd-card" style="--wotd-color:${color}">
-        <div class="wotd-label">${titleLabel}</div>
-        <div class="wotd-emoji">${emo.emoji}</div>
-        <div class="wotd-word">${emo[state.lang1] || emo.de}</div>
-        <div class="wotd-word-secondary">${emo[state.lang2] || emo.en}</div>
-        <div class="wotd-speak-row">
-          <button class="speak-btn wotd-speak" data-speak-word="${emo[state.lang1] || emo.de}" data-speak-lang="${state.lang1}">🔊 ${LANGUAGES[state.lang1]?.name || state.lang1}</button>
-          <button class="speak-btn wotd-speak" data-speak-word="${emo[state.lang2] || emo.en}" data-speak-lang="${state.lang2}">🔊 ${LANGUAGES[state.lang2]?.name || state.lang2}</button>
+
+        <!-- Header -->
+        <div class="wotd-header-bar">
+          <span class="wotd-label">${titleLabel}</span>
+          <span class="wotd-date-badge">${new Date().toLocaleDateString(lang === 'de' ? 'de-DE' : lang === 'vi' ? 'vi-VN' : 'en-US', { month: 'short', day: 'numeric' })}</span>
         </div>
-        <div class="wotd-category">${catLabel}</div>
-        <div class="wotd-divider"></div>
-        <div class="wotd-prompt-label">${promptLabel}</div>
-        <div class="wotd-prompt">${emo.prompt[lang] || emo.prompt.en || emo.prompt.de}</div>
-        ${cultureNote ? `<div class="wotd-culture"><span class="wotd-culture-label">🌍</span>${cultureNote}</div>` : ''}
+        <div class="wotd-hero">
+          <div class="wotd-emoji">${emo.emoji}</div>
+          <div class="wotd-words-block">
+            <div class="wotd-word">${emo[state.lang1] || emo.de}
+              <button class="wotd-speak-inline" data-speak-word="${emo[state.lang1] || emo.de}" data-speak-lang="${state.lang1}" title="${LANGUAGES[state.lang1]?.name || state.lang1}">🔊</button>
+            </div>
+            <div class="wotd-word-secondary">${emo[state.lang2] || emo.en}
+              <button class="wotd-speak-inline" data-speak-word="${emo[state.lang2] || emo.en}" data-speak-lang="${state.lang2}" title="${LANGUAGES[state.lang2]?.name || state.lang2}">🔊</button>
+            </div>
+          </div>
+        </div>
+        <div class="wotd-category-badge">${catLabel}</div>
+
+        ${insights?.insight ? `
+        <!-- Insight -->
+        <div class="wotd-section wotd-insight-section">
+          <div class="wotd-section-label">💡 ${L('Psychologische Tiefe', 'Psychological insight', 'Hiểu sâu tâm lý', 'Ψυχολογική κατανόηση')}</div>
+          <div class="wotd-insight-text">${insights.insight[lang] || insights.insight.en}</div>
+        </div>` : ''}
+
+        ${insights?.body ? `
+        <!-- Body -->
+        <div class="wotd-section wotd-body-section">
+          <div class="wotd-section-label">🫀 ${L('Im Körper', 'In your body', 'Trong cơ thể', 'Στο σώμα')}</div>
+          <div class="wotd-body-text">${insights.body[lang === 'de' ? 'de' : 'en']}</div>
+        </div>` : ''}
+
+        ${worldHtml}
+        ${quoteHtml}
+
+        <!-- Today's question -->
+        <div class="wotd-section wotd-question-section">
+          <div class="wotd-section-label">💬 ${L('Frage für heute', 'Today\'s question', 'Câu hỏi hôm nay', 'Ερώτηση της ημέρας')}</div>
+          <div class="wotd-prompt">${emo.prompt[lang] || emo.prompt.en || emo.prompt.de}</div>
+        </div>
+
+        ${relatedHtml}
+
+        <!-- Actions -->
         <div class="wotd-actions">
           <button class="wotd-learn-btn${learnedToday ? ' learned' : ''}"${learnedToday ? ' disabled' : ''}>${learnBtnLabel}</button>
           <button class="wotd-journal-btn">${journalLabel}</button>
         </div>
         <div class="wotd-journal-area" style="display:none">
-          <textarea class="wotd-textarea" placeholder="${lang === 'de' ? 'Deine Gedanken...' : 'Your thoughts...'}"></textarea>
-          <button class="wotd-journal-save">${lang === 'de' ? 'Speichern' : 'Save'}</button>
+          <textarea class="wotd-textarea" placeholder="${L('Deine Gedanken...', 'Your thoughts...', 'Suy nghĩ của bạn...', 'Οι σκέψεις σου...')}"></textarea>
+          <button class="wotd-journal-save">${L('Speichern', 'Save', 'Lưu', 'Αποθήκευση')}</button>
         </div>
       </div>`;
 
-    container.querySelectorAll('.wotd-speak').forEach(btn => {
+    container.querySelectorAll('.wotd-speak-inline').forEach(btn => {
       btn.addEventListener('click', () => speakWord(btn.dataset.speakWord, btn.dataset.speakLang));
+    });
+
+    // Related pill clicks — navigate to that emotion in wheel mode
+    container.querySelectorAll('.wotd-related-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const relEmo = EMOTIONS.find(e => e.id === btn.dataset.id);
+        if (relEmo) showCardHint({ emotion: relEmo, emotionId: relEmo.id, lang: state.lang1, word: relEmo[state.lang1] || relEmo.de });
+      });
     });
 
     const learnBtn = container.querySelector('.wotd-learn-btn');
@@ -2729,7 +2800,7 @@
         localStorage.setItem(WOTD_KEY, todayStr);
         learnBtn.classList.add('learned');
         learnBtn.disabled = true;
-        learnBtn.textContent = lang === 'de' ? '✓ Gelernt!' : '✓ Learned!';
+        learnBtn.textContent = L('✓ Gelernt!', '✓ Learned!', '✓ Đã học!', '✓ Έμαθα!');
         playMatchSound();
       });
     }
@@ -2752,7 +2823,7 @@
         GefuehleAPI.saveJournal({ date: todayStr, note: text, emotions: [emo.id] });
       }
       const saveBtn = container.querySelector('.wotd-journal-save');
-      saveBtn.textContent = lang === 'de' ? '✓ Gespeichert' : '✓ Saved';
+      saveBtn.textContent = L('✓ Gespeichert', '✓ Saved', '✓ Đã lưu', '✓ Αποθηκεύτηκε');
       saveBtn.disabled = true;
     });
   }
