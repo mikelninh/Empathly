@@ -3951,6 +3951,8 @@ body:not(.show-landing) .active-mode-container {
   font-size: 1rem; line-height: 1.6; color: var(--text); margin-bottom: 4px;
 }
 .wotd-quote-author { font-size: .78rem; color: var(--text-muted); text-align: right; }
+.wotd-presence-section { border-left: 3px solid #74C0FC; background: rgba(116,192,252,.04); }
+.wotd-presence-text { font-size: .92rem; line-height: 1.8; color: var(--text-soft); font-style: italic; letter-spacing: .01em; }
 .wotd-question-section { border-left: 3px solid #A78BFA; }
 .wotd-prompt { font-size: .92rem; line-height: 1.55; color: var(--text); font-style: italic; }
 .wotd-related { width: 100%; text-align: left; margin-bottom: 16px; }

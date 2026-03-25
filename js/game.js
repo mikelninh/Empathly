@@ -2788,6 +2788,13 @@
         ${worldHtml}
         ${quoteHtml}
 
+        ${insights?.presence ? `
+        <!-- Presence / Mindfulness -->
+        <div class="wotd-section wotd-presence-section">
+          <div class="wotd-section-label">🌬️ ${L('Moment der Stille', 'A moment of stillness', 'Khoảnh khắc tĩnh lặng', 'Στιγμή ησυχίας')}</div>
+          <div class="wotd-presence-text">${insights.presence[lang] || insights.presence.en}</div>
+        </div>` : ''}
+
         <!-- Today's question -->
         <div class="wotd-section wotd-question-section">
           <div class="wotd-section-label">💬 ${L('Frage für heute', 'Today\'s question', 'Câu hỏi hôm nay', 'Ερώτηση της ημέρας')}</div>
