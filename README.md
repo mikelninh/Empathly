@@ -21,11 +21,12 @@ Live spielen: [mikelninh.github.io/Gefuehle-Memory](https://mikelninh.github.io/
 
 ## Onboarding
 
-Drei Schritte beim ersten Öffnen:
+Vier Schritte beim ersten Öffnen:
 
 1. **Sprachpaar wählen** — 6 Schnell-Auswahl-Buttons (z.B. Deutsch↔Türkisch) oder eigene Dropdowns
 2. **Modus wählen** — Spielen, Entdecken oder Lernen
 3. **Profil** — Name + Emoji für die persönliche Note
+4. **Guide wählen** — Einer von 5 KI-Begleitern (Hana · Nadia · Karim · Lena · Soo)
 
 Danach startet das Spiel direkt — ohne Registrierung, ohne Account.
 
@@ -52,21 +53,33 @@ Spaced Repetition mit 5 Quiz-Typen: Übersetzen, Situation→Gefühl, Hören, L�
 ### Emotions-Journal
 Tägliche Gefühls-Einträge mit optionaler KI-Muster-Erkennung nach 3+ Einträgen.
 
+### Gefühls-Detektiv (neu)
+10 realistische Szenarien: Was steckt wirklich hinter dem Verhalten? Identifiziere die versteckte Emotion unter den offensichtlichen. Jede richtige Antwort erklärt die psychologische Logik dahinter.
+
+### Bedürfnis-Karte (neu)
+Wähle ein Gefühl — sieh sofort welche Bedürfnisse dahinterstecken (aus dem 40-Bedürfnis-Framework). Ein Tap öffnet das Journal mit vorausgefülltem Eintrag.
+
 ## Features
 
 | Feature | Status |
 |---------|--------|
-| 7 Spielmodi | ✅ |
-| 11 Sprachen (inkl. Tamil) | ✅ |
-| 3-Schritt-Onboarding | ✅ |
+| 9 Spielmodi | ✅ |
+| 11 Sprachen (inkl. Tamil, Japanisch, Chinesisch, Koreanisch, Sanskrit) | ✅ |
+| 4-Schritt-Onboarding (inkl. Persona-Wahl) | ✅ |
 | Nutzerprofil (Name + Emoji) | ✅ |
-| Streak + Wochen-Recap | ✅ |
+| Streak + Wochen-Recap + Meilenstein-Nachrichten | ✅ |
+| Tägliche Challenge (deterministisch, datums-geseedet) | ✅ |
+| Resonanz-Buttons (kenn ich / fühle ich / überraschend) | ✅ |
+| Persona-Gedächtnis (KI kennt deine emotionalen Resonanzen) | ✅ |
+| 5 KI-Guides (Hana, Nadia, Karim, Lena, Soo) | ✅ |
+| Tandem-Modus (Sprachpartner weltweit) | ✅ |
+| Physisches Kartenset konfigurieren | ✅ |
 | Benachrichtigungen (Banner) | ✅ |
 | KI ohne eigenen API-Key | ✅ |
 | Check-in mit 5 Dimensionen | ✅ |
 | Rückkehr-Prompt (gestern/heute) | ✅ |
 | Generative SVG-Kartenkunst | ✅ |
-| Kulturbrücke (handgeschrieben DE/VN/EL) | ✅ |
+| Kulturelle Perspektiven (20 Emotionen, mehrsprachig) | ✅ |
 | KI Cultural Bridge (RAG-powered) | ✅ |
 | Streaming AI-Antworten (SSE) | ✅ |
 | Fun Facts Modal (13 Sprachfakten) | ✅ |
@@ -81,8 +94,11 @@ Tägliche Gefühls-Einträge mit optionaler KI-Muster-Erkennung nach 3+ Einträg
 | SQLite Datenbank | ✅ |
 | Check-in Statistiken + Dimension-Verteilung | ✅ |
 | Journal-Analyse (KI) | ✅ |
-| Emotion teilen (Web Share API) | ✅ |
+| Zeitschätzungen auf allen Modus-Karten | ✅ |
+| Emotion teilen mit Session-Emojis (Web Share API) | ✅ |
 | Stats Widget (Landing Screen) | ✅ |
+| Gefühls-Detektiv (10 Szenarien) | ✅ |
+| Bedürfnis-Karte (40-Bedürfnis-Framework) | ✅ |
 
 ## Tech Stack
 
@@ -125,13 +141,18 @@ Das Frontend erkennt automatisch ob das Backend läuft und nutzt es. Ist das Bac
 index.html              — Hauptseite
 css/style.css           — Responsive Styles + Dark Mode
 js/
-  data.js               — 67 Emotionen, 40 Bedürfnisse, UI-Texte (11 Sprachen)
+  data.js               — 67 Emotionen, 40 Bedürfnisse, UI-Texte (15 Sprachen)
+  lang-supplement.js    — Patches für JA/ZH/KO/SA zur Laufzeit
   game.js               — Game Engine (alle Modi, Onboarding, Streak, Profil)
   api.js                — Backend-Client (graceful fallback auf LocalStorage)
-  ai.js                 — OpenRouter-Integration, KI-Kulturbrücke
+  ai.js                 — OpenRouter-Integration, KI-Kulturbrücke + Persona-Gedächtnis
   culture.js            — Handgeschriebene Kulturvergleiche DE/VN/EL
+  culture-insights.js   — Statische kulturelle Perspektiven für 20 Emotionen
   funfacts.js           — Fun Facts Modal (13 Sprachfakten)
   card-art.js           — Generative SVG-Kunst pro Kategorie
+  personas.js           — 5 KI-Guides (Hana/Nadia/Karim/Lena/Soo) mit Systemprompten
+  tandem.js             — Tandem-Lern-Modus (Sprachpartner weltweit)
+  detective.js          — Gefühls-Detektiv (10 Szenarien, versteckte Emotionen)
   learn.js              — Flashcard-Engine mit Spaced Repetition
   learn-data.js         — Szenarien, Übungen, Quiz-Typen
 manifest.json           — PWA-Manifest
@@ -203,25 +224,32 @@ Das Tool `backend/tools/add_tamil.py` zeigt wie das automatisch geht — als Vor
 ## Roadmap
 
 - [x] 67 Emotionen in 6 Kategorien
-- [x] 11 Sprachen (DE/VI/EN/TR/AR/ES/FR/UK/PL/EL/TA)
-- [x] 7 Spielmodi
+- [x] 15 Sprachen (DE/VI/EN/TR/AR/ES/FR/UK/PL/EL/TA/JA/ZH/KO/SA)
+- [x] 9 Spielmodi
 - [x] Audio-Aussprache
 - [x] Dark Mode + PWA
 - [x] Multiplayer (Pass-and-Play)
 - [x] KI-Integration (kostenlose Modelle, RAG)
-- [x] Flashcard-Lernsystem
+- [x] Flashcard-Lernsystem mit Spaced Repetition
 - [x] Generative Kartenkunst
 - [x] FastAPI Backend + SQLite
 - [x] Check-in mit 5 Dimensionen + Dimension-Statistiken
 - [x] Streaming AI (SSE)
 - [x] Fun Facts Modal
-- [x] 3-Schritt-Onboarding (Sprachpaar → Modus → Profil)
+- [x] 4-Schritt-Onboarding (Sprachpaar → Modus → Profil → Guide)
 - [x] KI ohne eigenen API-Key (Backend übernimmt)
 - [x] Nutzerprofil (Name + Emoji) + Backend-Sync
-- [x] Streak + Wochen-Recap (Retention-Loop)
+- [x] Streak + Wochen-Recap + Meilenstein-Nachrichten
 - [x] Benachrichtigungs-Banner
+- [x] 5 KI-Guides mit Persönlichkeit und Systemprompten
+- [x] Tandem-Lernmodus (Sprachpartner weltweit)
+- [x] Resonanz-Buttons + Persona-Gedächtnis
+- [x] Tägliche Challenge (datums-geseedet)
+- [x] Gefühls-Detektiv (10 Szenarien)
+- [x] Bedürfnis-Karte (40-Bedürfnis-Framework)
+- [x] Kulturelle Perspektiven auf Prompt-Overlay
 - [ ] Push Notifications (iOS Safari)
-- [ ] Visuelles Redesign für jüngere Nutzer
+- [ ] Echtzeit-Tandem-Matching (WebSocket)
 - [ ] B2B-Lizenzen (Schulen, Therapie, Integrationskurse)
 - [ ] Physisches Kartendeck (Print-on-Demand)
 
