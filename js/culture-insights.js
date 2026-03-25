@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Pre-authored Cultural Insight Snippets
+ * Empathly — Pre-authored Cultural Insight Snippets
  * One is shown randomly on every Classic mode card match.
  * Keyed by emotion ID. Each entry is an array; one is picked at random.
  * Written in a mix of DE/EN depending on the insight — kept short (1-2 sentences).

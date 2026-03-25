@@ -1,10 +1,16 @@
-# Gefühle-Memory
+# Empathly
 
-**A card game about emotions — in 15 languages.**
+**A mindful card game for emotional awareness — in 15 languages.**
 
-Find pairs. Talk about them. Learn emotional vocabulary across languages and cultures.
+Explore emotions. Talk about them. Grow your inner vocabulary across languages and cultures.
 
 Play live: [mikelninh.github.io/Gefuehle-Memory](https://mikelninh.github.io/Gefuehle-Memory/)
+
+---
+
+## Why Empathly?
+
+*Empath* + *-ly* — the adverb suffix that turns a quality into a way of being. Like *deeply*, *openly*, *mindfully* — words already woven into this app's language. The name suggests not just having empathy, but living it: feeling empathly, connecting empathly, knowing yourself empathly. A practice, not a label.
 
 ---
 

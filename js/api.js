@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Backend API Client
+ * Empathly — Backend API Client
  *
  * Connects the frontend to the FastAPI backend.
  * Graceful fallback: if backend is unreachable, LocalStorage is used transparently.
@@ -351,8 +351,8 @@ const GefuehleAPI = (function () {
       ta: 'Tamil', el: 'Griechisch', tr: 'Türkçe', ar: 'Arabisch',
       es: 'Español', fr: 'Français', uk: 'Ukrainisch', pl: 'Polski' };
 
-    const text = `${emo.emoji} "${word1}" auf ${langNames[lang1] || lang1} · "${word2}" auf ${langNames[lang2] || lang2}\n\n67 Gefühle · 11 Sprachen · Gefühle-Memory`;
-    const url = 'https://mikelninh.github.io/Gefuehle-Memory/';
+    const text = `${emo.emoji} "${word1}" auf ${langNames[lang1] || lang1} · "${word2}" auf ${langNames[lang2] || lang2}\n\n67 Gefühle · 11 Sprachen · Empathly`;
+    const url = 'https://mikelninh.github.io/Empathly/';
 
     if (navigator.share) {
       try {

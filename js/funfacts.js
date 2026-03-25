@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Fun Facts
+ * Empathly — Fun Facts
  * Surprising linguistic & cultural facts about emotions across languages.
  * Shown via a modal triggered by the "Wusstest du?" button on the landing screen.
  */
@@ -176,6 +176,9 @@ const FunFacts = (function () {
           <span class="ff-counter" id="ff-counter"></span>
           <button class="ff-next" aria-label="Nächster Fakt">→</button>
         </div>
+        <div class="ff-actions">
+          <button class="ff-share-btn" id="ff-share-btn">📸 Teilen</button>
+        </div>
         <p class="ff-cta">Diese Nuancen stecken alle in diesem Spiel. Fang an — und entdecke sie!</p>
       </div>
     `;
@@ -185,7 +188,118 @@ const FunFacts = (function () {
     modal.querySelector('.ff-next').addEventListener('click', () => navigate(1));
     modal.querySelector('.ff-prev').addEventListener('click', () => navigate(-1));
     modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    modal.querySelector('#ff-share-btn').addEventListener('click', () => shareCurrentFact());
     document.addEventListener('keydown', onKey);
+  }
+
+  async function shareCurrentFact() {
+    const fact = FACTS[currentIndex];
+    const btn = modal.querySelector('#ff-share-btn');
+    btn.textContent = '⏳';
+    btn.disabled = true;
+
+    try {
+      const canvas = document.createElement('canvas');
+      const W = 1080, H = 1080;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+
+      // Background
+      ctx.fillStyle = '#0D0B14';
+      ctx.fillRect(0, 0, W, H);
+
+      // Accent color gradient strip
+      ctx.fillStyle = fact.color + '33';
+      ctx.fillRect(0, 0, W, 8);
+      ctx.fillRect(0, H - 8, W, 8);
+
+      // Tag pill
+      ctx.fillStyle = fact.color + '33';
+      const tagW = 160, tagH = 44, tagX = (W - tagW) / 2, tagY = 60;
+      roundRect(ctx, tagX, tagY, tagW, tagH, 22);
+      ctx.fill();
+      ctx.fillStyle = fact.color;
+      ctx.font = 'bold 22px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(fact.tag, W / 2, tagY + 29);
+
+      // Flag + language
+      ctx.font = '52px serif';
+      ctx.fillStyle = '#fff';
+      ctx.fillText(fact.flag, W / 2, 200);
+      ctx.font = '26px sans-serif';
+      ctx.fillStyle = '#a09aaa';
+      ctx.fillText(fact.langName, W / 2, 240);
+
+      // Main word
+      ctx.font = `bold ${fact.word.length > 14 ? 52 : 72}px sans-serif`;
+      ctx.fillStyle = fact.color;
+      wrapText(ctx, fact.word, W / 2, 340, W - 100, fact.word.length > 14 ? 58 : 80);
+
+      // Title
+      ctx.font = 'bold 38px sans-serif';
+      ctx.fillStyle = '#fff';
+      wrapText(ctx, fact.title, W / 2, 480, W - 120, 46);
+
+      // Wow moment teaser (plain text)
+      const wowPlain = fact.wow.replace(/<[^>]+>/g, '').slice(0, 160) + '…';
+      ctx.font = '28px sans-serif';
+      ctx.fillStyle = '#c8c0d4';
+      wrapText(ctx, wowPlain, W / 2, 660, W - 140, 38);
+
+      // App attribution
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillStyle = fact.color;
+      ctx.fillText('💛 Empathly', W / 2, H - 60);
+
+      canvas.toBlob(async (blob) => {
+        const file = new File([blob], 'gefuehle-fact.png', { type: 'image/png' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: fact.title, text: fact.wow.replace(/<[^>]+>/g, '') });
+        } else {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'gefuehle-fact.png';
+          a.click();
+        }
+        btn.textContent = '📸 Teilen';
+        btn.disabled = false;
+      }, 'image/png');
+    } catch (err) {
+      btn.textContent = '📸 Teilen';
+      btn.disabled = false;
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function wrapText(ctx, text, x, y, maxW, lineH) {
+    const words = text.split(' ');
+    let line = '';
+    let cy = y;
+    for (const word of words) {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, x, cy);
+        line = word;
+        cy += lineH;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, x, cy);
   }
 
   function updateDisplay() {
@@ -216,9 +330,20 @@ const FunFacts = (function () {
 
   // ── Public API ────────────────────────────────────────────────────────────
 
-  function open(startRandom = true) {
+  function getDailyIndex() {
+    const day = Math.floor(Date.now() / 86400000);
+    return day % FACTS.length;
+  }
+
+  function getDailyFact() {
+    return FACTS[getDailyIndex()];
+  }
+
+  function open(startRandom = true, index = null) {
     if (!modal) buildModal();
-    if (startRandom) {
+    if (index !== null) {
+      currentIndex = index;
+    } else if (startRandom) {
       currentIndex = Math.floor(Math.random() * FACTS.length);
     }
     updateDisplay();
@@ -237,5 +362,5 @@ const FunFacts = (function () {
     if (btn) btn.addEventListener('click', () => open(true));
   }
 
-  return { init, open, close };
+  return { init, open, close, getDailyFact, getDailyIndex };
 })();

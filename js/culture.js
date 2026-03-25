@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Cultural Bridge / Kulturbrücke
+ * Empathly — Cultural Bridge / Kulturbrücke
  * The subtle differences in how emotions live across cultures.
  *
  * Not every emotion has a note — only where the cultural gap

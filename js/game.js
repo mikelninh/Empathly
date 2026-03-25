@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Game Engine
+ * Empathly — Game Engine
  * Classic memory + Talk + Story + Check-in + Emotion Wheel modes
  * Bilingual card matching with 67 emotions in 6 categories
  * Features: Audio pronunciation, Dark mode, Star rating, Multiplayer
@@ -2630,7 +2630,7 @@
           localStorage.setItem(REMINDER_KEY, '1');
           reminderBtn.textContent = '✓ Erinnerung aktiv';
           reminderBtn.classList.add('active');
-          new Notification('Gefühle-Memory 💛', {
+          new Notification('Empathly 💛', {
             body: 'Erinnerung aktiviert! Wir sehen uns heute Abend.',
             icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>',
           });
@@ -3009,14 +3009,14 @@
     const uiLang = state.uiLang;
     let text;
     if (uiLang === 'de') {
-      text = `Ich habe gerade Gefühle-Memory gespielt${emojiStr ? ' und diese Gefühle entdeckt: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — 67 Gefühle kennenlernen.`;
+      text = `Ich habe gerade Empathly gespielt${emojiStr ? ' und diese Gefühle entdeckt: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — 67 Gefühle kennenlernen.`;
     } else if (uiLang === 'vi') {
-      text = `Tôi vừa chơi Gefühle-Memory${emojiStr ? ' và khám phá: ' + emojiStr : ''}! ${lang1} ↔ ${lang2}`;
+      text = `Tôi vừa chơi Empathly${emojiStr ? ' và khám phá: ' + emojiStr : ''}! ${lang1} ↔ ${lang2}`;
     } else {
-      text = `I just played Gefühle-Memory${emojiStr ? ' and discovered: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — learning 67 emotions.`;
+      text = `I just played Empathly${emojiStr ? ' and discovered: ' + emojiStr : ''}! ${lang1} ↔ ${lang2} — learning 67 emotions.`;
     }
     if (navigator.share) {
-      navigator.share({ title: 'Gefühle-Memory 💛', text, url: location.href }).catch(() => {});
+      navigator.share({ title: 'Empathly 💛', text, url: location.href }).catch(() => {});
     } else {
       navigator.clipboard.writeText(text + ' ' + location.href).then(() => {
         const msg = uiLang === 'de' ? 'Link kopiert! ✓' : 'Link copied! ✓';
@@ -3755,7 +3755,7 @@
     if (!hasToday) {
       const hour = new Date().getHours();
       if (hour >= 19) { // Only show reminder in the evening
-        new Notification('Gefühle-Memory 💛', {
+        new Notification('Empathly 💛', {
           body: 'Wie war dein Tag? Dein Journal wartet.',
           icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💛</text></svg>',
         });

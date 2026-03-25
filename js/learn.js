@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Flashcard Learning Mode
+ * Empathly — Flashcard Learning Mode
  * Spaced repetition, 6 quiz types, progress dashboard, session summary, export
  */
 

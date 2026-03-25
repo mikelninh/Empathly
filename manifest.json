@@ -1,7 +1,7 @@
 {
-  "name": "Gefühle-Memory",
-  "short_name": "Gefühle",
-  "description": "Ein Kartenspiel über Gefühle. 67 Emotionen auf Deutsch, Vietnamesisch und Englisch.",
+  "name": "Empathly",
+  "short_name": "Empathly",
+  "description": "Explore 67 emotions across 15 languages. A mindful card game for emotional awareness and connection.",
   "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",

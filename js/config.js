@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — App Configuration
+ * Empathly — App Configuration
  *
  * After deploying the backend, set API_URL to your deployed URL:
  *   Railway:  'https://YOUR-APP.railway.app'

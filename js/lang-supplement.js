@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Language Supplement
+ * Empathly — Language Supplement
  * Adds Japanese (ja), Chinese Simplified (zh), Korean (ko), Sanskrit (sa)
  * to the EMOTIONS array after data.js loads.
  * Also provides LANGUAGE_INSIGHTS — unique cultural/linguistic facts per language.

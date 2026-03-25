@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Learning Data
+ * Empathly — Learning Data
  * Context sentences, scenarios, and application exercises
  * For flashcard/study mode with spaced repetition
  */

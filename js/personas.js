@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — AI Personas
+ * Empathly — AI Personas
  * 5 human-like guides, each with a name, backstory, language specialty,
  * and a full system prompt that shapes every AI response.
  */

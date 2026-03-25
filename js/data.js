@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Complete Card Data
+ * Empathly — Complete Card Data
  * Based on the original Gefühlsliste + Bedürfnisliste
  * 67 emotions in 6 categories + 40 needs in 5 dimensions
  * German + Vietnamese + English + Turkish + Arabic + Spanish + French + Ukrainian + Polish
@@ -1583,7 +1583,7 @@ const LANGUAGES = {
 
 const UI_TEXT = {
   de: {
-    title: 'Gefühle-Memory',
+    title: 'Empathly',
     subtitle: 'Finde die Paare — und sprich über deine Gefühle',
     moves: 'Züge',
     pairs: 'Paare',
@@ -1606,7 +1606,7 @@ const UI_TEXT = {
     newCards: 'Neue Karten',
     allCategories: 'Alle Kategorien',
     share: 'Teilen',
-    shareText: 'Ich spiele Gefühle-Memory — ein Spiel über Emotionen in {lang1} und {lang2}! 💛',
+    shareText: 'Ich spiele Empathly — ein Spiel über Emotionen in {lang1} und {lang2}! 💛',
     checkinTitle: 'Was brauchst du heute?',
     checkinSubtitle: 'Wähle in jeder Dimension, was sich gerade richtig anfühlt.',
     todayIChoose: 'Heute wähle ich:',

@@ -1,9 +1,9 @@
 /**
- * Gefühle-Memory — Service Worker
+ * Empathly — Service Worker
  * Cache-first strategy with version-based cache busting
  */
 
-const CACHE_VERSION = 'gefuehle-v2';
+const CACHE_VERSION = 'empathly-v1';
 const ASSETS = [
   './',
   './index.html',

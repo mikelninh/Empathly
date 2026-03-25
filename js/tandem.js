@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Tandem Mode
+ * Empathly — Tandem Mode
  * Real-time partner matching for emotion learning across languages.
  * WebSocket-based when backend is available; waitlist mode otherwise.
  */

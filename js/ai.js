@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — AI Integration (OpenRouter)
+ * Empathly — AI Integration (OpenRouter)
  * Settings modal, AI cultural bridge, journal pattern analysis.
  */
 
@@ -89,7 +89,7 @@ const GefuehleAI = (function () {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
         'HTTP-Referer': location.href,
-        'X-Title': 'Gefühle-Memory'
+        'X-Title': 'Empathly'
       },
       body: JSON.stringify({
         model: getModel(),

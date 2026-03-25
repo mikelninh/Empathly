@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Emotion Detective Mode
+ * Empathly — Emotion Detective Mode
  * "Was steckt dahinter?" — Given a scenario, identify the hidden emotion beneath the obvious ones.
  * Teaches emotional intelligence: reading what is not said.
  */

@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Word of the Day Deep Insights
+ * Empathly — Word of the Day Deep Insights
  * Rich psychological, cultural and somatic content for each emotion.
  */
 

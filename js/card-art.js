@@ -1,5 +1,5 @@
 /**
- * Gefühle-Memory — Generative Card Art
+ * Empathly — Generative Card Art
  * Creates unique SVG art for each emotion card.
  * Abstract, watercolor-inspired, layered shapes.
  */
