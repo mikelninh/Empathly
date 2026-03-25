@@ -21,7 +21,7 @@ const GefuehleDetective = (function () {
         vi: 'Lea được thăng chức sau hai năm nỗ lực. Nhưng cô không nói với ai — kể cả gia đình.',
         el: 'Η Λέα παίρνει την προαγωγή που δούλευε γι\' αυτή δύο χρόνια. Αλλά δεν το λέει σε κανένα — ούτε στην οικογένειά της.'
       },
-      surface_emotions: ['freude', 'stolz', 'scham', 'angst', 'einsamkeit', 'dankbarkeit'],
+      surface_emotions: ['freude', 'begeisterung', 'scham', 'angst_gefuehl', 'einsamkeit', 'dankbarkeit'],
       hidden: 'scham',
       persona_note: {
         de: 'Wenn Erfolg verstummt, steckt oft Scham dahinter. Die Frage „Verdiene ich das wirklich?" kann lauter sein als die Freude.',
@@ -37,7 +37,7 @@ const GefuehleDetective = (function () {
         vi: 'Marco không đến tiệc sinh nhật của người bạn thân nhất. Anh nói mình bệnh. Sau đó anh trở nên lạnh lùng và thu mình lại.',
         el: 'Ο Μάρκο δεν πηγαίνει στα γενέθλια της καλύτερης φίλης του. Λέει ότι είναι άρρωστος. Μετά γίνεται σιωπηλός και αποσύρεται.'
       },
-      surface_emotions: ['schuld', 'trauer', 'scham', 'angst', 'einsamkeit', 'wut'],
+      surface_emotions: ['schuld', 'traurigkeit', 'scham', 'angst_gefuehl', 'einsamkeit', 'wut'],
       hidden: 'scham',
       persona_note: {
         de: 'Rückzug nach einem Fehler ist oft Scham — nicht Gleichgültigkeit. Wer sich versteckt, tut das meist, weil er sich schlecht fühlt, nicht weil ihm egal ist.',
@@ -53,11 +53,11 @@ const GefuehleDetective = (function () {
         vi: 'Selin về nhà sau giờ làm và bùng nổ vì một hiểu lầm nhỏ với bạn đời. Sau đó, cô ngồi khóc một mình trong bếp.',
         el: 'Η Σελίν έρχεται σπίτι από τη δουλειά και ξεσπά για μια μικρή παρεξήγηση με τον σύντροφό της. Αργότερα κλαίει μόνη στην κουζίνα.'
       },
-      surface_emotions: ['wut', 'frustration', 'erschoepfung', 'einsamkeit', 'scham', 'trauer'],
-      hidden: 'erschoepfung',
+      surface_emotions: ['wut', 'frustration', 'ueberforderung', 'einsamkeit', 'scham', 'traurigkeit'],
+      hidden: 'ueberforderung',
       persona_note: {
-        de: 'Wut, die aus dem Nichts kommt, ist oft Erschöpfung in Verkleidung. Der Körper sagt: „Ich kann nicht mehr" — und der Mund sagt: „Du machst alles falsch."',
-        en: 'Anger that comes from nowhere is often exhaustion in disguise. The body says "I cannot take any more" — and the mouth says "you always do this."',
+        de: 'Wut, die aus dem Nichts kommt, ist oft Überforderung in Verkleidung. Der Körper sagt: „Ich kann nicht mehr" — und der Mund sagt: „Du machst alles falsch."',
+        en: 'Anger that comes from nowhere is often overwhelm in disguise. The body says "I cannot take any more" — and the mouth says "you always do this."',
       }
     },
     {
@@ -69,8 +69,8 @@ const GefuehleDetective = (function () {
         vi: 'Jonas làm mọi thứ hoàn hảo. Nhà anh gọn gàng, công việc xuất sắc, hồ sơ Instagram tỏa sáng. Nhưng anh ngủ không ngon suốt mấy tháng qua.',
         el: 'Ο Ιωνάς κάνει τα πάντα τέλεια. Το σπίτι του είναι άψογο, η δουλειά του άμεμπτη. Δεν κοιμάται καλά εδώ και μήνες.'
       },
-      surface_emotions: ['stolz', 'angst', 'erschoepfung', 'leere', 'scham', 'einsamkeit'],
-      hidden: 'angst',
+      surface_emotions: ['begeisterung', 'angst_gefuehl', 'ueberforderung', 'leere', 'scham', 'einsamkeit'],
+      hidden: 'angst_gefuehl',
       persona_note: {
         de: 'Perfektionismus ist fast immer Angst — die Angst, dass wenn man aufhört zu performen, niemand mehr bleibt.',
         en: 'Perfectionism is almost always fear — the fear that if you stop performing, no one will stay.',
@@ -85,8 +85,8 @@ const GefuehleDetective = (function () {
         vi: 'Khi con gọi điện, Marta luôn nói: "Mẹ ổn, đừng lo lắng." Bà nói vậy ngay cả khi đang khóc.',
         el: 'Όταν τα παιδιά της τηλεφωνούν, η Μάρτα πάντα λέει: "Είμαι καλά, μην ανησυχείτε." Το λέει ακόμα και όταν κλαίει.'
       },
-      surface_emotions: ['einsamkeit', 'trauer', 'stolz', 'schutzbeduerfnis', 'erschoepfung', 'sehnsucht'],
-      hidden: 'schutzbeduerfnis',
+      surface_emotions: ['einsamkeit', 'traurigkeit', 'begeisterung', 'verletzlichkeit', 'ueberforderung', 'sehnsucht'],
+      hidden: 'verletzlichkeit',
       persona_note: {
         de: 'Wer sagt „Mir geht\'s gut" und meint es nicht, sehnt sich oft am meisten danach, dass jemand fragt: „Bist du sicher?"',
         en: 'Those who say "I\'m fine" and don\'t mean it often long most for someone to ask: "Are you sure?"',
@@ -101,7 +101,7 @@ const GefuehleDetective = (function () {
         vi: 'Farid rời khỏi một công ty ổn định, lương cao mà không có việc mới. Gia đình không hiểu. Anh giải thích: "Tôi phải làm vậy thôi."',
         el: 'Ο Φαρίντ φεύγει από μια καλοπληρωμένη, σταθερή εταιρεία χωρίς άλλη δουλειά. Η οικογένειά του δεν καταλαβαίνει. Εξηγεί: "Απλώς έπρεπε."'
       },
-      surface_emotions: ['angst', 'mut', 'freiheit', 'leere', 'sehnsucht', 'hoffnung'],
+      surface_emotions: ['angst_gefuehl', 'verletzlichkeit', 'freiheit', 'leere', 'sehnsucht', 'hoffnung'],
       hidden: 'leere',
       persona_note: {
         de: 'Manchmal verlässt man nicht, weil man woanders hin möchte, sondern weil dort, wo man ist, innerlich nichts mehr ist. Leere als Antrieb.',
@@ -117,7 +117,7 @@ const GefuehleDetective = (function () {
         vi: 'Sau 10 năm mất liên lạc, Anouk nhắn tin cho chị gái. Cô viết: "Tôi chỉ muốn biết bạn có ổn không." Cô viết lại tin nhắn đó ba lần trước khi gửi.',
         el: 'Μετά από 10 χρόνια αποσύνδεσης, η Ανούκ γράφει στην αδερφή της. Γράφει: "Ήθελα μόνο να δω αν είσαι καλά." Ξαναγράφει αυτό το μήνυμα τρεις φορές.'
       },
-      surface_emotions: ['sehnsucht', 'angst', 'hoffnung', 'scham', 'liebe', 'mut'],
+      surface_emotions: ['sehnsucht', 'angst_gefuehl', 'hoffnung', 'scham', 'liebe', 'verletzlichkeit'],
       hidden: 'sehnsucht',
       persona_note: {
         de: 'Eine Nachricht dreimal umschreiben ist kein Zögern — es ist Sehnsucht, die nach Worten sucht.',
@@ -133,7 +133,7 @@ const GefuehleDetective = (function () {
         vi: 'Mỗi khi Theo nhận được phản hồi — dù là nhẹ nhàng và mang tính xây dựng — anh im lặng, nhìn xuống sàn và không nói gì thêm.',
         el: 'Κάθε φορά που ο Θέο λαμβάνει feedback — ακόμα και ήπιο, εποικοδομητικό — σωπαίνει, κοιτά το πάτωμα και δεν λέει τίποτα άλλο.'
       },
-      surface_emotions: ['scham', 'wut', 'trauer', 'angst', 'verlassenheit', 'ohnmacht'],
+      surface_emotions: ['scham', 'wut', 'traurigkeit', 'angst_gefuehl', 'verlassenheit', 'ohnmacht'],
       hidden: 'verlassenheit',
       persona_note: {
         de: 'Sich nach Kritik zurückzuziehen kann nicht Scham, sondern Verlassenheitsangst sein: „Jetzt werde ich abgelehnt." Eine alte Wunde, die aufgeht.',
@@ -149,7 +149,7 @@ const GefuehleDetective = (function () {
         vi: 'Eva chăm sóc cha bệnh của mình được ba năm. Cô nói cô yêu ông và không muốn gì khác. Nhưng đôi khi, khi ông ngủ, cô chỉ ngồi đó và khóc thầm.',
         el: 'Η Εύα φροντίζει τον άρρωστο πατέρα της εδώ και τρία χρόνια. Λέει ότι τον αγαπά και δεν θα το άλλαζε. Αλλά μερικές φορές, όταν κοιμάται, κάθεται και κλαίει αθόρυβα.'
       },
-      surface_emotions: ['erschoepfung', 'trauer', 'liebe', 'einsamkeit', 'schuld', 'sehnsucht'],
+      surface_emotions: ['ueberforderung', 'traurigkeit', 'liebe', 'einsamkeit', 'schuld', 'sehnsucht'],
       hidden: 'einsamkeit',
       persona_note: {
         de: 'Man kann jemanden intensiv lieben und trotzdem zutiefst einsam sein. Beides schließt sich nicht aus.',
@@ -165,7 +165,7 @@ const GefuehleDetective = (function () {
         vi: 'Vào ngày cuốn tiểu thuyết đầu tiên của Kira được xuất bản, cô cảm thấy buồn kỳ lạ. Cô không biết tại sao.',
         el: 'Την ημέρα που κυκλοφορεί το πρώτο της μυθιστόρημα, η Κίρα νιώθει παράξενα λυπημένη. Δεν ξέρει γιατί.'
       },
-      surface_emotions: ['freude', 'trauer', 'leere', 'sehnsucht', 'angst', 'erschoepfung'],
+      surface_emotions: ['freude', 'traurigkeit', 'leere', 'sehnsucht', 'angst_gefuehl', 'ueberforderung'],
       hidden: 'leere',
       persona_note: {
         de: 'Ein großes Ziel zu erreichen kann Leere hinterlassen — nicht weil es nicht gut war, sondern weil das Ziel die Richtung war, und die Richtung jetzt fehlt.',
