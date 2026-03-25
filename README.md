@@ -4,7 +4,7 @@
 
 Explore emotions. Talk about them. Grow your inner vocabulary across languages and cultures.
 
-Play live: [mikelninh.github.io/Gefuehle-Memory](https://mikelninh.github.io/Gefuehle-Memory/)
+Play live: [mikelninh.github.io/Empathly](https://mikelninh.github.io/Empathly/)
 
 ---
 
