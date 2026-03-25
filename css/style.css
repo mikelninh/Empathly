@@ -404,6 +404,69 @@ body:not(.show-landing) .settings-bar {
   line-height: 1.5;
 }
 
+/* Primary mode grid — 5 core modes */
+.mode-grid-primary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+/* More modes expandable section */
+.more-modes-section { width: 100%; margin-top: 4px; }
+.more-modes-toggle {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 11px 18px;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color .2s, color .2s;
+}
+.more-modes-toggle:hover { border-color: var(--border2); color: var(--text); }
+.more-modes-arrow {
+  display: inline-block;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: transform .3s var(--easing-spring, ease);
+}
+.more-modes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+  animation: fadeSlideUp .25s ease both;
+}
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Kartenset in footer */
+.btn-kartenset {
+  display: block;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: .78rem;
+  cursor: pointer;
+  margin: 6px auto 0;
+  padding: 4px 8px;
+  opacity: .7;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: opacity .2s;
+}
+.btn-kartenset:hover { opacity: 1; }
+
 /* Per-group accent colors */
 .mode-group:nth-child(1) .mode-card { --icon-bg: rgba(255,209,102,.15); --card-glow: radial-gradient(ellipse at 0% 0%, rgba(255,209,102,.07), transparent 60%); }
 .mode-group:nth-child(2) .mode-card { --icon-bg: rgba(6,214,160,.15);   --card-glow: radial-gradient(ellipse at 0% 0%, rgba(6,214,160,.07), transparent 60%); }

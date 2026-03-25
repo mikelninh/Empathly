@@ -155,92 +155,77 @@
       </div>
     </div>
 
-    <!-- Mode Grid -->
-    <div class="mode-grid">
-      <div class="mode-group">
-        <h3 class="mode-group-label">Erleben</h3>
-        <div class="mode-group-cards">
-          <button class="mode-card" data-mode="classic">
-            <span class="mode-card-icon">🃏</span>
-            <span class="mode-card-name">Klassisch</span>
-            <span class="mode-card-desc">Lass Gefühle zusammenfinden — und beim Öffnen ankommen</span>
-          </button>
-          <button class="mode-card" data-mode="talk">
-            <span class="mode-card-icon">💬</span>
-            <span class="mode-card-name">Gesprächsrunde</span>
-            <span class="mode-card-desc">Eine Karte — ein ehrlicher Moment mit dir selbst</span>
-          </button>
-          <button class="mode-card" data-mode="story">
-            <span class="mode-card-icon">📖</span>
-            <span class="mode-card-name">Geschichten</span>
-            <span class="mode-card-desc">Drei Gefühle finden einen Weg — durch dich</span>
-          </button>
-        </div>
-      </div>
-      <div class="mode-group">
-        <h3 class="mode-group-label">Erspüren</h3>
-        <div class="mode-group-cards">
-          <button class="mode-card" data-mode="wheel">
-            <span class="mode-card-icon">🎡</span>
-            <span class="mode-card-name">Emotions-Rad</span>
-            <span class="mode-card-desc">Wo bist du gerade — in dir selbst?</span>
-          </button>
-          <button class="mode-card" data-mode="checkin">
-            <span class="mode-card-icon">🌿</span>
-            <span class="mode-card-name">Check-in</span>
-            <span class="mode-card-desc">Halte inne. Was lebt gerade in dir?</span>
-          </button>
-          <button class="mode-card" data-mode="ask">
-            <span class="mode-card-icon">✨</span>
-            <span class="mode-card-name">Innere Stimme</span>
-            <span class="mode-card-desc">Bring mit, was dich trägt oder bewegt</span>
-          </button>
-        </div>
-      </div>
-      <div class="mode-group">
-        <h3 class="mode-group-label">Vertiefen</h3>
-        <div class="mode-group-cards">
-          <button class="mode-card" data-mode="wotd">
-            <span class="mode-card-icon">🌅</span>
-            <span class="mode-card-name">Gefühl des Tages</span>
-            <span class="mode-card-desc">Ein Gefühl wartet heute auf dich</span>
-          </button>
-          <button class="mode-card" data-mode="learn">
-            <span class="mode-card-icon">🌱</span>
-            <span class="mode-card-name">Innere Sprache</span>
-            <span class="mode-card-desc">Dem Innenleben Worte geben</span>
-          </button>
-          <button class="mode-card" data-mode="journal">
-            <span class="mode-card-icon">📓</span>
-            <span class="mode-card-name">Journal</span>
-            <span class="mode-card-desc">Schreib, was dein Herz kennt und noch nicht benennt</span>
-          </button>
-          <button class="mode-card" data-mode="detective">
-            <span class="mode-card-icon">🔍</span>
-            <span class="mode-card-name">Gefühls-Detektiv</span>
-            <span class="mode-card-desc">Was liegt noch tiefer darunter?</span>
-          </button>
-          <button class="mode-card" data-mode="needsmap">
-            <span class="mode-card-icon">🗺️</span>
-            <span class="mode-card-name">Bedürfnis-Karte</span>
-            <span class="mode-card-desc">Was braucht deine Seele gerade?</span>
-          </button>
-        </div>
-      </div>
-      <div class="mode-group">
-        <h3 class="mode-group-label">Begegnen</h3>
-        <div class="mode-group-cards">
-          <button class="mode-card" data-mode="tandem">
-            <span class="mode-card-icon">🌍</span>
-            <span class="mode-card-name">Tandem</span>
-            <span class="mode-card-desc">Gefühle teilen — über Sprachen und Grenzen hinweg</span>
-          </button>
-          <button class="mode-card" data-mode="deck">
-            <span class="mode-card-icon">🎴</span>
-            <span class="mode-card-name">Kartenset</span>
-            <span class="mode-card-desc">Anfassen, was innen lebt</span>
-          </button>
-        </div>
+    <!-- Mode Grid — 5 primary modes -->
+    <div class="mode-grid-primary">
+      <button class="mode-card" data-mode="classic">
+        <span class="mode-card-icon">🃏</span>
+        <span class="mode-card-name">Klassisch</span>
+        <span class="mode-card-desc">Lass Gefühle zusammenfinden — und beim Öffnen ankommen</span>
+      </button>
+      <button class="mode-card" data-mode="wheel">
+        <span class="mode-card-icon">🎡</span>
+        <span class="mode-card-name">Emotions-Rad</span>
+        <span class="mode-card-desc">Wo bist du gerade — in dir selbst?</span>
+      </button>
+      <button class="mode-card" data-mode="wotd">
+        <span class="mode-card-icon">🌅</span>
+        <span class="mode-card-name">Gefühl des Tages</span>
+        <span class="mode-card-desc">Ein Gefühl wartet heute auf dich</span>
+      </button>
+      <button class="mode-card" data-mode="talk">
+        <span class="mode-card-icon">💬</span>
+        <span class="mode-card-name">Gesprächsrunde</span>
+        <span class="mode-card-desc">Eine Karte — ein ehrlicher Moment mit dir selbst</span>
+      </button>
+      <button class="mode-card" data-mode="journal">
+        <span class="mode-card-icon">📓</span>
+        <span class="mode-card-name">Journal</span>
+        <span class="mode-card-desc">Schreib, was dein Herz kennt und noch nicht benennt</span>
+      </button>
+    </div>
+
+    <!-- More modes — collapsed by default -->
+    <div class="more-modes-section">
+      <button class="more-modes-toggle" id="btn-more-modes" aria-expanded="false">
+        <span class="more-modes-label">Mehr entdecken</span>
+        <span class="more-modes-arrow">›</span>
+      </button>
+      <div class="more-modes-grid" id="more-modes-grid" hidden>
+        <button class="mode-card" data-mode="story">
+          <span class="mode-card-icon">📖</span>
+          <span class="mode-card-name">Geschichten</span>
+          <span class="mode-card-desc">Drei Gefühle finden einen Weg — durch dich</span>
+        </button>
+        <button class="mode-card" data-mode="checkin">
+          <span class="mode-card-icon">🌿</span>
+          <span class="mode-card-name">Check-in</span>
+          <span class="mode-card-desc">Halte inne. Was lebt gerade in dir?</span>
+        </button>
+        <button class="mode-card" data-mode="ask">
+          <span class="mode-card-icon">✨</span>
+          <span class="mode-card-name">Innere Stimme</span>
+          <span class="mode-card-desc">Bring mit, was dich trägt oder bewegt</span>
+        </button>
+        <button class="mode-card" data-mode="detective">
+          <span class="mode-card-icon">🔍</span>
+          <span class="mode-card-name">Gefühls-Detektiv</span>
+          <span class="mode-card-desc">Was liegt noch tiefer darunter?</span>
+        </button>
+        <button class="mode-card" data-mode="needsmap">
+          <span class="mode-card-icon">🗺️</span>
+          <span class="mode-card-name">Bedürfnis-Karte</span>
+          <span class="mode-card-desc">Was braucht deine Seele gerade?</span>
+        </button>
+        <button class="mode-card" data-mode="learn">
+          <span class="mode-card-icon">🌱</span>
+          <span class="mode-card-name">Innere Sprache</span>
+          <span class="mode-card-desc">Dem Innenleben Worte geben</span>
+        </button>
+        <button class="mode-card" data-mode="tandem">
+          <span class="mode-card-icon">🌍</span>
+          <span class="mode-card-name">Tandem</span>
+          <span class="mode-card-desc">Gefühle teilen — über Sprachen und Grenzen hinweg</span>
+        </button>
       </div>
     </div>
 
@@ -403,6 +388,7 @@
   <!-- Footer -->
   <footer class="footer">
     <p>Gefühle-Memory 💛 67 Gefühle · 6 Kategorien · 11 Sprachen</p>
+    <button class="btn-kartenset" data-mode="deck">🎴 Kartenset drucken</button>
   </footer>
 
   <script src="js/config.js"></script>
@@ -428,6 +414,15 @@
     }
     FunFacts.init();
     GefuehleAPI.init();
+    // More modes toggle
+    document.getElementById('btn-more-modes').addEventListener('click', function() {
+      const grid = document.getElementById('more-modes-grid');
+      const open = this.getAttribute('aria-expanded') === 'true';
+      grid.hidden = open;
+      this.setAttribute('aria-expanded', !open);
+      this.querySelector('.more-modes-label').textContent = open ? 'Mehr entdecken' : 'Weniger anzeigen';
+      this.querySelector('.more-modes-arrow').style.transform = open ? '' : 'rotate(90deg)';
+    });
   </script>
 </body>
 </html>
