@@ -668,6 +668,7 @@
     renderDailyFunFact();
     renderTodaysEmotion();
     renderDailyChallengeCard();
+    renderDailyDetectiveCard();
     renderCollectionBar();
     renderFavoritesSection();
     if (typeof GefuehlePersonas !== 'undefined') {
@@ -3628,6 +3629,82 @@
     }
   }
 
+  /* ---- Daily Detective card on landing ---- */
+  function renderDailyDetectiveCard() {
+    const el = document.getElementById('daily-detective-card');
+    if (!el || typeof GefuehleDetective === 'undefined') return;
+
+    const DAILY_DETECTIVE_KEY = 'empathly-daily-detective';
+    const today = new Date().toISOString().split('T')[0];
+    const saved = JSON.parse(localStorage.getItem(DAILY_DETECTIVE_KEY) || '{}');
+    const lang = state.uiLang;
+
+    // Pick scenario deterministically by date
+    const scenarios = GefuehleDetective.SCENARIOS;
+    const dateNum = new Date().toISOString().split('T')[0].replace(/-/g, '');
+    const idx = parseInt(dateNum, 10) % scenarios.length;
+    const scenario = scenarios[idx];
+    if (!scenario) return;
+
+    const done = saved.date === today && saved.completed;
+    const streakDays = saved.streak || 0;
+
+    const labels = {
+      de: { title: 'Szenario des Tages', btn: 'Untersuchen', done: '✓ Heute gelöst!', streak: 'Tage in Folge' },
+      en: { title: "Today's Case", btn: 'Investigate', done: '✓ Solved today!', streak: 'days in a row' },
+      vi: { title: 'Ca của hôm nay', btn: 'Điều tra', done: '✓ Đã giải hôm nay!', streak: 'ngày liên tiếp' },
+      el: { title: 'Η υπόθεση της ημέρας', btn: 'Ερεύνησε', done: '✓ Λύθηκε σήμερα!', streak: 'μέρες στη σειρά' },
+    };
+    const T = labels[lang] || labels.en;
+    const diffEmoji = { easy: '🟢', medium: '🟡', hard: '🔴' };
+    const situationText = scenario.situation[lang] || scenario.situation.en;
+
+    el.style.display = '';
+    el.className = `daily-detective-card${done ? ' done' : ''}`;
+    el.innerHTML = `
+      <div class="ddc-header">
+        <span class="ddc-icon">🔍</span>
+        <span class="ddc-title">${T.title}</span>
+        ${streakDays >= 2 ? `<span class="ddc-streak">🔥 ${streakDays} ${T.streak}</span>` : ''}
+      </div>
+      <div class="ddc-situation">${situationText}</div>
+      <div class="ddc-footer">
+        <span class="ddc-diff">${diffEmoji[scenario.difficulty] || '🟡'} ${scenario.difficulty}</span>
+        <button class="ddc-btn${done ? ' done' : ''}" ${done ? 'disabled' : ''}>${done ? T.done : T.btn}</button>
+      </div>`;
+
+    if (!done) {
+      el.querySelector('.ddc-btn').addEventListener('click', () => {
+        // Save started
+        const rec = JSON.parse(localStorage.getItem(DAILY_DETECTIVE_KEY) || '{}');
+        if (rec.date !== today) {
+          const newStreak = rec.date === getPrevDay() ? (rec.streak || 1) + 1 : 1;
+          localStorage.setItem(DAILY_DETECTIVE_KEY, JSON.stringify({ date: today, completed: false, streak: newStreak, scenarioId: scenario.id }));
+        }
+        state.mode = 'detective';
+        hideLanding();
+        showGame();
+        initDetectiveMode();
+      });
+    }
+  }
+
+  function getPrevDay() {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  }
+
+  function markDailyDetectiveComplete(scenarioId) {
+    const DAILY_DETECTIVE_KEY = 'empathly-daily-detective';
+    const today = new Date().toISOString().split('T')[0];
+    const rec = JSON.parse(localStorage.getItem(DAILY_DETECTIVE_KEY) || '{}');
+    if (rec.date === today && rec.scenarioId === scenarioId) {
+      rec.completed = true;
+      localStorage.setItem(DAILY_DETECTIVE_KEY, JSON.stringify(rec));
+    }
+  }
+
   function renderStreakCard() {
     const el = document.getElementById('streak-card');
     if (!el) return;
@@ -3771,13 +3848,26 @@
       container.innerHTML = `<div class="mode-placeholder"><p>🔍 Gefühls-Detektiv wird geladen...</p></div>`;
       return;
     }
+    // Check if this session was launched from the daily card
+    const DAILY_DETECTIVE_KEY = 'empathly-daily-detective';
+    const today = new Date().toISOString().split('T')[0];
+    const dailyRec = JSON.parse(localStorage.getItem(DAILY_DETECTIVE_KEY) || '{}');
+    const isDailySession = dailyRec.date === today && !dailyRec.completed;
+
     GefuehleDetective.initDetectiveMode(container, state.uiLang, (score, total) => {
+      // Mark daily complete if this was the daily session
+      if (isDailySession) {
+        dailyRec.completed = true;
+        localStorage.setItem(DAILY_DETECTIVE_KEY, JSON.stringify(dailyRec));
+      }
+
       // On complete — show a mini congrats
       const lang = state.uiLang;
+      const pct = total > 0 ? Math.round((score / total) * 100) : 0;
       const msg = lang === 'de'
-        ? `Detektiv-Session abgeschlossen! ${score}/${total} richtig.`
-        : lang === 'vi' ? `Hoàn thành! ${score}/${total} đúng.`
-        : `Detective session complete! ${score}/${total} correct.`;
+        ? `Detektiv-Session abgeschlossen! ${score}/${total} richtig (${pct}%).`
+        : lang === 'vi' ? `Hoàn thành! ${score}/${total} đúng (${pct}%).`
+        : `Detective session complete! ${score}/${total} correct (${pct}%).`;
       const banner = document.createElement('div');
       banner.className = 'detective-complete-banner';
       banner.innerHTML = `<span>🔍 ${msg}</span><button>${lang === 'de' ? 'Nochmal' : 'Again'}</button>`;
@@ -3789,164 +3879,177 @@
     });
   }
 
-  /* ---- Needs Map mode ---- */
+  /* ---- Needs Map mode — 3-step flow ---- */
+  const NM_HISTORY_KEY = 'empathly-needs-history';
+
+  function nmSaveHistory(emotionId, needId) {
+    const hist = JSON.parse(localStorage.getItem(NM_HISTORY_KEY) || '[]');
+    hist.push({ date: new Date().toISOString().split('T')[0], emotionId, needId });
+    if (hist.length > 100) hist.splice(0, hist.length - 100);
+    localStorage.setItem(NM_HISTORY_KEY, JSON.stringify(hist));
+  }
+
+  function nmGetTopNeeds(days) {
+    const hist = JSON.parse(localStorage.getItem(NM_HISTORY_KEY) || '[]');
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const cutStr = cutoff.toISOString().split('T')[0];
+    const recent = hist.filter(h => h.date >= cutStr);
+    const counts = {};
+    recent.forEach(h => { counts[h.needId] = (counts[h.needId] || 0) + 1; });
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 3).map(e => e[0]);
+  }
+
   function initNeedsMapMode() {
     const container = document.querySelector('.needsmap-mode');
     if (!container) return;
-    const lang = state.uiLang;
-    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+    nmRenderEmotionPicker(container, state.uiLang);
+  }
 
-    // Build needs map: user selects an emotion → see connected needs
-    const emotions = getEmotions().slice(0, 24); // Show a manageable grid
-    const titleText = L('Welches Gefühl hast du gerade?', 'What emotion do you feel right now?', 'Bạn đang cảm thấy gì?', 'Τι συναίσθημα έχεις τώρα;');
-    const subtitleText = L('Tippe auf ein Gefühl, um die dahinterliegenden Bedürfnisse zu sehen.', 'Tap an emotion to see the underlying needs.', 'Chạm vào cảm xúc để xem nhu cầu bên dưới.', 'Πάτησε ένα συναίσθημα για να δεις τις ανάγκες πίσω από αυτό.');
+  function nmRenderEmotionPicker(container, lang) {
+    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+    const topNeeds = nmGetTopNeeds(7);
+    const allEmotions = typeof EMOTIONS !== 'undefined' ? EMOTIONS : [];
+    const cats = typeof CATEGORIES !== 'undefined' ? CATEGORIES : [];
+
+    const patternHtml = topNeeds.length >= 2 ? (() => {
+      const needObjs = topNeeds.map(id => typeof NEEDS !== 'undefined' ? NEEDS.find(n => n.id === id) : null).filter(Boolean);
+      const label = L('Diese Woche brauchst du vor allem:', 'This week you need most:', 'Tuần này bạn cần nhất:', 'Αυτή την εβδομάδα χρειάζεσαι κυρίως:');
+      return `<div class="nm-pattern-bar">
+        <span class="nm-pattern-label">${label}</span>
+        <span class="nm-pattern-needs">${needObjs.map(n => `${n.emoji} ${n[lang] || n.en}`).join(' · ')}</span>
+      </div>`;
+    })() : '';
+
+    const titleText = L('Was fühlst du gerade?', 'What are you feeling right now?', 'Bạn đang cảm thấy gì?', 'Τι νιώθεις τώρα;');
+
+    const tabsHtml = `<div class="nm-cat-tabs">
+      <button class="nm-cat-tab active" data-cat="all">${L('Alle', 'All', 'Tất cả', 'Όλα')}</button>
+      ${cats.map(c => `<button class="nm-cat-tab" data-cat="${c.id}">${c.emoji} ${c[lang] || c.en}</button>`).join('')}
+    </div>`;
+
+    const emotionGridHtml = (filterCat) => allEmotions
+      .filter(e => !filterCat || filterCat === 'all' || e.category === filterCat)
+      .map(e => `<button class="nm-emo-btn" data-id="${e.id}" style="--cat-color:${getCategoryColor(e.category)}">
+        <span class="nm-emo-icon">${e.emoji}</span>
+        <span class="nm-emo-name">${e[lang] || e.de}</span>
+      </button>`).join('');
 
     container.innerHTML = `
       <div class="needsmap-wrap">
+        ${patternHtml}
         <h2 class="needsmap-title">${titleText}</h2>
-        <p class="needsmap-subtitle">${subtitleText}</p>
-        <div class="needsmap-emotion-grid">
-          ${emotions.map(e => `
-            <button class="nm-emotion-btn" data-id="${e.id}" style="--cat-color:${getCategoryColor(e.category)}">
-              <span class="nm-emoji">${e.emoji}</span>
-              <span class="nm-word">${e[lang] || e.de}</span>
-            </button>`).join('')}
-        </div>
-        <div class="needsmap-result" id="needsmap-result"></div>
+        ${tabsHtml}
+        <div class="nm-emo-grid" id="nm-emo-grid">${emotionGridHtml('all')}</div>
       </div>`;
 
-    container.querySelectorAll('.nm-emotion-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.nm-emotion-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        const emo = EMOTIONS.find(e => e.id === btn.dataset.id);
-        if (emo) showNeedsForEmotion(emo, lang);
+    container.querySelectorAll('.nm-cat-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        container.querySelectorAll('.nm-cat-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('nm-emo-grid').innerHTML = emotionGridHtml(tab.dataset.cat);
+        container.querySelectorAll('.nm-emo-btn').forEach(btn => btn.addEventListener('click', onEmoBtnClick));
+      });
+    });
+
+    function onEmoBtnClick() {
+      const emo = allEmotions.find(e => e.id === this.dataset.id);
+      if (emo) nmRenderNeeds(container, emo, lang);
+    }
+    container.querySelectorAll('.nm-emo-btn').forEach(btn => btn.addEventListener('click', onEmoBtnClick));
+  }
+
+  function nmRenderNeeds(container, emotion, lang) {
+    if (typeof EMOTION_NEEDS_MAP === 'undefined' || typeof NEED_ACTIONS === 'undefined') return;
+    const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
+    const needIds = EMOTION_NEEDS_MAP[emotion.id] || [];
+    const needs = needIds.map(id => typeof NEEDS !== 'undefined' ? NEEDS.find(n => n.id === id) : null).filter(Boolean);
+    const color = getCategoryColor(emotion.category);
+
+    const backText = L('← Anderes Gefühl', '← Different emotion', '← Cảm xúc khác', '← Άλλο συναίσθημα');
+    const headerText = L(`${emotion.de} ruft nach...`, `${emotion.en} calls for...`, `${emotion.vi} cần...`, `${emotion.el} χρειάζεται...`);
+
+    container.innerHTML = `
+      <div class="needsmap-wrap nm-step-needs">
+        <button class="nm-back-btn">${backText}</button>
+        <div class="nm-needs-header" style="--cat-color:${color}">
+          <span class="nm-needs-emo">${emotion.emoji}</span>
+          <span class="nm-needs-title">${headerText}</span>
+        </div>
+        <div class="nm-needs-list">
+          ${needs.map(n => {
+            const actions = NEED_ACTIONS[n.id];
+            const insight = actions ? (actions.insight[lang] || actions.insight.en) : '';
+            return `<button class="nm-need-card" data-id="${n.id}">
+              <span class="nm-need-emoji">${n.emoji || '🌱'}</span>
+              <div class="nm-need-body">
+                <span class="nm-need-name">${n[lang] || n.en}</span>
+                ${insight ? `<span class="nm-need-insight">${insight}</span>` : ''}
+              </div>
+              <span class="nm-need-arrow">→</span>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>`;
+
+    container.querySelector('.nm-back-btn').addEventListener('click', () => nmRenderEmotionPicker(container, lang));
+    container.querySelectorAll('.nm-need-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const need = needs.find(n => n.id === card.dataset.id);
+        if (need) nmRenderActions(container, emotion, need, lang);
       });
     });
   }
 
-  function showNeedsForEmotion(emotion, lang) {
-    const resultEl = document.getElementById('needsmap-result');
-    if (!resultEl) return;
-    if (typeof NEEDS === 'undefined' || typeof NEED_DIMENSIONS === 'undefined') {
-      resultEl.innerHTML = '<p>Bedürfnis-Daten nicht verfügbar.</p>';
-      return;
-    }
+  function nmRenderActions(container, emotion, need, lang) {
+    if (typeof NEED_ACTIONS === 'undefined') return;
     const L = (de, en, vi, el) => lang === 'de' ? de : lang === 'vi' ? vi : lang === 'el' ? el : en;
-
-    // Map emotions to needs by category & emotional valence
-    const needsMap = {
-      freude:        ['verbundenheit', 'anerkennung', 'freude', 'leichtigkeit', 'sicherheit'],
-      trauer:        ['verbundenheit', 'mitgefuehl', 'verstaendnis', 'trost', 'gehoert_werden'],
-      wut:           ['respekt', 'gerechtigkeit', 'autonomie', 'grenzen', 'sicherheit'],
-      angst:         ['sicherheit', 'schutz', 'geborgenheit', 'vertrauen', 'stabilität'],
-      ekel:          ['respekt', 'sauberkeit', 'grenzen', 'autonomie', 'wuerde'],
-      überraschung:  ['verstaendnis', 'orientierung', 'kontrolle', 'sicherheit', 'neugier'],
-      scham:         ['akzeptanz', 'zugehoerigkeit', 'verstaendnis', 'selbstmitgefuehl', 'wuerde'],
-      schuld:        ['reue', 'verbundenheit', 'gerechtigkeit', 'wiedergutmachung', 'vergebung'],
-      einsamkeit:    ['verbundenheit', 'zugehoerigkeit', 'kontakt', 'liebe', 'gemeinschaft'],
-      liebe:         ['verbundenheit', 'zuneigung', 'intimität', 'sicherheit', 'akzeptanz'],
-      hoffnung:      ['sinn', 'orientierung', 'zukunft', 'vertrauen', 'moeglichkeit'],
-      neugier:       ['lernen', 'entdeckung', 'verstaendnis', 'stimulation', 'wachstum'],
-      erschoepfung:  ['ruhe', 'erholung', 'unterstuetzung', 'grenzen', 'selbstfuersorge'],
-      dankbarkeit:   ['verbundenheit', 'anerkennung', 'wertschaetzung', 'sinn', 'zugehoerigkeit'],
-      mitgefuehl:    ['verbundenheit', 'verstaendnis', 'mitgefuehl', 'liebe', 'fuersorge'],
-    };
-
-    // Real dimensions: koerper · herz · geist · seele · beziehung
-    // Real category IDs: licht · mitte · schwere · sturm · angst · schatten
-    const catToDimension = {
-      licht:    'herz',
-      mitte:    'seele',
-      schwere:  'herz',
-      sturm:    'beziehung',
-      angst:    'koerper',
-      schatten: 'seele'
-    };
-    const emotionToDimension = {
-      freude: 'herz', dankbarkeit: 'herz', liebe: 'beziehung',
-      frieden: 'seele', geborgenheit: 'beziehung', sehnsucht: 'beziehung',
-      einsamkeit: 'beziehung', trauer: 'herz', verlust: 'herz',
-      wut: 'beziehung', frustration: 'geist', enttaeuschung: 'beziehung',
-      angst: 'koerper', panik: 'koerper', unsicherheit: 'koerper',
-      scham: 'beziehung', schuld: 'beziehung', peinlichkeit: 'beziehung',
-      hoffnung: 'seele', neugier: 'geist', begeisterung: 'geist',
-      erschoepfung: 'koerper', mitgefuehl: 'herz', staunen: 'seele',
-      leere: 'seele', zerrissenheit: 'seele', weltschmerz: 'seele',
-      stolz: 'herz', verbundenheit: 'beziehung', eifersucht: 'beziehung',
-      neid: 'beziehung', ekel: 'koerper', verwirrung: 'geist',
-      erleichterung: 'seele', zufriedenheit: 'seele', langeweile: 'geist',
-      überwaeltigung: 'koerper', überwaeltigt: 'koerper'
-    };
-    const dim = emotionToDimension[emotion.id] || catToDimension[emotion.category] || 'herz';
-
-    // Seeded shuffle so each emotion consistently shows different needs from that dimension
-    const seed = emotion.id.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0);
-    const seededSort = arr => [...arr].sort((a, b) => {
-      const ha = Math.abs((seed ^ a.id.charCodeAt(0) * 17) % 23);
-      const hb = Math.abs((seed ^ b.id.charCodeAt(0) * 17) % 23);
-      return ha - hb;
-    });
-    const dimNeeds = NEEDS.filter(n => n.dimension === dim);
-    const otherNeeds = NEEDS.filter(n => n.dimension !== dim);
-    const displayNeeds = [...seededSort(dimNeeds), ...seededSort(otherNeeds)].slice(0, 6);
-
+    const actions = NEED_ACTIONS[need.id];
     const color = getCategoryColor(emotion.category);
-    const headerText = L(`${emotion.de} verbindet sich mit...`, `${emotion.en} connects to...`, `${emotion.vi} kết nối với...`, `${emotion.el} συνδέεται με...`);
-    const questionText = L('Welches dieser Bedürfnisse sprichst du an?', 'Which of these needs resonates?', 'Nhu cầu nào đang nói với bạn?', 'Ποια από αυτές τις ανάγκες σε αγγίζει;');
-    const journalText = L('Im Journal festhalten', 'Note in Journal', 'Ghi vào nhật ký', 'Σημείωσε στο ημερολόγιο');
+    const actionList = actions ? (actions[lang] || actions.en || []) : [];
+    const insight = actions ? (actions.insight[lang] || actions.insight.en) : '';
 
-    resultEl.innerHTML = `
-      <div class="nm-result-card" style="--cat-color:${color}">
-        <div class="nm-result-header">
-          <span class="nm-result-emoji">${emotion.emoji}</span>
-          <span class="nm-result-title">${headerText}</span>
+    nmSaveHistory(emotion.id, need.id);
+
+    const backText = L('← Andere Bedürfnisse', '← Other needs', '← Nhu cầu khác', '← Άλλες ανάγκες');
+    const doText = L('Was du jetzt tun kannst:', 'What you can do now:', 'Bạn có thể làm ngay:', 'Τι μπορείς να κάνεις τώρα:');
+    const journalText = L('Im Journal festhalten', 'Write in Journal', 'Ghi vào nhật ký', 'Γράψε στο ημερολόγιο');
+
+    container.innerHTML = `
+      <div class="needsmap-wrap nm-step-action">
+        <button class="nm-back-btn">${backText}</button>
+        <div class="nm-action-header" style="--cat-color:${color}">
+          <span class="nm-action-emos">${emotion.emoji} → ${need.emoji || '🌱'}</span>
+          <div>
+            <div class="nm-action-need-name">${need[lang] || need.en}</div>
+            ${insight ? `<div class="nm-action-insight">${insight}</div>` : ''}
+          </div>
         </div>
-        <div class="nm-needs-grid">
-          ${displayNeeds.map(n => `
-            <button class="nm-need-btn" data-need="${n.de || n.en}">
-              <span class="nm-need-icon">${n.emoji || '🌱'}</span>
-              <span class="nm-need-name">${n[lang] || n.de || n.en}</span>
-            </button>`).join('')}
+        <p class="nm-action-label">${doText}</p>
+        <div class="nm-action-list">
+          ${actionList.map(a => `
+            <div class="nm-action-item">
+              <span class="nm-action-dot">◦</span>
+              <span>${a}</span>
+            </div>`).join('')}
         </div>
-        <p class="nm-question">${questionText}</p>
-        <div class="nm-selected-need"></div>
         <button class="nm-journal-btn">${journalText}</button>
       </div>`;
 
-    let selectedNeed = null;
-    resultEl.querySelectorAll('.nm-need-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        resultEl.querySelectorAll('.nm-need-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedNeed = btn.dataset.need;
-        const selectedEl = resultEl.querySelector('.nm-selected-need');
-        const needMsg = L(
-          `Du spürst ein Bedürfnis nach "${selectedNeed}".`,
-          `You sense a need for "${selectedNeed}".`,
-          `Bạn cảm thấy cần "${selectedNeed}".`,
-          `Αισθάνεσαι ανάγκη για "${selectedNeed}".`
-        );
-        if (selectedEl) selectedEl.textContent = needMsg;
-      });
-    });
-
-    resultEl.querySelector('.nm-journal-btn').addEventListener('click', () => {
-      // Pre-fill journal with emotion + need reflection
-      const journalEntry = selectedNeed
-        ? `${emotion.emoji} ${emotion[lang] || emotion.de} → Bedürfnis: ${selectedNeed}`
-        : `${emotion.emoji} ${emotion[lang] || emotion.de}`;
+    container.querySelector('.nm-back-btn').addEventListener('click', () => nmRenderNeeds(container, emotion, lang));
+    container.querySelector('.nm-journal-btn').addEventListener('click', () => {
+      const emoName = emotion[lang] || emotion.de;
+      const needName = need[lang] || need.en;
+      const journalEntry = `${emotion.emoji} ${emoName} → ${need.emoji || ''} ${needName}`;
       localStorage.setItem('gefuehle-journal-prefill', journalEntry);
       state.mode = 'journal';
-      const container2 = document.querySelector('.needsmap-mode');
-      if (container2) container2.classList.remove('active');
+      container.classList.remove('active');
       const jMode = document.querySelector('.journal-mode');
       if (jMode) jMode.classList.add('active');
       initJournalMode(journalEntry);
     });
-
-    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
+
 
   /* ---- Emotion Map (Win 8) ---- */
   function initEmotionMapMode() {

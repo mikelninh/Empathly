@@ -1508,6 +1508,132 @@ const NEEDS = [
 ];
 
 // ============================================================
+// EMOTION → NEEDS MAP (real psychological connections)
+// 4 needs per emotion, ordered by relevance
+// ============================================================
+const EMOTION_NEEDS_MAP = {
+  // 🌟 Licht
+  freude:              ['spiel', 'dank_ausdruck', 'seele_verbundenheit', 'gesehen'],
+  dankbarkeit:         ['dank_ausdruck', 'gesehen', 'wertschaetzung', 'naehe'],
+  frieden:             ['meditation', 'stille', 'ruhe', 'hingabe'],
+  leichtigkeit:        ['spiel', 'luft', 'bewegung', 'stille'],
+  begeisterung:        ['kreativ', 'inspiration', 'lernen', 'bewegung'],
+  zaertlichkeit:       ['liebe_n', 'beruehrung', 'naehe', 'gesehen'],
+  verbundenheit:       ['naehe', 'seele_verbundenheit', 'ehrlichkeit', 'zuhoeren'],
+  liebe:               ['liebe_n', 'beruehrung', 'naehe', 'seele_verbundenheit'],
+  staunen:             ['natur', 'lernen', 'stille', 'bedeutung'],
+  vertrauen:           ['seele_vertrauen', 'ehrlichkeit', 'sicherheit', 'raum'],
+  hoffnung:            ['bedeutung', 'sinn', 'seele_vertrauen', 'perspektive'],
+  klarheit:            ['geist_klarheit', 'ordnung', 'stille', 'fokus'],
+  freiheit:            ['raum', 'bewegung', 'natur', 'kreativ'],
+  ehrfurcht:           ['natur', 'bedeutung', 'stille', 'meditation'],
+  // 🌊 Mitte
+  zufriedenheit:       ['ruhe', 'hingabe', 'sinn', 'dank_ausdruck'],
+  melancholie:         ['weinen', 'trost', 'stille', 'seele_verbundenheit'],
+  nachdenklichkeit:    ['stille', 'geist_klarheit', 'sinn', 'perspektive'],
+  sehnsucht:           ['naehe', 'seele_verbundenheit', 'wahrheit', 'bedeutung'],
+  sensibilitaet:       ['raum', 'stille', 'gesehen', 'natur'],
+  nostalgie:           ['seele_verbundenheit', 'wahrheit', 'naehe', 'gesehen'],
+  offenheit:           ['kreativ', 'lernen', 'perspektive', 'ehrlichkeit'],
+  verletzlichkeit:     ['gesehen', 'weinen', 'zuhoeren', 'sicherheit'],
+  muedigkeit:          ['ruhe', 'waerme', 'stille', 'nahrung'],
+  langeweile:          ['inspiration', 'lernen', 'kreativ', 'bewegung'],
+  neutralitaet:        ['stille', 'ordnung', 'fokus', 'ruhe'],
+  beduerfnis:          ['geist_klarheit', 'wahrheit', 'gesehen', 'zuhoeren'],
+  weichheit:           ['liebe_n', 'trost', 'hingabe', 'natur'],
+  // 🌑 Schwere
+  traurigkeit:         ['trost', 'weinen', 'zuhoeren', 'naehe'],
+  einsamkeit:          ['naehe', 'seele_verbundenheit', 'zuhoeren', 'gesehen'],
+  enttaeuschung:       ['zuhoeren', 'gesehen', 'ehrlichkeit', 'wahrheit'],
+  hilflosigkeit:       ['unterstuetzung', 'trost', 'gesehen', 'zuhoeren'],
+  ueberforderung:      ['ruhe', 'ordnung', 'unterstuetzung', 'grenzen'],
+  ohnmacht:            ['unterstuetzung', 'sicherheit', 'gesehen', 'wahrheit'],
+  scham:               ['gesehen', 'sicherheit', 'liebe_n', 'seele_verbundenheit'],
+  schuld:              ['wahrheit', 'ehrlichkeit', 'vergebung', 'seele_vertrauen'],
+  leere:               ['bedeutung', 'sinn', 'seele_verbundenheit', 'natur'],
+  verlorenheit:        ['sinn', 'wahrheit', 'bedeutung', 'ordnung'],
+  hoffnungslosigkeit:  ['trost', 'zuhoeren', 'gesehen', 'bedeutung'],
+  verlassenheit:       ['naehe', 'sicherheit', 'zuhoeren', 'liebe_n'],
+  // 🔥 Sturm
+  wut:                 ['grenzen', 'raum', 'wahrheit', 'bewegung'],
+  frustration:         ['geist_klarheit', 'grenzen', 'raum', 'stille'],
+  aerger:              ['grenzen', 'wahrheit', 'raum', 'bewegung'],
+  neid:                ['sinn', 'wertschaetzung', 'kreativ', 'bedeutung'],
+  eifersucht:          ['sicherheit', 'ehrlichkeit', 'zuhoeren', 'naehe'],
+  groll:               ['wahrheit', 'ehrlichkeit', 'vergebung', 'raum'],
+  ungeduld:            ['stille', 'atmen', 'ordnung', 'perspektive'],
+  gereiztheit:         ['ruhe', 'raum', 'stille', 'grenzen'],
+  trotz:               ['ehrlichkeit', 'grenzen', 'wahrheit', 'raum'],
+  empoerung:           ['wahrheit', 'grenzen', 'zuhoeren', 'wertschaetzung'],
+  rebellion:           ['wahrheit', 'grenzen', 'kreativ', 'raum'],
+  // ⚡ Angst
+  angst_gefuehl:       ['sicherheit', 'atmen', 'waerme', 'seele_vertrauen'],
+  sorge:               ['ordnung', 'seele_vertrauen', 'stille', 'unterstuetzung'],
+  unsicherheit:        ['sicherheit', 'seele_vertrauen', 'gesehen', 'zuhoeren'],
+  panik:               ['atmen', 'sicherheit', 'waerme', 'beruehrung'],
+  nervositaet:         ['atmen', 'bewegung', 'ordnung', 'stille'],
+  misstrauen:          ['ehrlichkeit', 'seele_vertrauen', 'grenzen', 'sicherheit'],
+  bedrohung:           ['sicherheit', 'grenzen', 'raum', 'unterstuetzung'],
+  kontrollverlust:     ['ordnung', 'atmen', 'sicherheit', 'stille'],
+  ueberwachsamkeit:    ['ruhe', 'stille', 'sicherheit', 'atmen'],
+  // 🌘 Schatten
+  resignation:         ['bedeutung', 'sinn', 'gesehen', 'trost'],
+  bitterkeit:          ['wahrheit', 'vergebung', 'zuhoeren', 'trost'],
+  selbstzweifel:       ['gesehen', 'wertschaetzung', 'liebe_n', 'seele_vertrauen'],
+  selbstverurteilung:  ['liebe_n', 'gesehen', 'vergebung', 'trost'],
+  verhaertung:         ['weinen', 'naehe', 'waerme', 'seele_verbundenheit'],
+  taubheit:            ['beruehrung', 'naehe', 'waerme', 'bewegung'],
+  zynismus:            ['bedeutung', 'ehrlichkeit', 'sinn', 'perspektive'],
+  hoffnungsmuedigkeit: ['ruhe', 'bedeutung', 'trost', 'gesehen'],
+};
+
+// ============================================================
+// NEED ACTIONS — micro-actions + insight per need (DE / EN)
+// ============================================================
+const NEED_ACTIONS = {
+  ruhe:        { insight: { de: 'Dein System braucht eine Pause — keine Leistung, nur Sein.', en: 'Your system needs a pause — no performance, just being.' }, de: ['Leg dich 15 Minuten hin, ohne Handy', 'Sag heute eine Verpflichtung ab', 'Schlaf eine Stunde früher als sonst'], en: ['Lie down for 15 minutes without your phone', 'Cancel one commitment for today', 'Go to bed one hour earlier tonight'] },
+  bewegung:    { insight: { de: 'Energie, die sich staut, sucht einen Weg raus.', en: 'Pent-up energy needs an outlet.' }, de: ['Mach einen Spaziergang, auch nur 5 Minuten', 'Strecke dich — Arme hoch, tief atmen', 'Tanz zu einem Lieblingslied'], en: ['Take a short walk, even 5 minutes', 'Stretch — arms up, breathe deeply', 'Dance to a favorite song'] },
+  beruehrung:  { insight: { de: 'Körperkontakt senkt Stresshormone — manchmal genügt die eigene Hand.', en: 'Touch lowers stress hormones — sometimes your own hand is enough.' }, de: ['Umarme jemanden, dem du vertraust', 'Leg eine Hand auf dein Herz', 'Nimm eine heiße Dusche und spür das Wasser'], en: ['Hug someone you trust', 'Place a hand on your heart', 'Take a warm shower and feel the water'] },
+  nahrung:     { insight: { de: 'Ein ungepflegter Körper macht alles schwerer.', en: 'A neglected body makes everything harder.' }, de: ['Koch dir etwas Warmes und Nährendes', 'Iss langsam, ohne Ablenkung', 'Trink eine Tasse Suppe oder Brühe'], en: ['Cook yourself something warm and nourishing', 'Eat slowly, without distractions', 'Have a cup of warm soup or broth'] },
+  wasser:      { insight: { de: 'Schon leichte Dehydration trübt die Stimmung und den Kopf.', en: 'Even mild dehydration clouds mood and thinking.' }, de: ['Trink jetzt ein großes Glas Wasser', 'Halte dein Gesicht kurz unter kaltes Wasser', 'Mach dir einen beruhigenden Tee'], en: ['Drink a large glass of water right now', 'Splash cold water on your face', 'Make yourself a calming tea'] },
+  luft:        { insight: { de: 'Frische Luft und Tageslicht regulieren das Nervensystem.', en: 'Fresh air and daylight regulate the nervous system.' }, de: ['Geh raus — auch nur für 3 Minuten', 'Öffne das Fenster und atme tief', 'Steh auf und strecke dich kurz'], en: ['Go outside, even just for 3 minutes', 'Open a window and breathe deeply', 'Stand up and stretch for a moment'] },
+  atmen:       { insight: { de: 'Der Atem ist die schnellste Verbindung zum Nervensystem.', en: 'The breath is the fastest line to your nervous system.' }, de: ['4 Sekunden ein, 7 halten, 8 aus — dreimal', 'Leg eine Hand auf den Bauch und atme dorthin', 'Zähl beim Ausatmen langsam bis 8'], en: ['Inhale 4, hold 7, exhale 8 — three times', 'Place a hand on your belly and breathe into it', 'Count slowly to 8 on each exhale'] },
+  waerme:      { insight: { de: 'Wärme signalisiert dem Körper: Ich bin in Sicherheit.', en: 'Warmth signals to the body: I am safe.' }, de: ['Mach dir einen Tee oder Kakao', 'Wickle dich in eine weiche Decke', 'Nimm ein warmes Bad oder eine Dusche'], en: ['Make yourself a tea or cocoa', 'Wrap yourself in a soft blanket', 'Take a warm bath or shower'] },
+  gesehen:     { insight: { de: 'Wir brauchen keine perfekte Version unserer selbst zu zeigen — nur eine echte.', en: 'We do not need to show a perfect version of ourselves — only a real one.' }, de: ['Teile etwas Echtes mit jemandem, dem du vertraust', 'Schreib auf, was du heute geleistet hast', 'Ruf jemanden an und erzähl, wie es dir wirklich geht'], en: ['Share something real with someone you trust', 'Write down what you accomplished today', 'Call someone and tell them how you really are'] },
+  liebe_n:     { insight: { de: 'Zärtlichkeit — auch zu dir selbst — ist kein Luxus, sondern Nahrung.', en: 'Tenderness — even toward yourself — is not a luxury, it is nourishment.' }, de: ['Schreib jemandem eine kurze, ehrliche Nachricht', 'Sag laut, was du an dir schätzt', 'Tu heute eine Sache, die sich fürsorglich anfühlt'], en: ['Send someone a short, genuine message', 'Say out loud what you appreciate about yourself', 'Do one thing today that feels caring'] },
+  trost:       { insight: { de: 'Trost schützt nicht vor dem Schmerz — er macht ihn tragbar.', en: 'Comfort does not protect from pain — it makes it bearable.' }, de: ['Leg dich mit einer Decke auf die Couch', 'Ruf eine Person an, die dir gut tut', 'Schreib dir einen Brief — mitfühlend, wie an eine Freundin'], en: ['Lie on the couch with a blanket', 'Call someone who makes you feel better', 'Write yourself a letter — compassionately, as to a dear friend'] },
+  spiel:       { insight: { de: 'Spiel ist nicht Ablenkung — es ist ein Grundbedürfnis.', en: 'Play is not distraction — it is a fundamental need.' }, de: ['Tu etwas, das keinen Zweck hat — nur Freude', 'Spiel ein Spiel, zeichne oder mach Musik', 'Mach etwas Kreatives ohne Perfektionsanspruch'], en: ['Do something with no purpose — just fun', 'Play a game, draw, or make music', 'Create something without aiming for perfection'] },
+  lachen:      { insight: { de: 'Lachen baut Cortisol ab — in Sekunden.', en: 'Laughter breaks down cortisol — in seconds.' }, de: ['Schau ein kurzes Video, das dich immer zum Lachen bringt', 'Erinnere dich an einen Moment, der noch heute amüsant ist', 'Ruf jemanden an, mit dem du lachen kannst'], en: ['Watch a short video that always makes you laugh', 'Recall a moment that still amuses you today', 'Call someone you can laugh with'] },
+  dank_ausdruck: { insight: { de: 'Dankbarkeit laut aussprechen vertieft sie — für dich und den anderen.', en: 'Expressing gratitude aloud deepens it — for you and the other person.' }, de: ['Schreib drei Dinge auf, für die du heute dankbar bist', 'Sag einer Person direkt, was sie dir bedeutet', 'Schick jemandem eine Nachricht nur um Danke zu sagen'], en: ['Write three things you are grateful for today', 'Tell someone directly what they mean to you', 'Send someone a message just to say thank you'] },
+  weinen:      { insight: { de: 'Tränen sind keine Schwäche — sie sind Verarbeitung.', en: 'Tears are not weakness — they are processing.' }, de: ['Lass die Tränen kommen, ohne sie zu stoppen', 'Leg ein trauriges Lied auf, das zu deiner Stimmung passt', 'Sitz hin und erlaube dir zu fühlen, was da ist'], en: ['Let the tears come without stopping them', 'Put on a sad song that fits your mood', 'Sit down and allow yourself to feel what is there'] },
+  sicherheit:  { insight: { de: 'Das Nervensystem braucht konkrete Signale: Jetzt bin ich okay.', en: 'The nervous system needs concrete signals: I am okay right now.' }, de: ['Benenne 5 Dinge um dich — siehst du, hörst du, spürst du', 'Geh an einen Ort, an dem du dich wohl fühlst', 'Sprich mit einer Person, bei der du dich sicher fühlst'], en: ['Name 5 things around you — you see, hear, feel', 'Go somewhere you feel comfortable', 'Talk to someone with whom you feel safe'] },
+  geist_klarheit: { insight: { de: 'Klarheit entsteht nicht durch mehr Denken, sondern durch weniger.', en: 'Clarity does not come from more thinking, but from less.' }, de: ['Schreib alles auf, was in deinem Kopf kreist', 'Trenn: Was kann ich kontrollieren? Was nicht?', 'Sprich laut aus, was dich beschäftigt'], en: ['Write down everything circling in your head', 'Separate: what can I control? What not?', 'Say out loud what is occupying you'] },
+  stille:      { insight: { de: 'Stille ist keine Leere — sie ist der Raum, in dem man sich wieder hört.', en: 'Silence is not emptiness — it is the space where you hear yourself again.' }, de: ['Sitz 5 Minuten ohne Geräte und Ablenkung', 'Leg dich hin und schließe die Augen', 'Geh einen Spaziergang ohne Kopfhörer'], en: ['Sit for 5 minutes without devices or distractions', 'Lie down and close your eyes', 'Go for a walk without headphones'] },
+  fokus:       { insight: { de: 'Multitasking erschöpft. Eine Sache gibt Kraft.', en: 'Multitasking exhausts. One thing restores.' }, de: ['Wähle eine Aufgabe — tu nur diese für 20 Minuten', 'Schreib auf, was jetzt dran ist — nur das', 'Schalte alle Benachrichtigungen für eine Stunde aus'], en: ['Choose one task — do only that for 20 minutes', 'Write down what is next — only that', 'Turn off all notifications for one hour'] },
+  inspiration: { insight: { de: 'Inspiration sucht man nicht — man öffnet sich ihr.', en: 'You do not seek inspiration — you open yourself to it.' }, de: ['Lies einen Absatz aus einem Buch, das dich bewegt', 'Schau dir etwas Schönes an: Kunst, Natur, Musik', 'Frag dich: Was würde mich begeistern, wenn kein Risiko wäre?'], en: ['Read a paragraph from a book that moves you', 'Look at something beautiful: art, nature, music', 'Ask: what would excite me if there were no risk?'] },
+  ordnung:     { insight: { de: 'Äußere Ordnung schafft inneren Raum.', en: 'Outer order creates inner space.' }, de: ['Räum eine kleine Fläche auf — nur eine', 'Schreib 3 Dinge auf, die du erledigen willst', 'Sortier eine Schublade oder deinen Desktop'], en: ['Tidy up one small surface — just one', 'Write down 3 things you want to get done', 'Sort one drawer or your desktop'] },
+  lernen:      { insight: { de: 'Neugier ist das Gegenmittel gegen Stagnation.', en: 'Curiosity is the antidote to stagnation.' }, de: ['Lies 10 Minuten über etwas, das dich neugierig macht', 'Stell einer Person eine ehrliche Frage und hör zu', 'Suche die Antwort auf eine Frage, die dich schon lang beschäftigt'], en: ['Read for 10 minutes about something that intrigues you', 'Ask someone a genuine question and listen', 'Look up the answer to a question you have long wondered about'] },
+  sinn:        { insight: { de: 'Sinn entsteht nicht durch Nachdenken — durch Handeln.', en: 'Meaning does not arise from thinking — from doing.' }, de: ['Schreib: Wofür stehe ich morgens auf?', 'Erinnere dich an einen Moment, der sich bedeutsam anfühlte', 'Tu heute eine Kleinigkeit für jemanden anderen'], en: ['Write: what do I get up for in the mornings?', 'Recall a moment that felt meaningful', 'Do one small thing for someone else today'] },
+  perspektive: { insight: { de: 'Distanz verändert, was man sieht — ohne die Realität zu verändern.', en: 'Distance changes what you see — without changing reality.' }, de: ['Frag dich: Wie sehe ich das in einem Jahr?', 'Sprich mit jemandem, der anders denkt als du', 'Schreib die Situation aus einer anderen Perspektive auf'], en: ['Ask yourself: how will I see this in one year?', 'Talk to someone who thinks differently from you', 'Write the situation from another perspective'] },
+  seele_verbundenheit: { insight: { de: 'Echte Verbundenheit entsteht durch Verletzlichkeit, nicht Perfektion.', en: 'Real connection comes through vulnerability, not perfection.' }, de: ['Denk an jemanden, dem du dankbar bist, und schreib ihm', 'Sitz in der Natur und spür: du bist Teil von etwas Größerem', 'Teile etwas Echtes — eine Schwäche oder Freude'], en: ['Think of someone you are grateful for and write to them', 'Sit in nature and feel: you are part of something larger', 'Share something real — a vulnerability or a joy'] },
+  seele_vertrauen: { insight: { de: 'Vertrauen in sich selbst wächst durch das Erinnern, nicht das Beweisen.', en: 'Trust in yourself grows through remembering, not proving.' }, de: ['Schreib: Was habe ich schon alles überstanden?', 'Erinnere dich an eine Zeit, wo alles gut wurde', 'Atme tief und sag dir: Ich bin okay — genau jetzt'], en: ['Write: what have I already survived?', 'Recall a time when everything turned out okay', 'Breathe deeply and tell yourself: I am okay — right now'] },
+  hingabe:     { insight: { de: 'Loslassen ist kein Aufgeben — es ist Weisheit.', en: 'Letting go is not giving up — it is wisdom.' }, de: ['Lass eine Sorge los — schreib sie auf, dann zerreißt du den Zettel', 'Sitz still und akzeptiere, was ist — ohne es lösen zu müssen', 'Sag dir: "Ich muss das nicht alleine tragen"'], en: ['Let go of one worry — write it down, then tear the paper', 'Sit still and accept what is — without having to solve it', 'Tell yourself: "I do not have to carry this alone"'] },
+  wahrheit:    { insight: { de: 'Was wir nicht aussprechen, trägt uns — und erschöpft uns.', en: 'What we do not say carries us — and exhausts us.' }, de: ['Schreib, was du wirklich denkst — ohne Filter', 'Sag jemandem, wie es dir wirklich geht', 'Steh zu einer Grenze, die du noch nicht ausgesprochen hast'], en: ['Write what you really think — without filter', 'Tell someone how you are really doing', 'Assert a boundary you have not spoken aloud yet'] },
+  kreativ:     { insight: { de: 'Kreativität ist kein Talent — sie ist eine Art, die Welt zu berühren.', en: 'Creativity is not a talent — it is a way of touching the world.' }, de: ['Mach etwas mit den Händen — schreiben, zeichnen, basteln', 'Koch etwas ohne Rezept', 'Fotografiere etwas, das dich heute berührt hat'], en: ['Do something with your hands — write, draw, craft', 'Cook something without a recipe', 'Photograph something that moved you today'] },
+  meditation:  { insight: { de: 'Meditation ist nicht Leere — sie ist das Beobachten ohne Wertung.', en: 'Meditation is not emptiness — it is observing without judgment.' }, de: ['Sitz 5 Minuten still und beobachte deine Gedanken', 'Mach einen Body-Scan: Körperteil für Körperteil loslassen', 'Zünde eine Kerze an und schau einfach'], en: ['Sit still for 5 minutes and observe your thoughts', 'Do a body scan: release each part of your body', 'Light a candle and simply look at it'] },
+  natur:       { insight: { de: 'Die Natur erinnert uns: Wir müssen nichts leisten, um zu gehören.', en: 'Nature reminds us: we do not need to perform to belong.' }, de: ['Geh raus und schau einen Baum, Himmel oder eine Pflanze an', 'Steh kurz barfuß auf Gras oder Boden', 'Setz dich ans Fenster und beobachte das Licht'], en: ['Go outside and look at a tree, sky, or plant', 'Stand barefoot on grass or ground for a moment', 'Sit by the window and observe the light'] },
+  bedeutung:   { insight: { de: 'Bedeutung ist nicht etwas, das man findet — man schafft sie.', en: 'Meaning is not something you find — you create it.' }, de: ['Schreib: Was wäre anders, wenn du nicht da wärst?', 'Tu heute etwas, das über dich selbst hinausgeht', 'Erinnere dich: Wann hast du jemanden wirklich berührt?'], en: ['Write: what would be different if you were not here?', 'Do something today that goes beyond yourself', 'Recall: when did you truly touch someone?'] },
+  ehrlichkeit: { insight: { de: 'Ehrlichkeit kostet kurz — Unehrlichkeit kostet lang.', en: 'Honesty costs briefly — dishonesty costs long.' }, de: ['Sag heute einmal die ungeschönte Wahrheit', 'Schreib einen Brief, den du vielleicht nie abschickst', 'Frag jemanden, wie es ihm wirklich geht — und hör wirklich zu'], en: ['Say the unvarnished truth once today', 'Write a letter you might never send', 'Ask someone how they really are — and truly listen'] },
+  grenzen:     { insight: { de: 'Grenzen sind kein Rückzug — sie sind Selbstrespekt.', en: 'Boundaries are not withdrawal — they are self-respect.' }, de: ['Sag einmal heute Nein — klar und freundlich', 'Benenne, was dich belastet, jemandem gegenüber', 'Schreib: Was darf ich nicht mehr erlauben?'], en: ['Say no once today — clearly and kindly', 'Name what burdens you to someone', 'Write: what must I no longer allow?'] },
+  naehe:       { insight: { de: 'Nähe braucht keine perfekte Situation — nur Bereitschaft.', en: 'Closeness needs no perfect situation — only willingness.' }, de: ['Ruf jemanden an, nur um da zu sein', 'Schreib einer Person, die dir fehlt', 'Verbringe Zeit mit jemandem ohne Agenda'], en: ['Call someone just to be there', 'Write to someone you miss', 'Spend time with someone with no agenda'] },
+  raum:        { insight: { de: 'Raum für sich selbst ist kein Egoismus — es ist Regeneration.', en: 'Space for yourself is not selfishness — it is regeneration.' }, de: ['Sag ab, was du nicht willst — ohne schlechtes Gewissen', 'Geh einen Moment allein spazieren', 'Schalte das Handy für eine Stunde aus'], en: ['Cancel what you do not want — without guilt', 'Take a moment to walk alone', 'Turn off your phone for one hour'] },
+  unterstuetzung: { insight: { de: 'Um Hilfe bitten ist keine Schwäche — es ist Mut und Intelligenz.', en: 'Asking for help is not weakness — it is courage and intelligence.' }, de: ['Frag jemanden direkt um Hilfe', 'Erzähl jemandem, womit du gerade kämpfst', 'Schreib auf, wen du fragen könntest'], en: ['Ask someone directly for help', 'Tell someone what you are currently struggling with', 'Write down who you could ask'] },
+  zuhoeren:    { insight: { de: 'Gehört werden ist so grundlegend wie gesehen werden.', en: 'Being heard is as fundamental as being seen.' }, de: ['Ruf eine Person an und erzähl, was dich bewegt', 'Schreib es in dein Journal — lass dich selbst hören', 'Bitte jemanden: „Kannst du mir einfach zuhören?"'], en: ['Call someone and tell them what really moves you', 'Write it in your journal — let yourself be heard', 'Ask someone: "Can you just listen to me?"'] },
+  wertschaetzung: { insight: { de: 'Anerkennung von außen tröstet — die eigene trägt.', en: 'Recognition from outside soothes — self-recognition sustains.' }, de: ['Schreib auf, was du heute gut gemacht hast', 'Bitte jemanden um ehrliches, positives Feedback', 'Erinnere dich: Wofür haben dich Menschen schon gedankt?'], en: ['Write down what you did well today', 'Ask someone for honest positive feedback', 'Recall: what have people thanked you for?'] },
+  vergebung:   { insight: { de: 'Vergeben bedeutet nicht, dass es okay war — nur, dass du dich befreist.', en: 'Forgiving does not mean it was okay — only that you free yourself.' }, de: ['Schreib einen Brief an dich oder jemanden — sende ihn nicht', 'Sag laut: „Ich gebe mir die Erlaubnis, loszulassen"', 'Atme aus und stell dir vor, du gibst die Last ab'], en: ['Write a letter to yourself or someone — do not send it', 'Say aloud: "I give myself permission to let go"', 'Exhale and imagine setting down the weight'] },
+};
+
+// ============================================================
 // DIFFICULTY LEVELS
 // ============================================================
 

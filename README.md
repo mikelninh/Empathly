@@ -4,7 +4,7 @@
 
 Explore emotions. Talk about them. Grow your inner vocabulary across languages and cultures.
 
-Play live: [mikelninh.github.io/Empathly](https://mikelninh.github.io/Empathly/)
+Play live: [mikelninh.github.io/Empathly](https://mikelninh.github.io/Empathly/) · [📊 Slides](https://mikelninh.github.io/Empathly/presentation.html)
 
 ---
 
@@ -239,6 +239,8 @@ Contributions welcome — especially:
 - Additional Detective scenarios
 - Cultural insights and untranslatable words
 - Accessibility improvements
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide — architecture overview, data formats, and good first issues.
 
 Open an issue first for larger changes.
 

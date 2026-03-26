@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Empathly — Presentation</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #F6C344;
+    --gold-dim: rgba(246,195,68,.15);
+    --bg: #0D0B14;
+    --bg2: #13101f;
+    --surface: rgba(255,255,255,.05);
+    --border: rgba(255,255,255,.1);
+    --text: #F5F0FF;
+    --text-muted: rgba(245,240,255,.5);
+    --licht: #F6C344;
+    --mitte: #7BAFD4;
+    --schwere: #8B8090;
+    --sturm: #E74C3C;
+    --angst: #8E44AD;
+    --schatten: #5D6D7E;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── Deck ── */
+  #deck {
+    width: 100vw; height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px;
+    opacity: 0; pointer-events: none;
+    transform: translateX(40px);
+    transition: opacity .45s cubic-bezier(.4,0,.2,1), transform .45s cubic-bezier(.4,0,.2,1);
+  }
+  .slide.active {
+    opacity: 1; pointer-events: all;
+    transform: translateX(0);
+  }
+  .slide.prev {
+    opacity: 0; transform: translateX(-40px);
+  }
+
+  /* ── Progress bar ── */
+  #progress {
+    position: fixed; bottom: 0; left: 0;
+    height: 3px; background: var(--gold);
+    transition: width .4s ease;
+    z-index: 100;
+  }
+
+  /* ── Navigation dots ── */
+  #dots {
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 8px; z-index: 100;
+  }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); cursor: pointer;
+    transition: background .3s, transform .3s;
+  }
+  .dot.active { background: var(--gold); transform: scale(1.4); }
+
+  /* ── Nav arrows ── */
+  #nav-prev, #nav-next {
+    position: fixed; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text-muted);
+    font-size: 2rem; cursor: pointer; padding: 20px;
+    z-index: 100; transition: color .2s;
+  }
+  #nav-prev { left: 0; }
+  #nav-next { right: 0; }
+  #nav-prev:hover, #nav-next:hover { color: var(--gold); }
+
+  /* ── Slide counter ── */
+  #counter {
+    position: fixed; top: 20px; right: 28px;
+    font-size: .75rem; color: var(--text-muted); z-index: 100;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Typography ── */
+  .eyebrow {
+    font-size: .7rem; font-weight: 800; letter-spacing: .15em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 16px;
+  }
+  h1 {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900; line-height: 1;
+    letter-spacing: -.03em;
+  }
+  h2 {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 800; line-height: 1.1;
+    letter-spacing: -.02em;
+  }
+  h3 {
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    font-weight: 700;
+  }
+  .tagline {
+    font-size: clamp(1rem, 2.5vw, 1.4rem);
+    color: var(--text-muted); font-weight: 400;
+    margin-top: 16px; line-height: 1.6;
+  }
+  .url {
+    font-size: .9rem; color: var(--gold);
+    margin-top: 24px; font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .big-emoji {
+    font-size: clamp(3rem, 8vw, 6rem); line-height: 1;
+    margin-bottom: 24px;
+  }
+
+  /* ── Cards & Grids ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; width: 100%; max-width: 900px; margin-top: 32px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 20px;
+    transition: border-color .2s, background .2s;
+  }
+  .card:hover {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+  .card-icon { font-size: 1.6rem; margin-bottom: 8px; }
+  .card-title { font-size: .92rem; font-weight: 700; margin-bottom: 4px; }
+  .card-desc { font-size: .75rem; color: var(--text-muted); line-height: 1.5; }
+
+  .two-col {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 40px; width: 100%; max-width: 900px;
+    align-items: start;
+  }
+
+  /* ── Quote block ── */
+  .quote {
+    font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+    line-height: 1.7; font-weight: 400;
+    color: var(--text); text-align: center;
+    max-width: 780px;
+    position: relative;
+  }
+  .quote::before {
+    content: '"';
+    font-size: 5rem; line-height: 0;
+    color: var(--gold); opacity: .3;
+    position: absolute; top: 0; left: -20px;
+    font-family: Georgia, serif;
+  }
+  .quote em { color: var(--gold); font-style: normal; }
+
+  /* ── Highlight list ── */
+  .hl-list { list-style: none; display: flex; flex-direction: column; gap: 14px; }
+  .hl-list li {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: clamp(.88rem, 1.8vw, 1.05rem); line-height: 1.5;
+  }
+  .hl-list li::before {
+    content: '◦'; color: var(--gold); font-size: 1.2rem;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* ── Stats row ── */
+  .stats-row {
+    display: flex; gap: 40px; margin-top: 32px;
+    flex-wrap: wrap; justify-content: center;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    font-weight: 900; color: var(--gold);
+    line-height: 1; letter-spacing: -.03em;
+  }
+  .stat-label {
+    font-size: .75rem; font-weight: 600;
+    color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: .08em; margin-top: 4px;
+  }
+
+  /* ── Comparison table ── */
+  .compare {
+    width: 100%; max-width: 700px; border-collapse: collapse;
+    margin-top: 24px;
+  }
+  .compare th, .compare td {
+    padding: 10px 16px; text-align: left;
+    font-size: .85rem; border-bottom: 1px solid var(--border);
+  }
+  .compare th {
+    font-size: .68rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .1em; color: var(--text-muted);
+    padding-bottom: 12px;
+  }
+  .compare td:first-child { color: var(--text-muted); }
+  .compare td:last-child { color: var(--gold); font-weight: 600; }
+
+  /* ── Code block ── */
+  .code-block {
+    background: rgba(0,0,0,.4); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+    font-family: 'SF Mono', 'Fira Mono', monospace;
+    font-size: .78rem; line-height: 1.8;
+    color: #a8d8a8; max-width: 680px; width: 100%;
+  }
+  .code-block .k { color: var(--gold); }
+  .code-block .c { color: var(--text-muted); }
+
+  /* ── Persona row ── */
+  .persona-row {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    justify-content: center; margin-top: 24px;
+  }
+  .persona-chip {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; padding: 16px 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; min-width: 120px;
+  }
+  .persona-chip .em { font-size: 1.8rem; }
+  .persona-chip .name { font-size: .78rem; font-weight: 700; }
+  .persona-chip .city { font-size: .65rem; color: var(--text-muted); }
+  .persona-chip .spec { font-size: .65rem; color: var(--gold); margin-top: 2px; font-style: italic; }
+
+  /* ── Language bubbles ── */
+  .lang-cloud {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; max-width: 700px;
+    margin-top: 24px;
+  }
+  .lang-bubble {
+    padding: 7px 16px; border-radius: 100px;
+    font-size: .82rem; font-weight: 700;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+
+  /* ── Slide-specific backgrounds ── */
+  .slide-title { background: radial-gradient(ellipse at 60% 40%, rgba(246,195,68,.08) 0%, transparent 60%); }
+  .slide-hook  { background: radial-gradient(ellipse at 30% 60%, rgba(116,160,212,.06) 0%, transparent 60%); }
+  .slide-ai    { background: radial-gradient(ellipse at 70% 30%, rgba(142,68,173,.08) 0%, transparent 60%); }
+  .slide-close { background: radial-gradient(ellipse at 50% 50%, rgba(246,195,68,.06) 0%, transparent 60%); }
+
+  /* ── Pill badges ── */
+  .badge {
+    display: inline-block; padding: 4px 12px; border-radius: 100px;
+    font-size: .7rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .08em; background: var(--gold); color: #0d0b14;
+    margin-bottom: 20px;
+  }
+
+  /* ── Centered content wrapper ── */
+  .center { text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+  /* ── Divider ── */
+  .divider {
+    width: 40px; height: 3px; background: var(--gold);
+    border-radius: 2px; margin: 20px auto;
+  }
+
+  /* ── Flow steps ── */
+  .flow {
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap; justify-content: center;
+    margin-top: 28px;
+  }
+  .flow-step {
+    background: var(--surface); border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 16px 20px;
+    text-align: center; min-width: 140px;
+  }
+  .flow-step .fs-num { font-size: .65rem; font-weight: 800; color: var(--gold); text-transform: uppercase; letter-spacing: .1em; }
+  .flow-step .fs-title { font-size: .95rem; font-weight: 700; margin-top: 4px; }
+  .flow-step .fs-desc { font-size: .72rem; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+  .flow-arrow { font-size: 1.2rem; color: var(--text-muted); }
+
+  /* ── Fullscreen hint ── */
+  #fullscreen-hint {
+    position: fixed; bottom: 48px; right: 28px;
+    font-size: .7rem; color: var(--text-muted); z-index: 100;
+  }
+
+  @media (max-width: 700px) {
+    .slide { padding: 32px 24px; }
+    .two-col { grid-template-columns: 1fr; gap: 24px; }
+    .card-grid { grid-template-columns: 1fr 1fr; }
+    .flow-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="counter"></div>
+
+<div id="deck">
+
+  <!-- ── 1. TITLE ── -->
+  <section class="slide slide-title active" id="s1">
+    <div class="center">
+      <div class="big-emoji">💛</div>
+      <h1>Empathly</h1>
+      <p class="tagline">Feel deeply. Live openly.<br>67 emotions · 15 languages · 9 game modes · 5 AI guides</p>
+      <div class="divider"></div>
+      <p class="url">mikelninh.github.io/Empathly</p>
+    </div>
+  </section>
+
+  <!-- ── 2. THE HOOK ── -->
+  <section class="slide slide-hook" id="s2">
+    <div class="center" style="max-width:800px">
+      <div class="eyebrow">Open with this question</div>
+      <h2>"What do you call the feeling of missing a home that no longer exists — or maybe never did?"</h2>
+      <div class="divider"></div>
+      <div class="lang-cloud">
+        <span class="lang-bubble">🇩🇪 Heimweh</span>
+        <span class="lang-bubble">🇷🇺 Toska</span>
+        <span class="lang-bubble">🇵🇹 Saudade</span>
+        <span class="lang-bubble">🇯🇵 Mono no aware</span>
+        <span class="lang-bubble">🇰🇷 Han</span>
+        <span class="lang-bubble">🇦🇪 Ya'aburnee</span>
+        <span class="lang-bubble">🇬🇧 ...sad?</span>
+      </div>
+      <p class="tagline" style="margin-top:28px">Language shapes what you can feel — or at least, what you can name.</p>
+    </div>
+  </section>
+
+  <!-- ── 3. THE PROBLEM ── -->
+  <section class="slide" id="s3">
+    <div class="center" style="max-width:750px">
+      <div class="eyebrow">The Problem</div>
+      <h2>Talking about feelings is hard. In any language.</h2>
+      <div class="divider"></div>
+      <ul class="hl-list" style="margin-top:8px; max-width:620px; text-align:left">
+        <li>Most people have fewer than 10 words for emotions (happy, sad, angry, tired…)</li>
+        <li>Families across language barriers have no shared emotional vocabulary</li>
+        <li>Emotional literacy is the foundation of therapy, education, and relationships — and nobody teaches it</li>
+        <li>Translation apps handle words. None handle <em style="color:var(--gold)">felt meaning</em>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 4. WHAT IT IS ── -->
+  <section class="slide" id="s4">
+    <div class="center">
+      <div class="eyebrow">The Solution</div>
+      <h2>A multilingual emotional vocabulary game</h2>
+      <div class="stats-row">
+        <div class="stat"><div class="stat-num">67</div><div class="stat-label">Emotions</div></div>
+        <div class="stat"><div class="stat-num">15</div><div class="stat-label">Languages</div></div>
+        <div class="stat"><div class="stat-num">9</div><div class="stat-label">Game Modes</div></div>
+        <div class="stat"><div class="stat-num">40</div><div class="stat-label">Human Needs</div></div>
+        <div class="stat"><div class="stat-num">30</div><div class="stat-label">Detective Cases</div></div>
+        <div class="stat"><div class="stat-num">5</div><div class="stat-label">AI Guides</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 5. GAME MODES ── -->
+  <section class="slide" id="s5">
+    <div class="center">
+      <div class="eyebrow">9 Game Modes</div>
+      <h2>Every mode is a different kind of learning</h2>
+      <div class="card-grid" style="margin-top:24px; max-width:1000px">
+        <div class="card"><div class="card-icon">🃏</div><div class="card-title">Classic Memory</div><div class="card-desc">Match emotion pairs across languages. 5 difficulty levels.</div></div>
+        <div class="card"><div class="card-icon">🔍</div><div class="card-title">Emotion Detective</div><div class="card-desc">Read a scenario. Find the hidden emotion. 30 psychological cases.</div></div>
+        <div class="card"><div class="card-icon">🗺️</div><div class="card-title">Needs Map</div><div class="card-desc">Emotion → 4 real needs → 3 micro-actions you can do right now.</div></div>
+        <div class="card"><div class="card-icon">🌅</div><div class="card-title">Word of the Day</div><div class="card-desc">Deep psychological, cultural & etymological insights daily.</div></div>
+        <div class="card"><div class="card-icon">💬</div><div class="card-title">Conversation</div><div class="card-desc">Draw a card. Answer the reflection question. For groups.</div></div>
+        <div class="card"><div class="card-icon">📖</div><div class="card-title">Emotion Journal</div><div class="card-desc">Write entries. AI finds patterns after 3+ entries.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 6. AI ENGINEERING ── -->
+  <section class="slide slide-ai" id="s6">
+    <div class="center">
+      <div class="eyebrow">AI Engineering</div>
+      <h2>Where AI actually adds value</h2>
+      <div class="divider"></div>
+      <div class="card-grid" style="max-width:1000px; grid-template-columns: repeat(3,1fr)">
+        <div class="card">
+          <div class="card-icon">🧠</div>
+          <div class="card-title">RAG Cultural Bridge</div>
+          <div class="card-desc">Knowledge base of untranslatable emotion vocabulary. Retrieved by context. AI explains cultural felt-meaning, not just definitions.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🌊</div>
+          <div class="card-title">SSE Streaming</div>
+          <div class="card-desc">Server-sent events from FastAPI. Real-time word-by-word output. A spinner kills the magic.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🗣️</div>
+          <div class="card-title">Language Enforcement</div>
+          <div class="card-desc">System prompt + user message both specify language. Double enforcement — single instruction isn't reliable enough.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">💾</div>
+          <div class="card-title">Persona Memory</div>
+          <div class="card-desc">Your guide remembers which emotions resonated with you. Contextual, personal responses over time.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🔀</div>
+          <div class="card-title">Model Routing</div>
+          <div class="card-desc">GPT-4o Mini via backend (free for users). Falls back to OpenRouter free models. Cost optimization built in.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Journal Analysis</div>
+          <div class="card-desc">Pattern recognition after 3+ entries. Which emotions repeat. What's shifting. No cloud required.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 7. AI PERSONAS ── -->
+  <section class="slide" id="s7">
+    <div class="center">
+      <div class="eyebrow">5 AI Guides</div>
+      <h2>Not a chatbot. A teacher with a personality.</h2>
+      <div class="persona-row">
+        <div class="persona-chip">
+          <span class="em">🌸</span>
+          <span class="name">Hana</span>
+          <span class="city">Kyoto</span>
+          <span class="spec">mono no aware · komorebi</span>
+        </div>
+        <div class="persona-chip">
+          <span class="em">🌿</span>
+          <span class="name">Nadia</span>
+          <span class="city">Moscow → Berlin</span>
+          <span class="spec">toska · dusha · Weltschmerz</span>
+        </div>
+        <div class="persona-chip">
+          <span class="em">🌙</span>
+          <span class="name">Karim</span>
+          <span class="city">Marrakech</span>
+          <span class="spec">ya'aburnee · tarab · Sufi poetry</span>
+        </div>
+        <div class="persona-chip">
+          <span class="em">📚</span>
+          <span class="name">Lena</span>
+          <span class="city">Frankfurt</span>
+          <span class="spec">etymology · untranslatability</span>
+        </div>
+        <div class="persona-chip">
+          <span class="em">🍃</span>
+          <span class="name">Soo</span>
+          <span class="city">Seoul</span>
+          <span class="spec">nunchi · han · jeong</span>
+        </div>
+      </div>
+      <p class="tagline" style="margin-top:28px; font-size:.88rem">Each guide has a system prompt shaped by their cultural background, emotional specialty, and voice.</p>
+    </div>
+  </section>
+
+  <!-- ── 8. TECH ARCHITECTURE ── -->
+  <section class="slide" id="s8">
+    <div class="center" style="max-width:800px">
+      <div class="eyebrow">Architecture</div>
+      <h2>Zero framework. Zero npm. Zero build step.</h2>
+      <div class="code-block" style="margin-top:28px; text-align:left">
+        <span class="k">Frontend</span>    Pure HTML + CSS + JS — open index.html, it works<br>
+        <span class="k">Backend</span>     FastAPI + SQLite — optional, enables AI features<br>
+        <span class="k">AI</span>          GPT-4o Mini → OpenRouter fallback (Gemma, Mistral)<br>
+        <span class="k">Offline</span>     PWA + Service Worker — installable, works without internet<br>
+        <span class="k">Data</span>        67 emotions × 15 languages = 1,005 emotion-language pairs<br>
+        <span class="k">Needs</span>       268 real emotion→need connections (not random)<br>
+        <span class="k">Detective</span>   30 psychological scenarios with expert insights
+      </div>
+      <p class="tagline" style="margin-top:20px; font-size:.85rem">The deliberate constraint: no React, no Vue, no TypeScript, no bundler — forces deep understanding of what frameworks actually solve.</p>
+    </div>
+  </section>
+
+  <!-- ── 9. NEEDS MAP FLOW ── -->
+  <section class="slide" id="s9">
+    <div class="center" style="max-width:900px">
+      <div class="eyebrow">Needs Map — The Key Feature</div>
+      <h2>From feeling to action in 3 taps</h2>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="fs-num">Step 1</div>
+          <div class="fs-title">😔 Pick emotion</div>
+          <div class="fs-desc">All 67 emotions, filtered by category. All languages.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="fs-num">Step 2</div>
+          <div class="fs-title">🌱 See needs</div>
+          <div class="fs-desc">4 real psychological needs mapped to that emotion. Each with a one-line insight.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">
+          <div class="fs-num">Step 3</div>
+          <div class="fs-title">✓ Take action</div>
+          <div class="fs-desc">3 concrete micro-actions you can do right now. Journal pre-filled.</div>
+        </div>
+      </div>
+      <p class="tagline" style="margin-top:32px">"This is what AI usefulness looks like — not a chatbot, but a 3-tap path from feeling to doing."</p>
+    </div>
+  </section>
+
+  <!-- ── 10. WHAT MAKES IT DIFFERENT ── -->
+  <section class="slide" id="s10">
+    <div class="center">
+      <div class="eyebrow">Why Empathly?</div>
+      <h2>What no other app does</h2>
+      <table class="compare">
+        <thead>
+          <tr><th>Other apps</th><th>Empathly</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Translate a word</td><td>Explain the cultural felt-meaning</td></tr>
+          <tr><td>One language</td><td>15 languages — natively</td></tr>
+          <tr><td>Chatbot UI</td><td>Game mechanics: memory, detective, flashcards, streak</td></tr>
+          <tr><td>English-first</td><td>Designed for non-English speakers and language gaps</td></tr>
+          <tr><td>Requires internet</td><td>Works offline, no account needed</td></tr>
+          <tr><td>Generic AI advice</td><td>40 mapped needs + 3 concrete micro-actions per emotion</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── 11. OPEN SOURCE ── -->
+  <section class="slide" id="s11">
+    <div class="two-col" style="max-width:900px">
+      <div>
+        <div class="eyebrow">Open Source</div>
+        <h2>Everything is open. Fork it, extend it, translate it.</h2>
+        <p class="tagline" style="font-size:.9rem; margin-top:16px">github.com/mikelninh/Empathly</p>
+        <div class="divider" style="margin-left:0"></div>
+        <ul class="hl-list">
+          <li>Add your language — 30 minutes, no code needed</li>
+          <li>Write a Detective scenario from your culture</li>
+          <li>Add cultural insights for untranslatable words</li>
+          <li>Improve accessibility, add audio, extend the backend</li>
+        </ul>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-icon">📝</div>
+          <div class="card-title">Data-first architecture</div>
+          <div class="card-desc">Adding a language = adding one key per emotion object in data.js. No code required. The knowledge base is plain markdown anyone can edit.</div>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="card-icon">🌍</div>
+          <div class="card-title">Languages we'd love next</div>
+          <div class="card-desc">Hindi · Portuguese · Italian · Persian · Swahili · Dutch</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">🧩</div>
+          <div class="card-title">Good first issues</div>
+          <div class="card-desc">5 emotions in your language, one Detective scenario, one cultural insight. Each one makes the app meaningfully better.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 12. WHAT WE LEARNED ── -->
+  <section class="slide" id="s12">
+    <div class="two-col" style="max-width:900px">
+      <div>
+        <div class="eyebrow">What we learned — About AI</div>
+        <ul class="hl-list" style="margin-top:12px">
+          <li>The hardest part isn't the API call — it's prompt engineering for <em style="color:var(--gold)">consistent output</em></li>
+          <li>Language enforcement needs redundancy: system prompt + user message</li>
+          <li>RAG makes AI feel like an expert, not a generator. The knowledge base is the product.</li>
+          <li>Streaming changes the experience completely — 2 seconds of "thinking" kills immersion</li>
+          <li>A feature only lands when it changes user behavior. The Needs Map failed until micro-actions were added.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="eyebrow">About Engineering</div>
+        <ul class="hl-list" style="margin-top:12px">
+          <li>Zero-dependency doesn't mean zero complexity — it means <em style="color:var(--gold)">intentional</em> complexity</li>
+          <li>67 emotions × 15 languages is a design problem before it's an engineering problem</li>
+          <li>Good CSS architecture is worth more than any library</li>
+          <li>Graceful degradation is a feature, not a fallback — "works offline" is a trust signal</li>
+          <li>Game mechanics (streak, rank, daily) make repetitive content feel fresh every day</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 13. CLOSING ── -->
+  <section class="slide slide-close" id="s13">
+    <div class="center" style="max-width:800px">
+      <div class="big-emoji">💛</div>
+      <blockquote class="quote">
+        We built a game. But underneath it is a serious claim: that emotional vocabulary is a <em>human right</em>. That not having words for what you feel is a kind of poverty. And that AI — when used well — can help give those words back.
+      </blockquote>
+      <div class="divider"></div>
+      <p class="url">mikelninh.github.io/Empathly</p>
+      <p class="tagline" style="font-size:.82rem; margin-top:8px">github.com/mikelninh/Empathly · MIT License · Contributions welcome</p>
+    </div>
+  </section>
+
+</div><!-- #deck -->
+
+<div id="dots"></div>
+<button id="nav-prev">‹</button>
+<button id="nav-next">›</button>
+<div id="fullscreen-hint">F — fullscreen</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const total = slides.length;
+  let current = 0;
+
+  const progress = document.getElementById('progress');
+  const counter  = document.getElementById('counter');
+  const dotsEl   = document.getElementById('dots');
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const d = document.createElement('button');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.setAttribute('aria-label', `Slide ${i+1}`);
+    d.addEventListener('click', () => goTo(i));
+    dotsEl.appendChild(d);
+  });
+
+  function goTo(n) {
+    if (n < 0 || n >= total) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('prev');
+    setTimeout(() => slides[current < n ? current : n].classList.remove('prev'), 500);
+    current = n;
+    slides[current].classList.add('active');
+    // Remove prev from all except the one we just left
+    slides.forEach((s, i) => { if (i !== current) { setTimeout(() => s.classList.remove('prev', 'active'), 500); } });
+    update();
+  }
+
+  function update() {
+    const pct = ((current + 1) / total) * 100;
+    progress.style.width = pct + '%';
+    counter.textContent = `${current + 1} / ${total}`;
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  // Nav
+  document.getElementById('nav-prev').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nav-next').addEventListener('click', () => goTo(current + 1));
+
+  // Keyboard
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); goTo(current - 1); }
+    if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+    if (e.key === 'Home') goTo(0);
+    if (e.key === 'End')  goTo(total - 1);
+  });
+
+  // Touch swipe
+  let touchX = 0;
+  document.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? current + 1 : current - 1);
+  });
+
+  // Click to advance (center area)
+  document.getElementById('deck').addEventListener('click', e => {
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.1 && x < 0.9) goTo(current + 1);
+  });
+
+  update();
+
+  // Hide fullscreen hint after a bit
+  setTimeout(() => {
+    const hint = document.getElementById('fullscreen-hint');
+    if (hint) hint.style.opacity = '0';
+  }, 4000);
+</script>
+</body>
+</html>
