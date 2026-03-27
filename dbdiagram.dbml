@@ -1,0 +1,131 @@
+// Gefuehle-Memory — Database Schema
+// Generated from backend/models.py
+// https://dbdiagram.io
+
+// ── Core ──────────────────────────────────────────────────────────────────────
+
+Table users {
+  id           integer     [pk, increment]
+  device_id    varchar     [unique, not null, note: "UUID generated in browser"]
+  display_name varchar
+  avatar_emoji varchar     [default: "💛"]
+  created_at   datetime
+}
+
+Table emotions {
+  id       varchar  [pk, note: "Slug, e.g. 'freude', 'angst_gefuehl'"]
+  emoji    varchar  [not null]
+  category varchar  [not null, note: "e.g. 'licht', 'sturm', 'schwere'"]
+  name_de  varchar  [not null]
+  name_vi  varchar
+  name_en  varchar
+  name_tr  varchar
+  name_ar  varchar
+  name_es  varchar
+  name_fr  varchar
+  name_uk  varchar
+  name_pl  varchar
+  name_el  varchar
+  name_ta  varchar
+}
+
+// ── Check-ins ─────────────────────────────────────────────────────────────────
+
+Table checkins {
+  id         integer  [pk, increment]
+  user_id    integer  [not null, ref: > users.id]
+  intensity  integer  [default: 3, note: "1 (barely felt) – 5 (very intense)"]
+  note       text
+  lang       varchar  [default: "de"]
+  needs_json text     [note: "JSON list of need IDs"]
+  dimensions text     [note: "JSON list of unique dimensions"]
+  created_at datetime
+}
+
+Table checkin_emotions {
+  checkin_id integer  [pk, ref: > checkins.id]
+  emotion_id varchar  [pk, ref: > emotions.id]
+}
+
+// ── Journal ───────────────────────────────────────────────────────────────────
+
+Table journal_entries {
+  id         integer  [pk, increment]
+  user_id    integer  [not null, ref: > users.id]
+  note       text
+  lang       varchar  [default: "de"]
+  created_at datetime
+}
+
+Table journal_emotions {
+  journal_id integer  [pk, ref: > journal_entries.id]
+  emotion_id varchar  [pk, ref: > emotions.id]
+}
+
+// ── Masterclass ───────────────────────────────────────────────────────────────
+
+Table masterclass_progress {
+  id           integer  [pk, increment]
+  user_id      integer  [not null, ref: > users.id]
+  lesson_id    varchar  [not null]
+  module_id    varchar  [not null]
+  score        integer  [note: "0–100, NULL if not scored"]
+  completed_at datetime
+
+  indexes {
+    (user_id, lesson_id) [unique, name: "uq_progress_user_lesson"]
+  }
+}
+
+Table masterclass_certificates {
+  id        integer  [pk, increment]
+  cert_uuid varchar  [unique, not null, note: "Public verifiable identifier"]
+  user_id   integer  [not null, ref: > users.id]
+  module_id varchar  [not null]
+  user_name varchar  [note: "Display name snapshot at time of issue"]
+  issued_at datetime
+}
+
+Table masterclass_classes {
+  id              integer  [pk, increment]
+  class_code      varchar  [unique, not null, note: "6-char uppercase code for student enrollment"]
+  teacher_user_id integer  [not null, ref: > users.id]
+  class_name      varchar  [not null]
+  created_at      datetime
+}
+
+Table masterclass_enrollments {
+  id           integer  [pk, increment]
+  class_id     integer  [not null, ref: > masterclass_classes.id]
+  user_id      integer  [not null, ref: > users.id]
+  student_name varchar  [note: "Roster name captured at enrollment"]
+  enrolled_at  datetime
+
+  indexes {
+    (class_id, user_id) [unique, name: "uq_enrollment_class_user"]
+  }
+}
+
+// ── Table Groups ──────────────────────────────────────────────────────────────
+
+TableGroup core {
+  users
+  emotions
+}
+
+TableGroup checkins_group {
+  checkins
+  checkin_emotions
+}
+
+TableGroup journal_group {
+  journal_entries
+  journal_emotions
+}
+
+TableGroup masterclass_group {
+  masterclass_progress
+  masterclass_certificates
+  masterclass_classes
+  masterclass_enrollments
+}
