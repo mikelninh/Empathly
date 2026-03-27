@@ -36,12 +36,14 @@
   <header class="header">
     <button class="btn-back" id="btn-back" title="Zurück">← Zurück</button>
     <h1>Empathly</h1>
-    <button class="btn-icon" id="btn-settings" title="Einstellungen">⚙️</button>
-    <button class="btn-icon" id="btn-classroom" title="Präsentationsmodus">📽</button>
-    <button class="btn-icon" id="btn-sound" title="Sound an/aus">🔊</button>
-    <button class="btn-icon" id="btn-dark-mode" title="Dark Mode">🌙</button>
-    <div id="user-profile-display" class="user-profile-display" style="display:none"></div>
     <p class="subtitle">Erkenne, was in dir lebt</p>
+    <div class="header-icons">
+      <div id="user-profile-display" class="user-profile-display" style="display:none"></div>
+      <button class="btn-icon" id="btn-sound" title="Sound an/aus">🔊</button>
+      <button class="btn-icon" id="btn-dark-mode" title="Dark Mode">🌙</button>
+      <button class="btn-icon" id="btn-settings" title="Einstellungen">⚙️</button>
+      <button class="btn-icon" id="btn-classroom" title="Präsentationsmodus" style="display:none">📽</button>
+    </div>
   </header>
 
   <!-- Landing Screen -->
@@ -59,9 +61,6 @@
 
     <!-- Backend Stats Widget (shown when backend is connected) -->
     <div id="stats-widget" class="stats-widget" style="display:none"></div>
-
-    <!-- Backend Status Indicator -->
-    <div id="backend-status" class="backend-status" title="Backend-Status"></div>
 
     <!-- Emotion Collection Progress Bar -->
     <div id="collection-bar" class="collection-bar" style="display:none"></div>
@@ -81,12 +80,6 @@
     <!-- Daily Fun Fact Card (populated by JS) -->
     <div id="daily-funfact-card" class="daily-funfact-card" style="display:none"></div>
 
-    <!-- Fun Fact Button (hidden — kept for JS hook) -->
-    <button class="btn-funfact" id="btn-funfact" style="display:none">
-      <span class="btn-funfact-icon">💡</span>
-      <span>Wusstest du?</span>
-    </button>
-
     <!-- Collapsible Settings Bar -->
     <div class="settings-bar" id="settings-bar">
       <button class="settings-bar-summary" id="settings-bar-toggle">
@@ -98,9 +91,9 @@
           <div class="control-group">
             <span id="flag1">🇬🇧</span>
             <select id="lang1">
-              <option value="de" selected>Deutsch</option>
+              <option value="de">Deutsch</option>
               <option value="vi">Tiếng Việt</option>
-              <option value="en">English</option>
+              <option value="en" selected>English</option>
               <option value="tr">Türkçe</option>
               <option value="ar">العربية</option>
               <option value="es">Español</option>
@@ -119,8 +112,8 @@
           <div class="control-group">
             <span id="flag2">🇬🇷</span>
             <select id="lang2">
-              <option value="de">Deutsch</option>
-              <option value="vi" selected>Tiếng Việt</option>
+              <option value="de" selected>Deutsch</option>
+              <option value="vi">Tiếng Việt</option>
               <option value="en">English</option>
               <option value="tr">Türkçe</option>
               <option value="ar">العربية</option>

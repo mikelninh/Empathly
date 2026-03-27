@@ -133,44 +133,45 @@ body {
 .header {
   width: 100%;
   max-width: 800px;
-  padding: 16px 20px 6px;
-  text-align: center;
+  padding: 14px 20px 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 8px;
   position: relative;
   z-index: 1;
 }
 .header h1 {
   font-family: var(--font-display);
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 600;
   font-style: italic;
   color: var(--text-soft);
   letter-spacing: -.02em;
+  flex: 1;
 }
-/* Hide header title when landing is visible (landing has its own hero) */
+/* Hide title/subtitle when landing has its own hero */
 body.show-landing .header h1,
 body.show-landing .header .subtitle {
   display: none;
 }
 .header .subtitle {
-  font-size: .85rem;
-  color: var(--text-soft);
-  margin-top: 2px;
-  width: 100%;
+  font-size: .82rem;
+  color: var(--text-muted);
+  margin-top: 1px;
 }
-/* Group header icon buttons cleanly on landing */
+/* On landing: header is just the icon strip, right-aligned */
 body.show-landing .header {
   justify-content: flex-end;
-  padding-bottom: 4px;
+  padding: 10px 20px 4px;
 }
-#btn-dark-mode {
-  font-size: 1.1rem;
-  flex-shrink: 0;
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
 }
+body.show-landing .header-icons { margin-left: 0; }
+#btn-dark-mode { font-size: 1rem; }
 
 /* ---------- Back Button ---------- */
 .btn-back {
@@ -1769,6 +1770,10 @@ body.dark-mode .wheel-segment-group:hover .wheel-deco {
   .landing-title { font-size: 2rem; }
   .landing-subtitle { font-size: .88rem; }
   .mode-group-cards {
+    grid-template-columns: 1fr;
+  }
+  .mode-grid-primary,
+  .more-modes-grid {
     grid-template-columns: 1fr;
   }
   .mode-card {
@@ -4182,56 +4187,141 @@ body.classroom-mode #btn-classroom { background: var(--accent); }
 
 /* ---- Persona Picker ---- */
 .persona-picker {
-  width: 100%; max-width: 560px;
-  margin: 20px auto 0;
+  width: 100%;
+  max-width: 560px;
+  margin: 28px auto 0;
 }
 .persona-section-title {
-  font-size: .72rem; font-weight: 700; letter-spacing: .07em;
-  text-transform: uppercase; color: var(--text-muted);
-  margin-bottom: 12px; padding: 0 2px; display: block;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  padding: 0 2px;
+  display: block;
 }
 .persona-cards-row {
-  display: flex; gap: 10px; overflow-x: auto; padding-bottom: 2px;
-  scrollbar-width: none; justify-content: center;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
-.persona-cards-row::-webkit-scrollbar { display: none; }
 .persona-card {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 6px; padding: 8px 8px 10px;
-  border-radius: 18px; border: 2.5px solid transparent;
-  background: var(--surface);
-  cursor: pointer; font: inherit; color: var(--text);
-  flex-shrink: 0; width: 88px;
-  transition: transform .2s, border-color .2s, box-shadow .2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text);
+  width: 80px;
+  transition: transform .2s var(--easing-spring, ease);
 }
-.persona-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
-.persona-card.active {
-  border-color: var(--pc, var(--accent));
-  background: var(--surface2);
-}
-@supports (color: color-mix(in srgb, red 10%, transparent)) {
-  .persona-card.active {
-    background: color-mix(in srgb, var(--pc, var(--accent)) 12%, transparent);
-  }
-}
+.persona-card:hover { transform: translateY(-4px); }
 .persona-face {
-  display: block; width: 64px; height: 64px;
-  border-radius: 50%; overflow: hidden;
-  border: 2px solid rgba(255,255,255,.08);
-  transition: border-color .2s; line-height: 1;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 20px rgba(0,0,0,.35);
+  transition: border-color .25s, box-shadow .25s, transform .2s var(--easing-spring, ease);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
 }
-.persona-face svg { display: block; width: 100%; height: 100%; }
-.persona-card.active .persona-face { border-color: var(--pc, var(--accent)); }
-.persona-name { font-size: .78rem; font-weight: 700; color: var(--text); }
+.persona-face::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,.08);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.persona-card:hover .persona-face::after { opacity: 1; }
+.persona-card.active .persona-face {
+  border-color: var(--pc, var(--accent));
+  box-shadow: 0 6px 28px rgba(0,0,0,.4), 0 0 0 1px var(--pc, var(--accent));
+  transform: scale(1.06);
+}
+.persona-initial {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  font-style: italic;
+  color: rgba(255,255,255,.95);
+  text-shadow: 0 2px 8px rgba(0,0,0,.3);
+  line-height: 1;
+  user-select: none;
+  position: relative; z-index: 1;
+}
+.persona-name {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: .02em;
+  transition: color .2s;
+}
+.persona-origin {
+  font-size: .65rem;
+  color: var(--text-muted);
+  opacity: .6;
+  margin-top: -4px;
+}
+.persona-card.active .persona-name { color: var(--text); }
+.persona-card.active .persona-origin { opacity: .8; }
+
 .persona-bio-box {
-  display: flex; flex-direction: column; gap: 3px;
-  padding: 12px 14px; border-radius: 14px;
-  background: var(--surface); border: 1px solid var(--border);
-  margin-top: 10px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.persona-bio-name { font-size: .9rem; font-weight: 700; color: var(--text); }
-.persona-bio-tagline { font-size: .76rem; color: var(--accent); font-weight: 600; margin-bottom: 2px; }
-.persona-bio-text { font-size: .81rem; color: var(--text-soft); line-height: 1.55; }
+.persona-bio-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.persona-bio-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 1.1rem; font-weight: 600; font-style: italic;
+  color: rgba(255,255,255,.95);
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,.3);
+}
+.persona-bio-name {
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--text);
+  display: block;
+  line-height: 1.2;
+}
+.persona-bio-tagline {
+  font-size: .74rem;
+  color: var(--accent);
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+  opacity: .9;
+}
+.persona-bio-text {
+  font-size: .82rem;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
 
 /* ---- Tandem Overlay ---- */
 .tandem-overlay {

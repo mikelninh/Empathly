@@ -15,9 +15,9 @@
 
   /* ---- State ---- */
   let state = {
-    lang1: 'de',
-    lang2: 'vi',
-    uiLang: 'de',
+    lang1: 'en',
+    lang2: 'de',
+    uiLang: 'en',
     mode: 'classic',
     category: 'all',
     difficulty: 'medium',
@@ -1254,10 +1254,10 @@
     }
     const cat = CATEGORIES.find(c => c.id === emo.category);
     const catLabel = cat ? `${cat.emoji} ${cat[state.uiLang] || cat.de}` : '';
-    // Only show a static note if one is written for the actual target language — no fallback to unrelated de/vi content
+    // Only show static culture notes when the selected language pair is DE/VI — those notes are written specifically for that pair
     const _cultureNotes = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emo.id] : null;
-    // Show note in the reading language (lang1); only if it exists natively for that key
-    const cultureNote = _cultureNotes ? (_cultureNotes[state.lang1] || null) : null;
+    const isDeViPair = (state.lang1 === 'de' || state.lang2 === 'de') && (state.lang1 === 'vi' || state.lang2 === 'vi');
+    const cultureNote = (_cultureNotes && isDeViPair) ? (_cultureNotes[state.lang1] || _cultureNotes['de'] || null) : null;
     const cultureHTML = cultureNote ? `
         <div class="hint-divider"></div>
         <div class="hint-culture">
@@ -1403,15 +1403,18 @@
     if (dom.promptShare) dom.promptShare.dataset.emotionId = emotion.id;
 
     // Show culture insight (culture-insights.js) or fallback to culture notes
+    // Static insights are written in German — only show them in German UI
     if (dom.promptCulture) {
       let insightHTML = '';
-      if (typeof getRandomCultureInsight !== 'undefined') {
+      if (state.uiLang === 'de' && typeof getRandomCultureInsight !== 'undefined') {
         const insight = getRandomCultureInsight(emotion.id);
         if (insight) insightHTML = `<span class="prompt-culture-label">${insight.flag} Kulturelle Perspektive</span>${insight.text}`;
       }
       if (!insightHTML) {
-        const note = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emotion.id]?.[state.uiLang] : null;
-        if (note) insightHTML = `<span class="prompt-culture-label">🌍 Kulturbrücke</span>${note}`;
+        const _cn = (typeof CULTURE_NOTES !== 'undefined') ? CULTURE_NOTES[emotion.id] : null;
+        const isDeViPair2 = (state.lang1 === 'de' || state.lang2 === 'de') && (state.lang1 === 'vi' || state.lang2 === 'vi');
+        const note = (_cn && isDeViPair2) ? (_cn[state.uiLang] || null) : null;
+        if (note) insightHTML = `<span class="prompt-culture-label">🌍 Culture Bridge</span>${note}`;
       }
       if (insightHTML) {
         dom.promptCulture.innerHTML = insightHTML;

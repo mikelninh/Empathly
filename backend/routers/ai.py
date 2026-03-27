@@ -77,6 +77,10 @@ LANGUAGE_NAMES = {
     "pl": "Polish",
     "el": "Greek",
     "ta": "Tamil",
+    "zh": "Chinese (Mandarin)",
+    "ja": "Japanese",
+    "ko": "Korean",
+    "sa": "Sanskrit",
 }
 
 RESPONSE_LANGUAGE_NAMES = {
@@ -91,6 +95,10 @@ RESPONSE_LANGUAGE_NAMES = {
     "pl": "Polish.",
     "el": "Greek.",
     "ta": "Tamil.",
+    "zh": "English. When including Chinese words, always write them as: character (pinyin romanization) — meaning. Example: 渴望 (kě wàng) — longing.",
+    "ja": "English. When including Japanese words, always write them as: character (romaji romanization) — meaning. Example: 寂しい (sabishii) — lonely.",
+    "ko": "English. When including Korean words, always write them as: character (romanization) — meaning. Example: 그리움 (geuriumi) — longing.",
+    "sa": "English. When including Sanskrit words, always write them as: devanagari (IAST transliteration) — meaning.",
 }
 
 
@@ -281,10 +289,11 @@ Respond ONLY with valid JSON matching this structure exactly:
 {{
   "insight": "2-3 sentences explaining the cultural difference for this emotion",
   "vocabulary": [
-    {{"word": "word in target language", "meaning": "what it means", "usage": "when/how it's used"}}
+    {{"word": "word (romanization if non-Latin script)", "meaning": "what it means", "usage": "when/how it's used"}}
   ]
 }}
 Include 3-6 vocabulary items. For vocabulary, focus on the target language ({target_lang_name}).
+IMPORTANT: For any non-Latin script (Chinese, Japanese, Korean, Arabic, Sanskrit, etc.), always include the romanization in parentheses after the characters. Example: 渴望 (kě wàng).
 If the knowledge base contains relevant information, use it and expand on it.
 """
 

@@ -48,11 +48,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, UniqueConstraint, Index
-from sqlalchemy.orm import Session, relationship
+from sqlalchemy.orm import Session
 
-from database import Base, get_db
-from models import User
+from database import get_db
+from models import User, MasterclassProgress, MasterclassCertificate, MasterclassClass, MasterclassEnrollment
 
 
 # ── Curriculum definition ───────────────────────────────────────────────────────
@@ -99,98 +98,6 @@ MODULE_LESSONS: dict[str, list[str]] = {
 
 FREE_MODULES = {"module_1", "module_2"}
 ALL_MODULE_IDS = set(MODULE_LESSONS.keys())
-
-
-# ── SQLAlchemy models ───────────────────────────────────────────────────────────
-# These models will also be registered in models.py
-
-class MasterclassProgress(Base):
-    """
-    One row per (user, lesson) pair — records that a lesson was completed.
-    A UniqueConstraint prevents recording the same lesson twice for the same user.
-    The score column is optional; quizless lessons leave it NULL.
-    """
-    __tablename__ = "masterclass_progress"
-
-    id           = Column(Integer,  primary_key=True, index=True)
-    user_id      = Column(Integer,  ForeignKey("users.id", ondelete="CASCADE"),
-                          nullable=False, index=True)
-    lesson_id    = Column(String,   nullable=False)
-    module_id    = Column(String,   nullable=False, index=True)
-    score        = Column(Integer,  nullable=True)   # 0–100, or NULL if not scored
-    completed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-    user = relationship("User")
-
-    __table_args__ = (
-        UniqueConstraint("user_id", "lesson_id", name="uq_progress_user_lesson"),
-    )
-
-
-class MasterclassCertificate(Base):
-    """
-    Issued certificate for completing a full module.
-    cert_uuid is the public verifiable identifier (used in /verify/ links).
-    Indexed on cert_uuid for fast public lookups without authentication.
-    """
-    __tablename__ = "masterclass_certificates"
-
-    id        = Column(Integer,  primary_key=True, index=True)
-    cert_uuid = Column(String,   unique=True, nullable=False, index=True)
-    user_id   = Column(Integer,  ForeignKey("users.id", ondelete="CASCADE"),
-                       nullable=False, index=True)
-    module_id = Column(String,   nullable=False)
-    user_name = Column(String,   nullable=True)   # display name at time of issue
-    issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-    user = relationship("User")
-
-    __table_args__ = (
-        Index("ix_masterclass_certificates_cert_uuid", "cert_uuid"),
-    )
-
-
-class MasterclassClass(Base):
-    """
-    A teacher's class group identified by a short memorable class_code.
-    The 6-character uppercase code is what students type to enroll.
-    """
-    __tablename__ = "masterclass_classes"
-
-    id              = Column(Integer, primary_key=True, index=True)
-    class_code      = Column(String,  unique=True, nullable=False, index=True)
-    teacher_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
-                             nullable=False, index=True)
-    class_name      = Column(String,  nullable=False)
-    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-    teacher     = relationship("User")
-    enrollments = relationship("MasterclassEnrollment", back_populates="classroom",
-                               cascade="all, delete-orphan")
-
-
-class MasterclassEnrollment(Base):
-    """
-    Links a student (user) to a class.
-    student_name is stored at enrollment time as a display name
-    (independent of the user's display_name, useful for class rosters).
-    """
-    __tablename__ = "masterclass_enrollments"
-
-    id           = Column(Integer, primary_key=True, index=True)
-    class_id     = Column(Integer, ForeignKey("masterclass_classes.id", ondelete="CASCADE"),
-                          nullable=False, index=True)
-    user_id      = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
-                          nullable=False, index=True)
-    student_name = Column(String,  nullable=True)
-    enrolled_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-
-    classroom = relationship("MasterclassClass", back_populates="enrollments")
-    student   = relationship("User")
-
-    __table_args__ = (
-        UniqueConstraint("class_id", "user_id", name="uq_enrollment_class_user"),
-    )
 
 
 # ── Pydantic schemas ────────────────────────────────────────────────────────────
