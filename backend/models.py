@@ -54,18 +54,23 @@ journal_emotions = Table(
 
 class User(Base):
     """
-    One row per device. No login required — device_id is a UUID
-    generated in the browser (stored in localStorage) and sent with every request.
+    One row per authenticated user. Identity is delegated to Supabase Auth —
+    we never store passwords. The frontend signs in via magic link or Google
+    OAuth, receives a Supabase JWT, and passes it to our API. We verify the
+    JWT, extract supabase_uid + email, and upsert this row.
 
-    This replaces the old hardcoded user_id = "default".
-    Now each device is its own user, and we can track data per device.
+    supabase_uid  — the stable UUID Supabase assigns; use this as the lookup key
+    email         — stored for display / admin; never used for auth logic here
+    display_name  — optional name the user sets in their profile
+    lang          — preferred UI language, e.g. "en", "de"
     """
     __tablename__ = "users"
 
     id           = Column(Integer, primary_key=True, index=True)
-    device_id    = Column(String,  unique=True, index=True, nullable=False)
+    supabase_uid = Column(String,  unique=True, index=True, nullable=False)
+    email        = Column(String,  nullable=True)
     display_name = Column(String,  nullable=True)
-    avatar_emoji = Column(String,  default="💛")
+    lang         = Column(String,  default="en")
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     # One user → many check-ins and journal entries

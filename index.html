@@ -50,37 +50,13 @@
   <section class="landing-screen" id="landing-screen">
     <div class="landing-hero">
       <h2 class="landing-title">Empathly</h2>
-      <p class="landing-subtitle">Kenne dich. Fühl dich. Verbinde dich.</p>
+      <p class="landing-subtitle">Know yourself. Feel yourself. Connect.</p>
     </div>
 
-    <!-- Streak / returning user card -->
+    <!-- Streak / returning user card (shown above grid for returning users) -->
     <div id="streak-card" class="streak-card" style="display:none"></div>
 
-    <!-- Weekly AI recap (shown after 3+ journal entries) -->
-    <div id="weekly-recap-card" class="weekly-recap-card" style="display:none"></div>
-
-    <!-- Backend Stats Widget (shown when backend is connected) -->
-    <div id="stats-widget" class="stats-widget" style="display:none"></div>
-
-    <!-- Emotion Collection Progress Bar -->
-    <div id="collection-bar" class="collection-bar" style="display:none"></div>
-
-    <!-- Favorites Section -->
-    <div id="favorites-section" class="favorites-section" style="display:none"></div>
-
-    <!-- Today's Emotion Card (populated by JS) -->
-    <div id="todays-emotion-card" class="todays-emotion-card" style="display:none"></div>
-
-    <!-- Daily Challenge Card (populated by JS) -->
-    <div id="daily-challenge-card" class="daily-challenge-card" style="display:none"></div>
-
-    <!-- Daily Detective Card (populated by JS) -->
-    <div id="daily-detective-card" class="daily-detective-card" style="display:none"></div>
-
-    <!-- Daily Fun Fact Card (populated by JS) -->
-    <div id="daily-funfact-card" class="daily-funfact-card" style="display:none"></div>
-
-    <!-- Collapsible Settings Bar -->
+    <!-- Collapsible Settings Bar (for classic/card modes) -->
     <div class="settings-bar" id="settings-bar">
       <button class="settings-bar-summary" id="settings-bar-toggle">
         <span id="settings-summary-text">🇩🇪 Deutsch ↔ 🇻🇳 Tiếng Việt · 🌊 Mittel</span>
@@ -153,74 +129,74 @@
 
     <!-- Mode Grid — 5 primary modes -->
     <div class="mode-grid-primary">
-      <button class="mode-card" data-mode="classic">
-        <span class="mode-card-icon">🃏</span>
-        <span class="mode-card-name">Klassisch</span>
-        <span class="mode-card-desc">Lass Gefühle zusammenfinden — und beim Öffnen ankommen</span>
-      </button>
-      <button class="mode-card" data-mode="wheel">
-        <span class="mode-card-icon">🎡</span>
-        <span class="mode-card-name">Emotions-Rad</span>
-        <span class="mode-card-desc">Wo bist du gerade — in dir selbst?</span>
+      <button class="mode-card" data-mode="checkin">
+        <span class="mode-card-icon">🌿</span>
+        <span class="mode-card-name">Check-in</span>
+        <span class="mode-card-desc">Pause. What's alive in you right now?</span>
       </button>
       <button class="mode-card" data-mode="wotd">
         <span class="mode-card-icon">🌅</span>
-        <span class="mode-card-name">Gefühl des Tages</span>
-        <span class="mode-card-desc">Ein Gefühl wartet heute auf dich</span>
+        <span class="mode-card-name">Word of the Day</span>
+        <span class="mode-card-desc">One feeling is waiting for you today</span>
       </button>
       <button class="mode-card" data-mode="talk">
         <span class="mode-card-icon">💬</span>
-        <span class="mode-card-name">Gesprächsrunde</span>
-        <span class="mode-card-desc">Eine Karte — ein ehrlicher Moment mit dir selbst</span>
+        <span class="mode-card-name">Talk Round</span>
+        <span class="mode-card-desc">One card — one honest moment with yourself</span>
       </button>
       <button class="mode-card" data-mode="journal">
         <span class="mode-card-icon">📓</span>
         <span class="mode-card-name">Journal</span>
-        <span class="mode-card-desc">Schreib, was dein Herz kennt und noch nicht benennt</span>
+        <span class="mode-card-desc">Write what your heart knows but hasn't named yet</span>
+      </button>
+      <button class="mode-card" data-mode="classic">
+        <span class="mode-card-icon">🃏</span>
+        <span class="mode-card-name">Classic</span>
+        <span class="mode-card-desc">Let feelings find each other — and settle in</span>
       </button>
     </div>
 
     <!-- More modes — collapsed by default -->
     <div class="more-modes-section">
       <button class="more-modes-toggle" id="btn-more-modes" aria-expanded="false">
-        <span class="more-modes-label">Mehr entdecken</span>
+        <span class="more-modes-label">Explore more</span>
         <span class="more-modes-arrow">›</span>
       </button>
       <div class="more-modes-grid" id="more-modes-grid" hidden>
         <button class="mode-card" data-mode="story">
           <span class="mode-card-icon">📖</span>
-          <span class="mode-card-name">Geschichten</span>
-          <span class="mode-card-desc">Drei Gefühle finden einen Weg — durch dich</span>
+          <span class="mode-card-name">Stories</span>
+          <span class="mode-card-desc">Three feelings find a path — through you</span>
         </button>
-        <button class="mode-card" data-mode="checkin">
-          <span class="mode-card-icon">🌿</span>
-          <span class="mode-card-name">Check-in</span>
-          <span class="mode-card-desc">Halte inne. Was lebt gerade in dir?</span>
+        <button class="mode-card" data-mode="wheel">
+          <span class="mode-card-icon">🎡</span>
+          <span class="mode-card-name">Emotions Wheel</span>
+          <span class="mode-card-desc">Where are you — inside yourself?</span>
         </button>
         <button class="mode-card" data-mode="ask">
           <span class="mode-card-icon">✨</span>
-          <span class="mode-card-name">Innere Stimme</span>
-          <span class="mode-card-desc">Bring mit, was dich trägt oder bewegt</span>
+          <span class="mode-card-name">Inner Voice</span>
+          <span class="mode-card-desc">Bring what's carrying you or moving you</span>
         </button>
         <button class="mode-card" data-mode="detective">
           <span class="mode-card-icon">🔍</span>
-          <span class="mode-card-name">Gefühls-Detektiv</span>
-          <span class="mode-card-desc">Was liegt noch tiefer darunter?</span>
+          <span class="mode-card-name">Emotion Detective</span>
+          <span class="mode-card-desc">What's hiding deeper underneath?</span>
         </button>
         <button class="mode-card" data-mode="needsmap">
           <span class="mode-card-icon">🗺️</span>
-          <span class="mode-card-name">Bedürfnis-Karte</span>
-          <span class="mode-card-desc">Was braucht deine Seele gerade?</span>
+          <span class="mode-card-name">Needs Map</span>
+          <span class="mode-card-desc">What does your soul need right now?</span>
         </button>
         <button class="mode-card" data-mode="learn">
           <span class="mode-card-icon">🌱</span>
-          <span class="mode-card-name">Innere Sprache</span>
-          <span class="mode-card-desc">Dem Innenleben Worte geben</span>
+          <span class="mode-card-name">Inner Language</span>
+          <span class="mode-card-desc">Finding words for what lives inside</span>
         </button>
         <button class="mode-card" data-mode="tandem">
           <span class="mode-card-icon">🌍</span>
           <span class="mode-card-name">Tandem</span>
-          <span class="mode-card-desc">Gefühle teilen — über Sprachen und Grenzen hinweg</span>
+          <span class="mode-card-desc">Share feelings — across languages and borders</span>
         </button>
         <button class="mode-card mode-card-masterclass" data-mode="masterclass">
           <span class="mode-card-icon">🎓</span>
@@ -233,6 +209,20 @@
 
     <!-- Persona Picker -->
     <div id="persona-picker" class="persona-picker"></div>
+
+    <!-- Emotion Portrait — appears after 2+ check-ins, below the action grid -->
+    <div id="weekly-recap-card" class="weekly-recap-card" style="display:none"></div>
+
+    <!-- Secondary / discovery cards — shown progressively -->
+    <div id="todays-emotion-card" class="todays-emotion-card" style="display:none"></div>
+    <div id="daily-funfact-card" class="daily-funfact-card" style="display:none"></div>
+
+    <!-- Rarely-needed cards — hidden until meaningful data exists -->
+    <div id="stats-widget" class="stats-widget" style="display:none"></div>
+    <div id="collection-bar" class="collection-bar" style="display:none"></div>
+    <div id="favorites-section" class="favorites-section" style="display:none"></div>
+    <div id="daily-challenge-card" class="daily-challenge-card" style="display:none"></div>
+    <div id="daily-detective-card" class="daily-detective-card" style="display:none"></div>
 
   </section>
 

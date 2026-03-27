@@ -32,11 +32,10 @@ Paste this at https://dbdiagram.io to see the visual diagram.
 ```dbml
 Table users {
   id            integer   [pk, increment]
-  device_id     varchar   [unique, not null, note: "anonymous fingerprint"]
+  supabase_uid  varchar   [unique, not null, note: "UUID from Supabase Auth JWT"]
+  email         varchar   [note: "From Supabase; stored for display only"]
   display_name  varchar
   lang          varchar   [default: "en"]
-  is_pro        boolean   [default: false]
-  is_teacher    boolean   [default: false]
   created_at    datetime
 }
 
@@ -116,7 +115,8 @@ Table masterclass_enrollments {
 ```
 
 **Why this design?**
-- `device_id` lets users play without registering — privacy-first
+- We delegate auth entirely to Supabase — no passwords, no token management in our code
+- `supabase_uid` is the stable UUID Supabase issues; it never changes even if the user changes email
 - `checkin_emotions` is a *junction table* (many-to-many): one check-in can have multiple emotions
 - `cert_uuid` is a UUID4 that can be publicly shared for certificate verification
 - The `indexes` block with `[unique]` prevents duplicate records (e.g., completing the same lesson twice)
@@ -130,8 +130,10 @@ Before writing code, document your API as a spec. For each endpoint, write:
 
 ```
 AUTH / USERS
-  POST   /users/init              Create or retrieve user by device_id
-  PUT    /users/{user_id}         Update display_name or lang
+  POST   /users/          Upsert user profile after Supabase sign-in (supabase_uid + email)
+  GET    /users/{user_id} Get profile by integer id
+  PUT    /users/{user_id} Update display_name or lang
+  DELETE /users/{user_id} Delete account + all data
 
 CHECK-INS
   POST   /checkins/               Record a daily check-in with emotions
@@ -276,11 +278,10 @@ checkin_emotions = Table(
 class User(Base):
     __tablename__ = "users"
     id           = Column(Integer, primary_key=True, index=True)
-    device_id    = Column(String,  unique=True, nullable=False, index=True)
+    supabase_uid = Column(String,  unique=True, nullable=False, index=True)
+    email        = Column(String,  nullable=True)
     display_name = Column(String,  nullable=True)
     lang         = Column(String,  default="en")
-    is_pro       = Column(Boolean, default=False)
-    is_teacher   = Column(Boolean, default=False)
     created_at   = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 class CheckIn(Base):
@@ -353,16 +354,21 @@ from typing import Optional
 from datetime import datetime
 
 class UserCreate(BaseModel):
-    device_id: str
+    supabase_uid: str         # from Supabase JWT
+    email: Optional[str] = None
     display_name: Optional[str] = None
     lang: str = "en"
 
+class UserUpdate(BaseModel):
+    display_name: Optional[str] = None
+    lang: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
-    device_id: str
+    supabase_uid: str
+    email: Optional[str]
     display_name: Optional[str]
     lang: str
-    is_pro: bool
     created_at: datetime
 
     class Config:
@@ -387,16 +393,22 @@ from schemas import UserCreate, UserResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.post("/init", response_model=UserResponse)
-def init_user(payload: UserCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=UserResponse)
+def upsert_user(payload: UserCreate, db: Session = Depends(get_db)):
     """
-    Create a new user OR return existing user by device_id.
-    This is the 'upsert' pattern — idempotent, safe to call on every app open.
+    Upsert user profile after Supabase sign-in.
+    The frontend signs in via Supabase, gets a UID + email, and sends them here.
+    We create the profile row on first login, return existing row on subsequent logins.
     """
-    user = db.query(User).filter(User.device_id == payload.device_id).first()
+    user = db.query(User).filter(User.supabase_uid == payload.supabase_uid).first()
     if user:
         return user  # already exists — return it
-    user = User(**payload.model_dump())
+    user = User(
+        supabase_uid=payload.supabase_uid,
+        email=payload.email,
+        display_name=payload.display_name,
+        lang=payload.lang,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -492,10 +504,10 @@ import httpx
 
 BASE = "http://localhost:8000"
 
-# Create a user
-r = httpx.post(f"{BASE}/users/init", json={"device_id": "test-device-123"})
+# Create / retrieve a user after Supabase sign-in
+r = httpx.post(f"{BASE}/users/", json={"supabase_uid": "abc-123", "email": "test@example.com"})
 user = r.json()
-print(user)  # {"id": 1, "device_id": "test-device-123", ...}
+print(user)  # {"id": 1, "supabase_uid": "abc-123", "email": "test@example.com", ...}
 
 # Create a check-in
 r = httpx.post(f"{BASE}/checkins/", json={
@@ -519,14 +531,135 @@ print(r.json())
 | `response_model=` | Pydantic schema that shapes the JSON response | endpoint decorator |
 | `raise HTTPException` | Returns an HTTP error with a status code and message | validation/not-found |
 | Junction table | A table that represents a many-to-many relationship | checkin_emotions, journal_emotions |
-| Upsert | Create-or-return-existing — good for anonymous users | /users/init |
+| Upsert | Create-or-return-existing — safe to call on every app open | POST /users/ |
 
 ---
 
-## What to Build Next
+## PHASE 5 — Authentication with Supabase
 
-1. **Add authentication** — swap `device_id` for JWT tokens (use `python-jose`)
-2. **Add Stripe payments** — webhook updates `user.is_pro = True` in DB
+### Why delegate auth?
+
+Building auth from scratch means: storing passwords (hashed), handling forgotten
+passwords, implementing sessions, preventing brute-force attacks, managing tokens.
+This is weeks of work and a major security surface. Instead, we hand it all to
+Supabase Auth (free tier) and only store what we need in our own DB.
+
+**What Supabase handles:**
+- Magic link emails (one-click login, no password)
+- Google OAuth ("Continue with Google")
+- JWT creation and signing
+- Session management and refresh tokens
+
+**What we handle:**
+- Verify the JWT on incoming requests
+- Store `supabase_uid` + `email` in our `users` table
+- Look up the user's integer `id` for all data operations
+
+### Sign-in flow
+
+```
+User clicks "Sign in with email"
+  → Frontend calls supabase.auth.signInWithOtp({ email })
+  → Supabase sends magic link email
+  → User clicks link → redirected back to your app
+  → supabase.auth.onAuthStateChange fires with session
+  → Frontend extracts: session.user.id (supabase_uid) + session.user.email
+  → Frontend calls POST /users/ with those values
+  → Backend upserts profile row, returns integer user.id
+  → Frontend stores user.id for all subsequent API calls
+```
+
+### Setup (10 minutes)
+
+1. Create a free project at supabase.com
+2. Copy your project URL and anon key
+3. In your frontend HTML/JS:
+
+```javascript
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+const supabase = createClient(
+  'https://YOUR_PROJECT.supabase.co',
+  'YOUR_ANON_KEY'
+)
+
+// Magic link sign-in
+async function signIn(email) {
+  const { error } = await supabase.auth.signInWithOtp({ email })
+  if (error) alert(error.message)
+  else alert('Check your email for a magic link!')
+}
+
+// Google OAuth
+async function signInWithGoogle() {
+  await supabase.auth.signInWithOAuth({ provider: 'google' })
+}
+
+// After sign-in — sync profile to our backend
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (session) {
+    const res = await fetch('/users/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        supabase_uid: session.user.id,
+        email: session.user.email,
+      })
+    })
+    const profile = await res.json()
+    localStorage.setItem('user_id', profile.id)
+  }
+})
+```
+
+4. Enable Google in Supabase Dashboard → Authentication → Providers
+
+### JWT verification in FastAPI (production)
+
+For the demo, the frontend is trusted. For production, verify the JWT so users
+can't impersonate each other:
+
+```python
+# pip install python-jose httpx
+import os
+import httpx
+from jose import jwt, JWTError
+from fastapi import Depends, HTTPException, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+bearer = HTTPBearer()
+
+def get_supabase_jwks():
+    res = httpx.get(f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json")
+    return res.json()
+
+def verify_supabase_token(
+    credentials: HTTPAuthorizationCredentials = Security(bearer)
+):
+    token = credentials.credentials
+    try:
+        jwks = get_supabase_jwks()  # cache this in production
+        payload = jwt.decode(token, jwks, algorithms=["RS256"])
+        return payload  # contains payload["sub"] = supabase_uid
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# Use in any endpoint:
+@router.get("/me")
+def get_me(payload = Depends(verify_supabase_token), db: Session = Depends(get_db)):
+    uid = payload["sub"]
+    user = db.query(User).filter(User.supabase_uid == uid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+```
+
+### What to Build Next
+
+1. **Add Stripe payments** — webhook updates a `is_pro` flag (add column when needed)
+2. **Row-level security in Supabase** — prevent users from reading each other's data
+3. **Refresh token rotation** — Supabase handles this automatically on the frontend
 3. **Add vector search** — replace keyword RAG with `chromadb` + `sentence-transformers`
 4. **Add WebSockets** — real-time tandem partner matching
 5. **Deploy** — Railway (what we use), Render, or Fly.io all work great with FastAPI + SQLite

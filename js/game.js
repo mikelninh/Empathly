@@ -1794,168 +1794,256 @@
     beziehung: { color: '#4CAF82', emoji: '👥', de: 'Beziehung', en: 'Relationships', vi: 'Quan hệ',  el: 'Σχέσεις' },
   };
 
+  /* ---- Check-in helpers ---- */
+
+  function getDailyEmotionSet() {
+    // Deterministic daily rotation — same 9 per calendar day, changes at midnight
+    const day = Math.floor(Date.now() / 86400000);
+    function seeded(seed, len) {
+      return Math.abs(((seed * 1664525 + 1013904223) | 0)) % len;
+    }
+    const cats = ['licht', 'mitte', 'schwere', 'sturm', 'angst', 'schatten'];
+    const result = [];
+    cats.forEach((cat, i) => {
+      const pool = EMOTIONS.filter(e => e.category === cat);
+      if (!pool.length) return;
+      result.push(pool[seeded(day * 7 + i * 31, pool.length)]);
+    });
+    // Top up to 9 with a second pick from light / gentle / heavy
+    ['licht', 'mitte', 'schwere'].forEach((cat, i) => {
+      if (result.length >= 9) return;
+      const pool = EMOTIONS.filter(e => e.category === cat);
+      if (pool.length < 2) return;
+      const candidate = pool[seeded(day * 13 + i * 17 + 5, pool.length)];
+      if (!result.find(e => e.id === candidate.id)) result.push(candidate);
+    });
+    return result.slice(0, 9);
+  }
+
+  const CHECKIN_NEEDS_MAP = {
+    licht:    ['herz', 'beziehung', 'seele'],
+    mitte:    ['seele', 'koerper', 'beziehung'],
+    schwere:  ['herz', 'seele', 'geist'],
+    sturm:    ['geist', 'koerper', 'herz'],
+    angst:    ['koerper', 'geist', 'herz'],
+    schatten: ['seele', 'herz', 'geist'],
+  };
+
+  function getRelatedNeeds(emotionIds) {
+    if (!emotionIds.length || typeof NEEDS === 'undefined') return [];
+    const cats = [...new Set(emotionIds.map(id => {
+      const e = EMOTIONS.find(x => x.id === id);
+      return e ? e.category : null;
+    }).filter(Boolean))];
+    const score = {};
+    cats.forEach(cat => {
+      (CHECKIN_NEEDS_MAP[cat] || []).forEach((dim, rank) => {
+        score[dim] = (score[dim] || 0) + (3 - rank);
+      });
+    });
+    const topDims = Object.entries(score).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([d]) => d);
+    const needs = [];
+    topDims.forEach(dim => {
+      NEEDS.filter(n => n.dimension === dim).slice(0, 2).forEach(n => {
+        if (!needs.find(x => x.id === n.id)) needs.push(n);
+      });
+    });
+    return needs.slice(0, 6);
+  }
+
+  /* ---- Check-in Mode — 3-step ritual ---- */
+
   function initCheckinMode() {
     const container = dom.checkinMode;
     state.checkinSelections = {};
-    const lang = state.uiLang;
-
-    // Returning user prompt
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    const allCheckins = typeof GefuehleAPI !== 'undefined' ? GefuehleAPI.getCheckinEntries() : [];
-    const todayCheckin = allCheckins.find(c => c.date === today);
-    const yesterdayCheckin = allCheckins.find(c => c.date === yesterday);
-    let returningHTML = '';
-    if (todayCheckin?.need_ids?.length) {
-      const names = todayCheckin.need_ids.slice(0, 3).map(id => {
-        const n = NEEDS.find(x => x.id === id); return n ? `${n.emoji} ${n[lang] || n.de}` : id;
-      }).join(', ');
-      returningHTML = `<div class="ci-returning ci-returning-done">✓ ${lang === 'de' ? 'Heute schon:' : lang === 'el' ? 'Σήμερα:' : 'Today:'} ${names}</div>`;
-    } else if (yesterdayCheckin?.need_ids?.length) {
-      const names = yesterdayCheckin.need_ids.slice(0, 2).map(id => {
-        const n = NEEDS.find(x => x.id === id); return n ? (n[lang] || n.de) : id;
-      }).join(', ');
-      returningHTML = `<div class="ci-returning">💭 ${lang === 'de' ? `Gestern: ${names}. Heute?` : lang === 'el' ? `Χθες: ${names}. Σήμερα;` : `Yesterday: ${names}. Today?`}</div>`;
-    }
-
-    let html = `
-      <h2 class="checkin-title">${t('checkinTitle')}</h2>
-      <p class="checkin-subtitle">${t('checkinSubtitle')}</p>
-      ${returningHTML}
-      <div class="checkin-dimensions">`;
-
-    NEED_DIMENSIONS.forEach(dim => {
-      const dimNeeds = NEEDS.filter(n => n.dimension === dim.id);
-      html += `
-        <div class="checkin-dimension" data-dim="${dim.id}">
-          <h3 class="dim-title">${dim.emoji} ${dim[lang] || dim.de}</h3>
-          <p class="dim-question">${dim.question[lang] || dim.question.de}</p>
-          <div class="dim-needs">`;
-      dimNeeds.forEach(need => {
-        html += `
-            <button class="need-btn" data-need="${need.id}" data-dim="${dim.id}">
-              <span class="need-emoji">${need.emoji}</span>
-              <span class="need-label">${need[lang] || need.de}</span>
-              <span class="need-label-secondary">${need[state.lang2 !== lang ? state.lang2 : (lang === 'vi' ? 'de' : 'vi')]}</span>
-            </button>`;
-      });
-      html += `
-          </div>
-          <div class="dim-chosen" data-dim-chosen="${dim.id}"></div>
-        </div>`;
-    });
-
-    html += `
-      </div>
-      <div class="checkin-summary" style="display:none">
-        <p class="checkin-done-text">${t('checkinDone')}</p>
-        <div class="checkin-chosen-list"></div>
-        <button class="draw-btn checkin-reset">${t('checkinReset')}</button>
-      </div>`;
-
-    container.innerHTML = html;
-
-    $$('.need-btn', container).forEach(btn => {
-      btn.addEventListener('click', () => {
-        const need = btn.dataset.need;
-        const wasSelected = btn.classList.contains('selected');
-        btn.classList.toggle('selected');
-        if (wasSelected) {
-          delete state.checkinSelections[need];
-        } else {
-          state.checkinSelections[need] = btn.dataset.dim;
-        }
-        updateCheckinSummary(container);
-        // Auto-save to backend whenever selection changes
-        if (typeof GefuehleAPI !== 'undefined') {
-          const needIds = Object.keys(state.checkinSelections);
-          const dims = [...new Set(Object.values(state.checkinSelections))];
-          GefuehleAPI.saveCheckin({ need_ids: needIds, dimensions: dims, lang: state.uiLang });
-        }
-      });
-    });
-
-    container.querySelector('.checkin-reset')?.addEventListener('click', () => initCheckinMode());
+    state._checkinEmotionIds = [];
+    renderCheckinStep(container, 1);
   }
 
-  function updateCheckinSummary(container) {
-    const summary = $('.checkin-summary', container);
-    const list = $('.checkin-chosen-list', container);
-    const selected = Object.keys(state.checkinSelections);
+  function renderCheckinStep(container, step) {
+    const lang = state.uiLang;
+    const dots = [1, 2, 3].map(i =>
+      `<span class="ci-step-dot ${i === step ? 'active' : i < step ? 'done' : ''}"></span>`
+    ).join('');
 
-    if (selected.length > 0) {
-      summary.style.display = '';
-      const lang = state.uiLang;
-      const needNames = selected.map(needId => {
-        const need = NEEDS.find(n => n.id === needId);
-        return need ? (need[lang] || need.de) : needId;
-      });
-      list.innerHTML = needNames.map((name, i) => {
-        const need = NEEDS.find(n => n.id === selected[i]);
-        return `<span class="chosen-tag">${need ? need.emoji : ''} ${name}</span>`;
-      }).join('');
+    // All UI strings in one lookup — avoids repeated ternary chains
+    const L = {
+      title1:  { de: 'Wie geht es dir gerade?',  en: 'How are you right now?',   vi: 'Bạn đang cảm thấy thế nào?', tr: 'Şu an nasıl hissediyorsun?', ar: 'كيف تشعر الآن؟',    es: '¿Cómo te sientes ahora?',    fr: 'Comment te sens-tu?',       uk: 'Як ти зараз?',       pl: 'Jak się czujesz?',       el: 'Πώς νιώθεις τώρα;',        ta: 'இப்போது நீங்கள் எப்படி?' },
+      hint1:   { de: 'Wähle 1–3 Gefühle',        en: 'Choose 1–3 emotions',      vi: 'Chọn 1–3 cảm xúc',          tr: '1–3 duygu seç',             ar: 'اختر 1–3 مشاعر',   es: 'Elige 1–3 emociones',        fr: 'Choisis 1–3 émotions',      uk: 'Обери 1–3 емоції',   pl: 'Wybierz 1–3 emocje',     el: 'Επίλεξε 1–3 συναισθήματα', ta: '1–3 தேர்வு செய்' },
+      hint2:   { de: 'Was braucht dein inneres Erleben gerade?', en: 'What does this feeling point toward?', vi: 'Cảm xúc này hướng đến điều gì?', tr: 'Bu his neyi işaret ediyor?', ar: 'إلى ماذا يشير هذا الشعور؟', es: '¿Hacia qué apunta este sentimiento?', fr: 'Vers quoi pointe ce sentiment?', uk: 'На що вказує це почуття?', pl: 'Na co wskazuje to uczucie?', el: 'Τι υποδηλώνει αυτό το συναίσθημα;', ta: 'இந்த உணர்வு எதை சுட்டுகிறது?' },
+      cont:    { de: 'Weiter →',                 en: 'Continue →',               vi: 'Tiếp tục →',                 tr: 'Devam →',                   ar: 'استمر →',          es: 'Continuar →',                fr: 'Continuer →',               uk: 'Далі →',             pl: 'Dalej →',                el: 'Συνέχεια →',               ta: 'தொடரவும் →' },
+      title2:  { de: 'Was brauchst du gerade?',  en: 'What do you need most?',   vi: 'Bạn cần gì nhất?',          tr: 'Neye ihtiyacın var?',        ar: 'ماذا تحتاج الآن؟', es: '¿Qué necesitas más?',        fr: 'De quoi as-tu besoin?',     uk: 'Що тобі потрібно?', pl: 'Czego potrzebujesz?',    el: 'Τι χρειάζεσαι;',           ta: 'உங்களுக்கு என்ன தேவை?' },
+      skip:    { de: 'Überspringen',             en: 'Skip',                     vi: 'Bỏ qua',                     tr: 'Atla',                      ar: 'تخطَّ',            es: 'Saltar',                     fr: 'Passer',                    uk: 'Пропустити',        pl: 'Pomiń',                  el: 'Παράλειψη',                ta: 'தவிர்' },
+      done:    { de: 'Fertig →',                 en: 'Done →',                   vi: 'Xong →',                     tr: 'Bitti →',                   ar: 'انتهى →',          es: 'Listo →',                    fr: 'Terminé →',                 uk: 'Готово →',          pl: 'Gotowe →',               el: 'Τέλος →',                  ta: 'முடிந்தது →' },
+      deeper:  { de: 'Tiefer gehen 💬',          en: 'Go deeper 💬',             vi: 'Đi sâu hơn 💬',              tr: 'Daha derine 💬',             ar: 'أعمق 💬',          es: 'Profundizar 💬',             fr: 'Aller plus loin 💬',        uk: 'Глибше 💬',         pl: 'Głębiej 💬',             el: 'Πιο βαθιά 💬',             ta: 'ஆழமாக செல் 💬' },
+      still:   { de: 'Moment der Stille ✓',      en: 'A moment of stillness ✓',  vi: 'Một khoảnh khắc ✓',          tr: 'Sessizlik anı ✓',           ar: 'لحظة سكون ✓',      es: 'Un momento de calma ✓',      fr: 'Un moment de silence ✓',    uk: 'Мить тиші ✓',       pl: 'Chwila ciszy ✓',         el: 'Στιγμή ησυχίας ✓',         ta: 'அமைதி நொடி ✓' },
+    };
+    const tl = (key) => L[key]?.[lang] || L[key]?.en || '';
 
-      // Dimension summary bars
-      const dimGroups = {};
-      Object.entries(state.checkinSelections).forEach(([needId, dim]) => {
-        if (!dimGroups[dim]) dimGroups[dim] = [];
-        const need = NEEDS.find(n => n.id === needId);
-        if (need) dimGroups[dim].push(`${need.emoji} ${need[lang] || need.de}`);
-      });
-      const dimBarsHTML = Object.entries(dimGroups).map(([dim, needs]) => {
-        const meta = DIMENSION_META[dim] || { color: '#F6C344', emoji: '•', de: dim, en: dim, el: dim, vi: dim };
-        return `<div class="ci-dim-row">
-          <span class="ci-dim-pill" style="background:${meta.color}22;color:${meta.color};border-color:${meta.color}55">${meta.emoji} ${meta[lang] || meta.en}</span>
-          <span class="ci-dim-needs">${needs.join(' · ')}</span>
-        </div>`;
-      }).join('');
-      let dimEl = summary.querySelector('.ci-dim-summary');
-      if (!dimEl) { dimEl = document.createElement('div'); dimEl.className = 'ci-dim-summary'; list.after(dimEl); }
-      dimEl.innerHTML = dimBarsHTML;
-
-      // Request notification permission after 2nd check-in
+    if (step === 1) {
+      // Phase 2: contextual greeting from last check-in
+      let greeting = '';
       const allCI = typeof GefuehleAPI !== 'undefined' ? GefuehleAPI.getCheckinEntries() : [];
-      if (allCI.length === 2 && 'Notification' in window && Notification.permission === 'default') {
-        setTimeout(() => requestNotificationPermission(lang), 1500);
+      const today = new Date().toISOString().split('T')[0];
+      const lastCI = allCI.slice().reverse().find(c => c.date !== today && c.emotion_ids?.length);
+      if (lastCI?.emotion_ids?.[0]) {
+        const prev = EMOTIONS.find(x => x.id === lastCI.emotion_ids[0]);
+        if (prev) {
+          const prevName = prev[lang] || prev.en;
+          const greetMsg = {
+            de: `Zuletzt: ${prev.emoji} ${prevName}. Und heute?`,
+            en: `Last time: ${prev.emoji} ${prevName}. And today?`,
+            vi: `Lần trước: ${prev.emoji} ${prevName}. Hôm nay?`,
+            tr: `Son sefer: ${prev.emoji} ${prevName}. Bugün?`,
+            ar: `آخر مرة: ${prev.emoji} ${prevName}. واليوم؟`,
+            es: `La última vez: ${prev.emoji} ${prevName}. ¿Y hoy?`,
+            fr: `La dernière fois: ${prev.emoji} ${prevName}. Et aujourd'hui?`,
+            uk: `Минулого разу: ${prev.emoji} ${prevName}. Сьогодні?`,
+            pl: `Ostatnio: ${prev.emoji} ${prevName}. A dzisiaj?`,
+            el: `Τελευταία φορά: ${prev.emoji} ${prevName}. Σήμερα;`,
+            ta: `கடந்த முறை: ${prev.emoji} ${prevName}. இன்று?`,
+          };
+          greeting = `<p class="ci-greeting">${greetMsg[lang] || greetMsg.en}</p>`;
+        }
       }
 
-      // Add AI reflection button if not already present
-      if (!summary.querySelector('.btn-checkin-reflection')) {
-        const reflBtn = document.createElement('button');
-        reflBtn.className = 'btn-checkin-reflection';
-        reflBtn.textContent = state.uiLang === 'de' ? 'KI-Reflexion 🤖' : state.uiLang === 'el' ? 'Αντανάκλαση AI 🤖' : 'AI Reflection 🤖';
-        const reflResult = document.createElement('div');
-        reflResult.className = 'checkin-reflection-box';
-        summary.appendChild(reflBtn);
-        summary.appendChild(reflResult);
+      const emotions = getDailyEmotionSet();
+      const cards = emotions.map(e => {
+        const name = e[lang] || e.en || e.de;
+        const cat = CATEGORIES.find(c => c.id === e.category);
+        return `<button class="ci-emotion-card" data-id="${e.id}" style="--cat-color:${cat?.color || '#FFD166'}">
+          <span class="ci-card-emoji">${e.emoji}</span>
+          <span class="ci-card-name">${name}</span>
+        </button>`;
+      }).join('');
 
-        reflBtn.addEventListener('click', async () => {
-          if (typeof GefuehleAPI === 'undefined') return;
-          reflBtn.disabled = true;
-          reflBtn.innerHTML = '<span class="ai-spinner"></span>';
-          const res = await GefuehleAPI.dynamicPrompt({
-            type: 'checkin_reflection',
-            needs: needNames,
-            lang: state.uiLang,
-          });
-          reflBtn.textContent = state.uiLang === 'de' ? 'KI-Reflexion 🤖' : state.uiLang === 'el' ? 'Αντανάκλαση AI 🤖' : 'AI Reflection 🤖';
-          reflBtn.disabled = false;
-          if (res?.text) {
-            reflResult.textContent = res.text;
-            reflResult.classList.add('visible');
+      container.innerHTML = `<div class="ci-flow">
+        <div class="ci-steps">${dots}</div>
+        ${greeting}
+        <h2 class="ci-title">${tl('title1')}</h2>
+        <p class="ci-hint">${tl('hint1')}</p>
+        <div class="ci-emotion-grid">${cards}</div>
+        <button class="ci-continue-btn" disabled>${tl('cont')}</button>
+      </div>`;
+
+      let sel = [];
+      container.querySelectorAll('.ci-emotion-card').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          if (btn.classList.contains('selected')) {
+            btn.classList.remove('selected');
+            sel = sel.filter(x => x !== id);
+          } else if (sel.length < 3) {
+            btn.classList.add('selected');
+            sel.push(id);
           }
+          container.querySelector('.ci-continue-btn').disabled = !sel.length;
         });
-      }
-      // Ritual completion button — appears once selections are made
-      if (!summary.querySelector('.btn-checkin-fertig')) {
-        const fertigBtn = document.createElement('button');
-        fertigBtn.className = 'btn-checkin-fertig';
-        fertigBtn.textContent = lang === 'de' ? 'Moment der Stille ✓' : lang === 'el' ? 'Στιγμή ησυχίας ✓' : 'Moment of stillness ✓';
-        summary.appendChild(fertigBtn);
-        fertigBtn.addEventListener('click', () => showCheckinRitual(state.uiLang, state.checkinSelections));
-      }
-    } else {
-      summary.style.display = 'none';
+      });
+      container.querySelector('.ci-continue-btn').addEventListener('click', () => {
+        if (!sel.length) return;
+        state._checkinEmotionIds = sel;
+        if (typeof GefuehleAPI !== 'undefined')
+          GefuehleAPI.saveCheckin({ emotion_ids: sel, lang });
+        renderCheckinStep(container, 2);
+      });
+
+    } else if (step === 2) {
+      const needs = getRelatedNeeds(state._checkinEmotionIds);
+      const context = state._checkinEmotionIds.map(id => {
+        const e = EMOTIONS.find(x => x.id === id);
+        return e ? `${e.emoji} ${e[lang] || e.en}` : '';
+      }).filter(Boolean).join(' · ');
+
+      const pills = needs.map(n => `
+        <button class="ci-need-pill" data-need="${n.id}" data-dim="${n.dimension}">
+          <span class="ci-need-emoji">${n.emoji}</span>
+          <span>${n[lang] || n.de}</span>
+        </button>`).join('');
+
+      container.innerHTML = `<div class="ci-flow">
+        <div class="ci-steps">${dots}</div>
+        <p class="ci-emotion-context">${context}</p>
+        <h2 class="ci-title">${tl('title2')}</h2>
+        <p class="ci-hint">${tl('hint2')}</p>
+        <div class="ci-needs-grid">${pills}</div>
+        <div class="ci-step2-actions">
+          <button class="ci-done-btn" disabled>${tl('done')}</button>
+          <button class="ci-skip-btn">${tl('skip')}</button>
+        </div>
+      </div>`;
+
+      let needMap = {};
+      container.querySelectorAll('.ci-need-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (btn.classList.contains('selected')) {
+            btn.classList.remove('selected');
+            delete needMap[btn.dataset.need];
+          } else {
+            btn.classList.add('selected');
+            needMap[btn.dataset.need] = btn.dataset.dim;
+          }
+          container.querySelector('.ci-done-btn').disabled = !Object.keys(needMap).length;
+        });
+      });
+      const finish = (map) => {
+        state.checkinSelections = map;
+        const needIds = Object.keys(map), dims = [...new Set(Object.values(map))];
+        if (typeof GefuehleAPI !== 'undefined')
+          GefuehleAPI.saveCheckin({ emotion_ids: state._checkinEmotionIds, need_ids: needIds, dimensions: dims, lang });
+        renderCheckinStep(container, 3);
+      };
+      container.querySelector('.ci-done-btn').addEventListener('click', () => finish(needMap));
+      container.querySelector('.ci-skip-btn').addEventListener('click', () => finish({}));
+
+    } else if (step === 3) {
+      const emojis = state._checkinEmotionIds.map(id => {
+        const e = EMOTIONS.find(x => x.id === id); return e ? e.emoji : '💛';
+      }).join(' ');
+
+      const AFFIRM = {
+        koerper:   { de: 'Dein Körper hat gesprochen.', en: 'Your body has spoken.', vi: 'Cơ thể bạn đã nói.', tr: 'Vücudun konuştu.', ar: 'جسدك تكلّم.', es: 'Tu cuerpo ha hablado.', fr: 'Ton corps a parlé.', uk: 'Твоє тіло говорило.', pl: 'Twoje ciało przemówiło.', el: 'Το σώμα σου μίλησε.', ta: 'உங்கள் உடல் பேசியது.' },
+        herz:      { de: 'Dein Herz weiß, was es braucht.', en: 'Your heart knows what it needs.', vi: 'Trái tim bạn biết.', tr: 'Kalbin biliyor.', ar: 'قلبك يعرف.', es: 'Tu corazón sabe.', fr: 'Ton cœur sait.', uk: 'Твоє серце знає.', pl: 'Twoje serce wie.', el: 'Η καρδιά σου ξέρει.', ta: 'உங்கள் இதயம் அறியும்.' },
+        geist:     { de: 'Dein Geist sucht Klarheit. Gib ihm Raum.', en: 'Your mind seeks clarity. Give it space.', vi: 'Tâm trí tìm sự rõ ràng.', tr: 'Zihnin netlik arıyor.', ar: 'عقلك يبحث عن الوضوح.', es: 'Tu mente busca claridad.', fr: 'Ton esprit cherche la clarté.', uk: 'Твій розум шукає ясності.', pl: 'Twój umysł szuka jasności.', el: 'Ο νους σου ζητά καθαρότητα.', ta: 'உங்கள் மனம் தெளிவு தேடுகிறது.' },
+        seele:     { de: 'Deine Seele ist in Bewegung.', en: 'Your soul is in motion.', vi: 'Tâm hồn đang chuyển động.', tr: 'Ruhun hareket halinde.', ar: 'روحك في حركة.', es: 'Tu alma está en movimiento.', fr: 'Ton âme est en mouvement.', uk: 'Твоя душа в русі.', pl: 'Twoja dusza jest w ruchu.', el: 'Η ψυχή σου κινείται.', ta: 'உங்கள் ஆன்மா இயக்கத்தில்.' },
+        beziehung: { de: 'Verbindung nährt. Du bist nicht allein.', en: 'Connection nourishes. You are not alone.', vi: 'Kết nối nuôi dưỡng. Bạn không đơn độc.', tr: 'Bağlantı besler.', ar: 'التواصل يُغذّي.', es: 'La conexión nutre.', fr: 'La connexion nourrit.', uk: 'Зв\'язок живить.', pl: 'Połączenie karmi.', el: 'Η σύνδεση τρέφει.', ta: 'தொடர்பு வளர்க்கிறது.' },
+      };
+      const FALLBACK = { de: 'Du hast auf dich gehört. Das zählt.', en: 'You showed up for yourself. That counts.', vi: 'Bạn đã lắng nghe bản thân.', tr: 'Kendini dinledin.', ar: 'اهتممت بنفسك.', es: 'Te escuchaste.', fr: 'Tu t\'es écouté.', uk: 'Ти подбав про себе.', pl: 'Zadbałeś o siebie.', el: 'Φρόντισες τον εαυτό σου.', ta: 'நீங்கள் உங்களை கவனித்தீர்கள்.' };
+      const dims = [...new Set(Object.values(state.checkinSelections))];
+      const insight = dims.length
+        ? (AFFIRM[dims[0]]?.[lang] || AFFIRM[dims[0]]?.en || FALLBACK[lang] || FALLBACK.en)
+        : (FALLBACK[lang] || FALLBACK.en);
+
+      const allCI = typeof GefuehleAPI !== 'undefined' ? GefuehleAPI.getCheckinEntries() : [];
+      const streak = allCI.length ? computeLocalStreak(allCI) : 0;
+      const streakLine = streak > 1
+        ? (lang === 'de' ? `🔥 ${streak} Tage dabei` : `🔥 ${streak} days in a row`)
+        : (lang === 'de' ? '🌱 Du bist da.' : '🌱 You showed up.');
+
+      container.innerHTML = `<div class="ci-flow">
+        <div class="ci-steps">${dots}</div>
+        <div class="ci-closing">
+          <div class="ci-closing-emoji">${emojis || '💛'}</div>
+          <p class="ci-closing-insight">${insight}</p>
+          <span class="ci-streak-pill">${streakLine}</span>
+          <div class="ci-closing-actions">
+            <button class="ci-deeper-btn">${tl('deeper')}</button>
+            <button class="ci-still-btn">${tl('still')}</button>
+          </div>
+        </div>
+      </div>`;
+
+      container.querySelector('.ci-deeper-btn').addEventListener('click', () => {
+        const journeyEmotions = state._checkinEmotionIds
+          .map(id => EMOTIONS.find(e => e.id === id)).filter(Boolean);
+        state.mode = 'talk';
+        state._journeyEmotions = journeyEmotions.length ? journeyEmotions : null;
+        hideLanding();
+        startGame();
+      });
+      container.querySelector('.ci-still-btn').addEventListener('click', () => {
+        showCheckinRitual(lang, state.checkinSelections);
+      });
     }
   }
 
@@ -3787,29 +3875,105 @@
     });
   }
 
-  /* ---- Weekly AI recap card on landing ---- */
+  /* ---- Weekly emotion portrait on landing ---- */
   function renderWeeklyRecap() {
     const el = document.getElementById('weekly-recap-card');
     if (!el) return;
-    const JOURNAL_KEY = 'gefuehle-journal';
-    const entries = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
-    if (entries.length < 3) { el.style.display = 'none'; return; }
+
+    // Use check-in data (not journal) — needs only 2+ check-ins
+    const checkins = typeof GefuehleAPI !== 'undefined'
+      ? GefuehleAPI.getCheckinEntries()
+      : JSON.parse(localStorage.getItem('gefuehle-checkins') || '[]');
+
+    if (checkins.length < 2) { el.style.display = 'none'; return; }
+
     const lang = state.uiLang;
-    const weekKey = 'gefuehle-weekly-recap-' + (function(){
-      const d = new Date(), j = new Date(d.getFullYear(),0,1);
-      return Math.ceil(((d-j)/86400000+j.getDay()+1)/7);
+
+    // Build last-7-days window
+    const today = new Date();
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      days.push(d.toISOString().split('T')[0]);
+    }
+
+    // Count emotion-category occurrences across all check-ins in window
+    const windowCheckins = checkins.filter(c => days.includes(c.date));
+    const catCounts = {};
+    CATEGORIES.forEach(c => { catCounts[c.id] = 0; });
+    windowCheckins.forEach(ci => {
+      (ci.emotion_ids || []).forEach(id => {
+        const emo = EMOTIONS.find(e => e.id === id);
+        if (emo) catCounts[emo.category] = (catCounts[emo.category] || 0) + 1;
+      });
+    });
+    const totalEmotions = Object.values(catCounts).reduce((a, b) => a + b, 0);
+
+    // Collect recent emotion emojis (last 5 unique)
+    const recentEmojis = [];
+    [...checkins].reverse().forEach(ci => {
+      (ci.emotion_ids || []).forEach(id => {
+        const emo = EMOTIONS.find(e => e.id === id);
+        if (emo && !recentEmojis.includes(emo.emoji) && recentEmojis.length < 5) {
+          recentEmojis.push(emo.emoji);
+        }
+      });
+    });
+
+    // Day-streak dots: 7 days, filled if has check-in
+    const checkinDates = new Set(checkins.map(c => c.date));
+    const dayDots = days.map(d => `<span class="portrait-dot ${checkinDates.has(d) ? 'portrait-dot--on' : ''}"></span>`).join('');
+
+    // Category bars — show all with non-zero count, sorted by count
+    const barRows = CATEGORIES
+      .map(cat => ({ cat, count: catCounts[cat.id] || 0 }))
+      .filter(x => x.count > 0)
+      .sort((a, b) => b.count - a.count)
+      .map(({ cat, count }) => {
+        const pct = totalEmotions ? Math.round((count / totalEmotions) * 100) : 0;
+        const catLabel = cat[lang] || cat.en;
+        return `<div class="portrait-row">
+          <span class="portrait-cat-emoji">${cat.emoji}</span>
+          <span class="portrait-cat-label">${catLabel}</span>
+          <div class="portrait-bar-track">
+            <div class="portrait-bar-fill" style="width:${pct}%;background:${cat.color}"></div>
+          </div>
+          <span class="portrait-pct">${pct}%</span>
+        </div>`;
+      }).join('');
+
+    // AI insight — cached per week
+    const weekNum = (function(){
+      const j = new Date(today.getFullYear(), 0, 1);
+      return Math.ceil(((today - j) / 86400000 + j.getDay() + 1) / 7);
     })();
-    const cached = localStorage.getItem(weekKey);
-    el.innerHTML = `<div class="recap-inner">
-      <span class="recap-label">🤖 ${lang === 'de' ? 'Wöchentlicher Rückblick' : lang === 'el' ? 'Εβδομαδιαία ανασκόπηση' : 'Weekly Recap'}</span>
-      ${cached
-        ? `<p class="recap-text">${cached}</p>`
-        : `<button class="recap-btn">${lang === 'de' ? 'Muster erkennen' : lang === 'el' ? 'Ανάλυση προτύπων' : 'Analyze patterns'}</button>
-           <div class="recap-result"></div>`}
-    </div>`;
+    const weekKey = 'gefuehle-portrait-' + today.getFullYear() + '-w' + weekNum;
+    const cachedInsight = localStorage.getItem(weekKey);
+
+    const headingText = lang === 'de' ? 'Dein Gefühls-Portrait' : lang === 'vi' ? 'Chân dung cảm xúc' : 'Your emotion portrait';
+    const insightBtnText = lang === 'de' ? 'KI-Einblick holen' : 'Get AI insight';
+    const checkinsLabel = lang === 'de' ? `${windowCheckins.length} Check-ins diese Woche` : `${windowCheckins.length} check-ins this week`;
+
+    el.innerHTML = `
+      <div class="portrait-inner">
+        <div class="portrait-header">
+          <span class="portrait-title">${headingText}</span>
+          <span class="portrait-streak-dots">${dayDots}</span>
+        </div>
+        <div class="portrait-emoji-row">${recentEmojis.map(e => `<span class="portrait-emoji">${e}</span>`).join('')}</div>
+        <div class="portrait-bars">${barRows || '<p class="portrait-empty">No emotions this week yet</p>'}</div>
+        <div class="portrait-meta">${checkinsLabel}</div>
+        <div class="portrait-insight-area">
+          ${cachedInsight
+            ? `<p class="portrait-insight-text">${cachedInsight}</p>`
+            : `<button class="portrait-insight-btn">${insightBtnText}</button>
+               <div class="portrait-insight-result"></div>`}
+        </div>
+      </div>`;
     el.style.display = '';
-    el.querySelector('.recap-btn')?.addEventListener('click', async () => {
-      const btn = el.querySelector('.recap-btn');
+
+    el.querySelector('.portrait-insight-btn')?.addEventListener('click', async () => {
+      const btn = el.querySelector('.portrait-insight-btn');
       btn.disabled = true; btn.innerHTML = '<span class="ai-spinner"></span>';
       try {
         let result = '';
@@ -3821,14 +3985,19 @@
           if (res?.insight) result = res.insight;
         }
         if (!result && typeof GefuehleAI !== 'undefined') {
-          result = await GefuehleAI.generateJournalInsight(entries, lang);
+          const journalEntries = JSON.parse(localStorage.getItem('gefuehle-journal') || '[]');
+          result = await GefuehleAI.generateJournalInsight(journalEntries.length ? journalEntries : checkins, lang);
         }
         if (result) {
           localStorage.setItem(weekKey, result);
-          el.querySelector('.recap-result').textContent = result;
+          el.querySelector('.portrait-insight-result').textContent = result;
           btn.style.display = 'none';
-        } else { btn.disabled = false; btn.textContent = lang === 'de' ? 'Muster erkennen' : 'Analyze patterns'; }
-      } catch { btn.disabled = false; btn.textContent = lang === 'de' ? 'Muster erkennen' : 'Analyze patterns'; }
+        } else {
+          btn.disabled = false; btn.textContent = insightBtnText;
+        }
+      } catch {
+        btn.disabled = false; btn.textContent = insightBtnText;
+      }
     });
   }
 

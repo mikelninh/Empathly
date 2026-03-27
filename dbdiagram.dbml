@@ -5,10 +5,11 @@
 // ── Core ──────────────────────────────────────────────────────────────────────
 
 Table users {
-  id           integer     [pk, increment]
-  device_id    varchar     [unique, not null, note: "UUID generated in browser"]
+  id           integer  [pk, increment]
+  supabase_uid varchar  [unique, not null, note: "UUID from Supabase Auth JWT"]
+  email        varchar  [note: "From Supabase; stored for display only"]
   display_name varchar
-  avatar_emoji varchar     [default: "💛"]
+  lang         varchar  [default: "en", note: "Preferred UI language"]
   created_at   datetime
 }
 

@@ -18,20 +18,23 @@ from pydantic import BaseModel, Field
 # ── Users ──────────────────────────────────────────────────────────────────────
 
 class UserCreate(BaseModel):
-    device_id: str = Field(..., description="Browser UUID from localStorage")
+    supabase_uid: str = Field(..., description="Supabase user UUID from the verified JWT")
+    email:        Optional[str] = None
     display_name: Optional[str] = None
+    lang:         str = "en"
 
 
 class UserUpdate(BaseModel):
     display_name: Optional[str] = None
-    avatar_emoji: Optional[str] = None
+    lang:         Optional[str] = None
 
 
 class UserResponse(BaseModel):
     id:           int
-    device_id:    str
+    supabase_uid: str
+    email:        Optional[str]
     display_name: Optional[str]
-    avatar_emoji: str
+    lang:         str
     created_at:   datetime
 
     model_config = {"from_attributes": True}

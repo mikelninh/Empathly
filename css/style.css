@@ -3414,8 +3414,11 @@ body:not(.show-landing) .user-profile-display { display: none !important; }
 /* ---------- Weekly recap card ---------- */
 .weekly-recap-card {
   width: 100%; max-width: 560px;
-  background: var(--bg-card); border-radius: var(--radius);
-  box-shadow: var(--shadow-card); padding: 14px 18px;
+  /* portrait-inner provides its own card styling; keep container transparent */
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
 }
 .recap-inner { display: flex; flex-direction: column; gap: 8px; }
 .recap-label { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--text-soft); }
@@ -5462,4 +5465,392 @@ body.classroom-mode #btn-classroom { background: var(--accent); }
   .mc-untranslatable-grid { grid-template-columns: 1fr 1fr; }
   .mc-pricing-grid { grid-template-columns: 1fr; }
   .mc-class-code-display { font-size: 1.8rem; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CHECK-IN RITUAL — 3-step flow
+   ═══════════════════════════════════════════════════════════════ */
+
+.ci-flow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 4px 32px;
+}
+
+/* Step progress dots */
+.ci-steps {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.ci-step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--card-back);
+  transition: background .25s, transform .25s;
+}
+.ci-step-dot.active {
+  background: var(--accent);
+  transform: scale(1.3);
+}
+.ci-step-dot.done {
+  background: var(--accent);
+  opacity: .45;
+}
+
+/* Greeting + heading */
+.ci-greeting {
+  font-size: .82rem;
+  color: var(--text-soft);
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: 100px;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ci-title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  text-align: center;
+  line-height: 1.3;
+}
+.ci-hint {
+  font-size: .82rem;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+/* 3×3 emotion grid */
+.ci-emotion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.ci-emotion-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  background: var(--bg-card);
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color .18s, transform .18s, box-shadow .18s;
+  box-shadow: var(--shadow-card);
+  min-height: 80px;
+  text-align: center;
+}
+.ci-emotion-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.ci-emotion-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 1px var(--accent), var(--shadow);
+}
+.ci-card-emoji { font-size: 1.7rem; line-height: 1; }
+.ci-card-name  { font-size: .78rem; font-weight: 600; color: var(--text); }
+
+/* Continue button */
+.ci-continue-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+}
+.ci-continue-btn:disabled {
+  opacity: .35;
+  cursor: default;
+  transform: none;
+}
+.ci-continue-btn:not(:disabled):hover { opacity: .9; transform: translateY(-1px); }
+
+/* ── Step 2: needs ── */
+.ci-emotion-context {
+  font-size: .82rem;
+  color: var(--text-soft);
+  text-align: center;
+}
+.ci-needs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+.ci-need-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 2px solid var(--card-back);
+  border-radius: 100px;
+  cursor: pointer;
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text);
+  transition: border-color .18s, background .18s;
+  min-height: 44px;
+}
+.ci-need-pill:hover { border-color: var(--accent); background: var(--accent-light); }
+.ci-need-pill.selected {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.ci-need-emoji { font-size: 1.1rem; }
+
+.ci-step2-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.ci-done-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s;
+}
+.ci-done-btn:disabled {
+  opacity: .35;
+  cursor: default;
+}
+.ci-done-btn:not(:disabled):hover { opacity: .9; transform: translateY(-1px); }
+
+.ci-skip-btn {
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 8px;
+}
+.ci-skip-btn:hover { color: var(--text); }
+
+/* ── Step 3: closing ── */
+.ci-closing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg, 20px);
+  padding: 28px 24px;
+  box-shadow: var(--shadow-card);
+  width: 100%;
+}
+.ci-closing-emoji { font-size: 2.2rem; letter-spacing: 4px; }
+.ci-closing-insight {
+  font-size: .92rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  font-style: italic;
+}
+.ci-streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-light);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: .82rem;
+  border-radius: 100px;
+  padding: 6px 14px;
+}
+.ci-closing-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.ci-deeper-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: .95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+.ci-deeper-btn:hover { opacity: .9; }
+.ci-still-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 2px solid var(--card-back);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: border-color .18s, color .18s;
+}
+.ci-still-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* ═══════════════════════════════════════════════════════════════
+   EMOTION PORTRAIT — weekly recap card
+   ═══════════════════════════════════════════════════════════════ */
+
+.portrait-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  background: var(--bg-card);
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-card);
+}
+
+.portrait-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.portrait-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.portrait-streak-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.portrait-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--card-back);
+  display: inline-block;
+}
+.portrait-dot--on {
+  background: var(--accent);
+}
+
+.portrait-emoji-row {
+  display: flex;
+  gap: 6px;
+  font-size: 1.6rem;
+}
+
+.portrait-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.portrait-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: .82rem;
+}
+.portrait-cat-emoji { font-size: 1rem; flex-shrink: 0; }
+.portrait-cat-label {
+  min-width: 90px;
+  font-weight: 600;
+  color: var(--text-soft);
+  font-size: .78rem;
+}
+.portrait-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--card-back);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.portrait-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width .6s ease;
+}
+.portrait-pct {
+  min-width: 30px;
+  text-align: right;
+  color: var(--text-soft);
+  font-size: .75rem;
+}
+
+.portrait-meta {
+  font-size: .75rem;
+  color: var(--text-soft);
+}
+.portrait-empty {
+  font-size: .85rem;
+  color: var(--text-soft);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.portrait-insight-area { margin-top: 4px; }
+.portrait-insight-btn {
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 2px solid var(--card-back);
+  color: var(--text-soft);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color .18s, color .18s;
+}
+.portrait-insight-btn:hover { border-color: var(--accent); color: var(--text); }
+.portrait-insight-btn:disabled { opacity: .5; cursor: default; }
+.portrait-insight-text {
+  font-size: .85rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  font-style: italic;
+  margin: 0;
+}
+.portrait-insight-result {
+  font-size: .85rem;
+  color: var(--text-soft);
+  line-height: 1.55;
+  font-style: italic;
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .ci-emotion-grid { gap: 8px; }
+  .ci-emotion-card { padding: 12px 6px; min-height: 72px; }
+  .ci-card-emoji { font-size: 1.5rem; }
+  .portrait-cat-label { min-width: 70px; font-size: .72rem; }
 }
