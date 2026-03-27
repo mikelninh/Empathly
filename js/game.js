@@ -829,16 +829,9 @@
     if (labels[1]) labels[1].textContent = groups.entdecken;
     if (labels[2]) labels[2].textContent = groups.lernen;
 
-    // Update landing hero
+    // Update landing hero title only (subtitle is kept as the HTML default tagline)
     const heroTitle = $('.landing-title');
-    const heroSubtitle = $('.landing-subtitle');
     if (heroTitle) heroTitle.textContent = t('title');
-    if (heroSubtitle) {
-      heroSubtitle.textContent = lang === 'de' ? '67 Gefühle · 6 Kategorien · 11 Sprachen'
-        : lang === 'vi' ? '67 cảm xúc · 6 loại · 11 ngôn ngữ'
-        : lang === 'el' ? '67 συναισθήματα · 6 κατηγορίες · 11 γλώσσες'
-        : '67 emotions · 6 categories · 11 languages';
-    }
   }
 
   /* ---- UI text updates ---- */
@@ -3587,7 +3580,8 @@
   /* ---- Daily Fun Fact card on landing ---- */
   function renderDailyFunFact() {
     const el = document.getElementById('daily-funfact-card');
-    if (!el || typeof FunFacts === 'undefined') return;
+    // Fun fact content is written in German — only show to German UI users
+    if (!el || typeof FunFacts === 'undefined' || state.uiLang !== 'de') return;
     const fact = FunFacts.getDailyFact();
     const idx = FunFacts.getDailyIndex();
     if (!fact) return;
@@ -3642,9 +3636,8 @@
       <button class="tde-cta">${exploreLabel}</button>`;
     el.querySelector('.tde-cta').addEventListener('click', (e) => {
       e.stopPropagation();
-      // Open Talk Mode pre-loaded with today's emotion
-      state.mode = 'talk';
-      state._todaysEmotion = emo;
+      // Open Word of the Day mode — same emotion, rich exploration view
+      state.mode = 'wotd';
       hideLanding();
       startGame();
     });
@@ -3783,8 +3776,7 @@
         }
         state.mode = 'detective';
         hideLanding();
-        showGame();
-        initDetectiveMode();
+        startGame();
       });
     }
   }
