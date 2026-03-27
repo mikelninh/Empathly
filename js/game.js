@@ -762,6 +762,11 @@
       icon: '🗺️',
       name: { de: 'Bedürfnis-Karte', vi: 'Bản đồ nhu cầu', en: 'Needs Map', tr: 'İhtiyaç Haritası', ar: 'خريطة الاحتياجات', es: 'Mapa de Necesidades', fr: 'Carte des Besoins', uk: 'Карта потреб', pl: 'Mapa potrzeb', el: 'Χάρτης αναγκών', ta: 'தேவைகள் வரைபடம்' },
       desc: { de: 'Welche Bedürfnisse stecken hinter deinen Gefühlen?', vi: 'Nhu cầu nào ẩn sau cảm xúc của bạn?', en: 'What needs are behind your emotions?', tr: 'Duygularının arkasındaki ihtiyaçlar neler?', ar: 'ما الاحتياجات الكامنة وراء مشاعرك؟', es: '¿Qué necesidades hay detrás de tus emociones?', fr: 'Quels besoins se cachent derrière tes émotions?', uk: 'Які потреби стоять за твоїми емоціями?', pl: 'Jakie potrzeby kryją się za twoimi emocjami?', el: 'Ποιες ανάγκες κρύβονται πίσω από τα συναισθήματά σου;', ta: 'உங்கள் உணர்வுகளுக்கு பின்னால் என்ன தேவைகள் இருக்கின்றன?' }
+    },
+    masterclass: {
+      icon: '🎓',
+      name: { de: 'Masterclass', vi: 'Khóa học nâng cao', en: 'Masterclass', tr: 'Ustalık Sınıfı', ar: 'الدورة المتقدمة', es: 'Clase Maestra', fr: 'Masterclass', uk: 'Майстер-клас', pl: 'Kurs mistrzowski', el: 'Masterclass', ta: 'மாஸ்டர்கிளாஸ்' },
+      desc: { de: '5 Module · SEL-Curriculum · Zertifikat', vi: '5 mô-đun · Chương trình SEL · Chứng chỉ', en: '5 Modules · SEL Curriculum · Certificate', tr: '5 Modül · SEL Müfredatı · Sertifika', ar: '5 وحدات · منهج SEL · شهادة', es: '5 Módulos · Currículo SEL · Certificado', fr: '5 Modules · Programme SEL · Certificat', uk: '5 Модулів · Навчальна програма SEL · Сертифікат', pl: '5 Modułów · Program SEL · Certyfikat', el: '5 Ενότητες · Πρόγραμμα SEL · Πιστοποιητικό', ta: '5 தொகுதிகள் · SEL பாடத்திட்டம் · சான்றிதழ்' }
     }
   };
 
@@ -776,7 +781,7 @@
     classic: '5–10 min', talk: '10–20 min', story: '5–15 min',
     wheel: '5 min', checkin: '2 min', ask: '2 min',
     wotd: '1 min', learn: '5–10 min', journal: '5 min',
-    detective: '10–15 min', needsmap: '5–10 min'
+    detective: '10–15 min', needsmap: '5–10 min', masterclass: '20–60 min'
   };
 
   function updateModeCards() {
@@ -1059,10 +1064,11 @@
     const isWotd = state.mode === 'wotd';
     const isDetective = state.mode === 'detective';
     const isNeedsMap = state.mode === 'needsmap';
+    const isMasterclass = state.mode === 'masterclass';
 
     dom.board.style.display = isClassic ? '' : 'none';
     dom.statsBar.style.display = isClassic ? '' : 'none';
-    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk || isWotd || isDetective || isNeedsMap) ? 'none' : '';
+    dom.controlsRow2.style.display = (isCheckin || isWheel || isJournal || isLearn || isAsk || isWotd || isDetective || isNeedsMap || isMasterclass) ? 'none' : '';
     dom.talkMode.classList.toggle('active', isTalk);
     dom.storyMode.classList.toggle('active', isStory);
     dom.checkinMode.classList.toggle('active', isCheckin);
@@ -1075,6 +1081,8 @@
     if (detModeEl) detModeEl.classList.toggle('active', isDetective);
     const needsModeEl = document.querySelector('.needsmap-mode');
     if (needsModeEl) needsModeEl.classList.toggle('active', isNeedsMap);
+    const masterclassModeEl = document.querySelector('.masterclass-mode');
+    if (masterclassModeEl) masterclassModeEl.classList.toggle('active', isMasterclass);
     dom.turnIndicator.classList.remove('active');
     dom.playerSetup.classList.remove('active');
 
@@ -1097,6 +1105,7 @@
     if (isWotd) initWotdMode();
     if (isDetective) initDetectiveMode();
     if (isNeedsMap) initNeedsMapMode();
+    if (isMasterclass) initMasterclassMode();
   }
 
   function startClassicGame() {
@@ -3904,6 +3913,16 @@
     const container = document.querySelector('.needsmap-mode');
     if (!container) return;
     nmRenderEmotionPicker(container, state.uiLang);
+  }
+
+  function initMasterclassMode() {
+    const container = document.querySelector('.masterclass-mode');
+    if (!container) return;
+    if (typeof GefuehleMasterclass === 'undefined') {
+      container.innerHTML = `<div class="mode-placeholder"><p>🎓 Masterclass wird geladen...</p></div>`;
+      return;
+    }
+    GefuehleMasterclass.init(container, state.uiLang);
   }
 
   function nmRenderEmotionPicker(container, lang) {

@@ -15,11 +15,17 @@ Phase 1 schema:
   checkin_emotions — junction table: which emotions appeared in which check-in
   journal_entries  — a longer reflection, belongs to one user
   journal_emotions — junction table: which emotions appeared in which journal entry
+
+Masterclass schema (added for Empathly SEL curriculum):
+  masterclass_progress    — one row per (user, lesson) completed
+  masterclass_certificates — issued verifiable certificates per (user, module)
+  masterclass_classes      — teacher-managed class groups
+  masterclass_enrollments  — student membership in a class
 """
 
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Table
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Table, UniqueConstraint, Index
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -142,3 +148,102 @@ class JournalEntry(Base):
 
     user     = relationship("User",    back_populates="journal_entries")
     emotions = relationship("Emotion", secondary=journal_emotions)
+
+
+# ── Masterclass ────────────────────────────────────────────────────────────────
+
+class MasterclassProgress(Base):
+    """
+    One row per (user, lesson) pair — records that a lesson was completed.
+
+    A UniqueConstraint on (user_id, lesson_id) prevents recording the same lesson
+    twice. The score column is optional; lessons without quizzes leave it NULL.
+    """
+    __tablename__ = "masterclass_progress"
+
+    id           = Column(Integer,  primary_key=True, index=True)
+    user_id      = Column(Integer,  ForeignKey("users.id", ondelete="CASCADE"),
+                          nullable=False, index=True)
+    lesson_id    = Column(String,   nullable=False)
+    module_id    = Column(String,   nullable=False, index=True)
+    score        = Column(Integer,  nullable=True)   # 0-100, or NULL if not scored
+    completed_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "lesson_id", name="uq_progress_user_lesson"),
+    )
+
+
+class MasterclassCertificate(Base):
+    """
+    Issued certificate for completing a full module.
+
+    cert_uuid is the public verifiable identifier used in shareable links
+    (/masterclass/certificates/verify/{cert_uuid}). Indexed for fast public
+    lookups that require no authentication.
+    user_name stores the display name at the time of issue (snapshot).
+    """
+    __tablename__ = "masterclass_certificates"
+
+    id        = Column(Integer,  primary_key=True, index=True)
+    cert_uuid = Column(String,   unique=True, nullable=False)
+    user_id   = Column(Integer,  ForeignKey("users.id", ondelete="CASCADE"),
+                       nullable=False, index=True)
+    module_id = Column(String,   nullable=False)
+    user_name = Column(String,   nullable=True)   # display name at time of issue
+    issued_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User")
+
+    __table_args__ = (
+        Index("ix_masterclass_certificates_cert_uuid", "cert_uuid"),
+    )
+
+
+class MasterclassClass(Base):
+    """
+    A teacher's class group identified by a short memorable class_code.
+
+    The 6-character uppercase code is what students type to enroll themselves.
+    Deleting a class cascades to all enrollments.
+    """
+    __tablename__ = "masterclass_classes"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    class_code      = Column(String,  unique=True, nullable=False, index=True)
+    teacher_user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                             nullable=False, index=True)
+    class_name      = Column(String,  nullable=False)
+    created_at      = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    teacher     = relationship("User")
+    enrollments = relationship("MasterclassEnrollment", back_populates="classroom",
+                               cascade="all, delete-orphan")
+
+
+class MasterclassEnrollment(Base):
+    """
+    Links a student (user) to a class.
+
+    student_name is captured at enrollment time as a roster display name,
+    independent of the user's own display_name so it can be set by the teacher.
+    A UniqueConstraint on (class_id, user_id) prevents double-enrollment.
+    """
+    __tablename__ = "masterclass_enrollments"
+
+    id           = Column(Integer, primary_key=True, index=True)
+    class_id     = Column(Integer, ForeignKey("masterclass_classes.id", ondelete="CASCADE"),
+                          nullable=False, index=True)
+    user_id      = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"),
+                          nullable=False, index=True)
+    student_name = Column(String,  nullable=True)
+    enrolled_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    classroom = relationship("MasterclassClass", back_populates="enrollments")
+    student   = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("class_id", "user_id", name="uq_enrollment_class_user"),
+    )

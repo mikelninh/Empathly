@@ -19,7 +19,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
 from database import create_tables, engine
-from routers import checkins, journal, ai, users, emotions
+from routers import checkins, journal, ai, users, emotions, masterclass
 
 
 @asynccontextmanager
@@ -64,6 +64,7 @@ app.include_router(emotions.router)
 app.include_router(checkins.router)
 app.include_router(journal.router)
 app.include_router(ai.router)
+app.include_router(masterclass.router)
 
 
 @app.get("/", tags=["Health"])
