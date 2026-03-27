@@ -1865,7 +1865,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Kategorien'
   },
   vi: {
-    title: 'Trò Chơi Cảm Xúc',
+    title: 'Empathly',
     subtitle: 'Tìm các cặp — và nói về cảm xúc của bạn',
     moves: 'Lượt',
     pairs: 'Cặp',
@@ -1888,7 +1888,7 @@ const UI_TEXT = {
     newCards: 'Thẻ mới',
     allCategories: 'Tất cả',
     share: 'Chia sẻ',
-    shareText: 'Tôi đang chơi Trò Chơi Cảm Xúc — trò chơi về cảm xúc bằng {lang1} và {lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'Hôm nay bạn cần gì?',
     checkinSubtitle: 'Chọn trong mỗi chiều những gì cảm thấy phù hợp.',
     todayIChoose: 'Hôm nay tôi chọn:',
@@ -1953,7 +1953,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Phân loại'
   },
   en: {
-    title: 'Feelings Memory',
+    title: 'Empathly',
     subtitle: 'Find the pairs — and talk about your feelings',
     moves: 'Moves',
     pairs: 'Pairs',
@@ -1976,7 +1976,7 @@ const UI_TEXT = {
     newCards: 'New cards',
     allCategories: 'All categories',
     share: 'Share',
-    shareText: "I'm playing Feelings Memory — a game about emotions in {lang1} and {lang2}! 💛",
+    shareText: "I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛",
     checkinTitle: 'What do you need today?',
     checkinSubtitle: 'Choose what feels right in each dimension.',
     todayIChoose: 'Today I choose:',
@@ -2041,7 +2041,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Categories'
   },
   tr: {
-    title: 'Duygu Hafıza Oyunu',
+    title: 'Empathly',
     subtitle: 'Eşleri bul — ve duygularını konuş',
     moves: 'Hamle',
     pairs: 'Çift',
@@ -2064,7 +2064,7 @@ const UI_TEXT = {
     newCards: 'Yeni kartlar',
     allCategories: 'Tüm kategoriler',
     share: 'Paylaş',
-    shareText: 'Duygu Hafıza Oyunu oynuyorum — {lang1} ve {lang2} dillerinde duygular hakkında bir oyun! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'Bugün neye ihtiyacın var?',
     checkinSubtitle: 'Her boyutta sana uygun olanı seç.',
     todayIChoose: 'Bugün seçiyorum:',
@@ -2130,7 +2130,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Kategoriler'
   },
   ar: {
-    title: 'لعبة ذاكرة المشاعر',
+    title: 'Empathly',
     subtitle: 'ابحث عن الأزواج — وتحدث عن مشاعرك',
     moves: 'حركات',
     pairs: 'أزواج',
@@ -2153,7 +2153,7 @@ const UI_TEXT = {
     newCards: 'بطاقات جديدة',
     allCategories: 'جميع الفئات',
     share: 'مشاركة',
-    shareText: 'أنا ألعب لعبة ذاكرة المشاعر — لعبة عن العواطف بـ{lang1} و{lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'ماذا تحتاج اليوم؟',
     checkinSubtitle: 'اختر ما يناسبك في كل بُعد.',
     todayIChoose: 'اليوم أختار:',
@@ -2219,7 +2219,7 @@ const UI_TEXT = {
     categoryBreakdown: 'الفئات'
   },
   es: {
-    title: 'Memoria de Sentimientos',
+    title: 'Empathly',
     subtitle: 'Encuentra las parejas — y habla sobre tus sentimientos',
     moves: 'Movimientos',
     pairs: 'Parejas',
@@ -2242,7 +2242,7 @@ const UI_TEXT = {
     newCards: 'Nuevas cartas',
     allCategories: 'Todas las categorías',
     share: 'Compartir',
-    shareText: 'Estoy jugando Memoria de Sentimientos — un juego sobre emociones en {lang1} y {lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: '¿Qué necesitas hoy?',
     checkinSubtitle: 'Elige lo que se sienta bien en cada dimensión.',
     todayIChoose: 'Hoy elijo:',
@@ -2308,7 +2308,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Categorías'
   },
   fr: {
-    title: 'Mémoire des Sentiments',
+    title: 'Empathly',
     subtitle: 'Trouve les paires — et parle de tes sentiments',
     moves: 'Coups',
     pairs: 'Paires',
@@ -2331,7 +2331,7 @@ const UI_TEXT = {
     newCards: 'Nouvelles cartes',
     allCategories: 'Toutes les catégories',
     share: 'Partager',
-    shareText: 'Je joue à Mémoire des Sentiments — un jeu sur les émotions en {lang1} et {lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'De quoi as-tu besoin aujourd\'hui?',
     checkinSubtitle: 'Choisis ce qui te convient dans chaque dimension.',
     todayIChoose: 'Aujourd\'hui je choisis:',
@@ -2486,7 +2486,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Категорії'
   },
   pl: {
-    title: 'Pamięć Uczuć',
+    title: 'Empathly',
     subtitle: 'Znajdź pary — i porozmawiaj o swoich uczuciach',
     moves: 'Ruchy',
     pairs: 'Pary',
@@ -2509,7 +2509,7 @@ const UI_TEXT = {
     newCards: 'Nowe karty',
     allCategories: 'Wszystkie kategorie',
     share: 'Udostępnij',
-    shareText: 'Gram w Pamięć Uczuć — grę o emocjach w językach {lang1} i {lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'Czego dziś potrzebujesz?',
     checkinSubtitle: 'Wybierz to, co czujesz jako właściwe w każdym wymiarze.',
     todayIChoose: 'Dziś wybieram:',
@@ -2575,7 +2575,7 @@ const UI_TEXT = {
     categoryBreakdown: 'Kategorie'
   },
   el: {
-    title: 'Μνήμη Συναισθημάτων',
+    title: 'Empathly',
     subtitle: 'Βρες τα ζευγάρια — και μίλησε για τα συναισθήματά σου',
     moves: 'Κινήσεις',
     pairs: 'Ζευγάρια',
@@ -2598,7 +2598,7 @@ const UI_TEXT = {
     newCards: 'Νέες κάρτες',
     allCategories: 'Όλες οι κατηγορίες',
     share: 'Μοιράσου',
-    shareText: 'Παίζω Μνήμη Συναισθημάτων — ένα παιχνίδι για συναισθήματα στα {lang1} και {lang2}! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'Τι χρειάζεσαι σήμερα;',
     checkinSubtitle: 'Διάλεξε σε κάθε διάσταση αυτό που σου ταιριάζει.',
     todayIChoose: 'Σήμερα διαλέγω:',
@@ -2665,7 +2665,7 @@ const UI_TEXT = {
   },
 
   ta: {
-    title: 'உணர்வு நினைவு',
+    title: 'Empathly',
     subtitle: 'ஜோடிகளை கண்டுபிடி — உன் உணர்வுகளை பேசு',
     moves: 'நகர்வுகள்',
     pairs: 'ஜோடிகள்',
@@ -2688,7 +2688,7 @@ const UI_TEXT = {
     newCards: 'புதிய அட்டைகள்',
     allCategories: 'அனைத்து வகைகளும்',
     share: 'பகிர்',
-    shareText: 'நான் உணர்வு நினைவு விளையாடுகிறேன் — {lang1} மற்றும் {lang2} மொழிகளில்! 💛',
+    shareText: 'I'm playing Empathly — a game about emotions in {lang1} and {lang2}! 💛',
     checkinTitle: 'இன்று உனக்கு என்ன தேவை?',
     checkinSubtitle: 'ஒவ்வொரு பரிமாணத்திலும் உனக்கு பொருத்தமானதை தேர்ந்தெடு.',
     todayIChoose: 'இன்று நான் தேர்வு செய்கிறேன்:',
